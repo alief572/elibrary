@@ -736,9 +736,11 @@ class Process_checksheets extends Admin_Controller
 
 		if ($check_child > 0) {
 			$this->db->update('checksheet_process_sub', ['status' => '0'], ['process_id' => $id, 'company_id' => $this->company]);
+			$this->db->update('checksheet_process_sub2', ['status' => '0'], ['process_id' => $id, 'company_id' => $this->company]);
 		}
 		if ($check_dir > 0) {
 			$this->db->update('checksheet_process_sub', ['status' => '0'], ['process_id' => $id, 'company_id' => $this->company]);
+			$this->db->update('checksheet_process_sub2', ['status' => '0'], ['process_id' => $id, 'company_id' => $this->company]);
 		}
 
 		if ($this->db->trans_status() === FALSE) {
