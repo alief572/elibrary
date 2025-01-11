@@ -10,7 +10,7 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h3 class="m-0">
-						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id . '&sub=' . $sub->id); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Checksheet
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id . '&sub=' . $sub->id . '&sub2=' . $sub2->id); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Checksheet
 					</h3>
 					<button type="button" id="add" class="btn btn-primary"><i class="fa fa-plus"></i> New Checksheet</button>
 				</div>
@@ -27,6 +27,7 @@
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)); ?>"><i class="fa fa-home"></i></a>
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1) . "/?p=" . $parent->id); ?>"><?= $parent->name; ?></a>
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1) . "/?p=" . $parent->id . "&sub=" . $sub->id); ?>"><?= $sub->name; ?></a>
+							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1) . "/?p=" . $parent->id . "&sub=" . $sub->id . '&sub2=' . $sub2->id); ?>"><?= $sub2->name; ?></a>
 							<span class="breadcrumb-item active"><?= $dir->name; ?></span>
 						</nav>
 						<input type="hidden" id="dir" value="<?= $dir->id; ?>">

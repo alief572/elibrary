@@ -97,7 +97,7 @@
 					<hr>
 					<div class="text-right">
 						<button type="button" class="btn btn-primary" id="save"><i class="fa fa-save"></i> Save</button>
-						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . "&sub=" . $data->sub_id . "&checksheet=" . $data->dir_id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Back</a>
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . "&sub=".$dataSub2->id_sub."&sub2=" . $data->sub_id . "&checksheet=" . $data->dir_id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Back</a>
 					</div>
 				</div>
 			</div>
@@ -179,7 +179,7 @@
 						success: function(result) {
 							if (result.status == 1) {
 								Swal.fire("Success!", result.msg, "success", 3000).then(function() {
-									window.location.href = siteurl + active_controller + '?p=' + <?= $data->process_id; ?> + '&sub=' + <?= $data->sub_id; ?> + '&checksheet=' + <?= $data->dir_id; ?>
+									window.location.href = siteurl + active_controller + '?p=' + <?= $data->process_id; ?> + '&sub='+ <?= $dataSub2->id_sub ?> +'&sub2=' + <?= $data->sub_id; ?> + '&checksheet=' + <?= $data->dir_id; ?>
 								})
 							} else {
 								Swal.fire("Warning!", result.msg, "warning", 3000)

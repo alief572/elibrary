@@ -54,13 +54,16 @@ class Process_checksheets extends Admin_Controller
 		} else if ((isset($_GET['sub']) && !$_GET['sub'])) {
 			echo "Sub Directory not valid";
 			return false;
+		} else if ((isset($_GET['sub2']) && !$_GET['sub2'])) {
+			echo "Sub Directory 2 not valid";
+			return false;
 		} else if ((isset($_GET['checksheet']) && !$_GET['checksheet'])) {
 			echo "Checksheet Directory not valid";
 			return false;
-		} else if ((isset($_GET['sub']) && $_GET['sub']) && !isset($_GET['checksheet'])) {
+		} else if ((isset($_GET['sub']) && $_GET['sub']) && !isset($_GET['sub2'])) {
 			$parent 	=  $this->db->get_where('checksheet_process', ['id' => $_GET['p'], 'company_id' => $this->company, 'status' => '1'])->row();
 			$sub 		=  $this->db->get_where('checksheet_process_sub', ['id' => $_GET['sub'], 'company_id' => $this->company, 'status' => '1'])->row();
-			$data 		=  $this->db->get_where('checksheet_process_dir', ['process_id' => $_GET['p'], 'sub_id' => $_GET['sub'], 'company_id' => $this->company, 'status' => '1'])->result();
+			$data 		=  $this->db->get_where('checksheet_process_sub2', ['process_id' => $_GET['p'], 'id_sub' => $_GET['sub'], 'company_id' => $this->company, 'status' => '1'])->result();
 			$this->template->set(
 				[
 					'data' 		=> $data,
@@ -71,10 +74,28 @@ class Process_checksheets extends Admin_Controller
 
 			$this->template->render('index-dir');
 			return false;
-		} else if ((isset($_GET['checksheet']) && $_GET['checksheet'] && $_GET['sub'])) {
+		}else if((isset($_GET['sub2']) && $_GET['sub2']) && !isset($_GET['checksheet'])) {
+			$parent 	=  $this->db->get_where('checksheet_process', ['id' => $_GET['p'], 'company_id' => $this->company, 'status' => '1'])->row();
+			$sub 		=  $this->db->get_where('checksheet_process_sub', ['id' => $_GET['sub'], 'company_id' => $this->company, 'status' => '1'])->row();
+			$sub2 		=  $this->db->get_where('checksheet_process_sub2', ['id' => $_GET['sub2'], 'company_id' => $this->company, 'status' => '1'])->row();
+			$data 		=  $this->db->get_where('checksheet_process_dir', ['process_id' => $_GET['p'], 'sub_id' => $_GET['sub2'], 'company_id' => $this->company, 'status' => '1'])->result();
+
+			$this->template->set(
+				[
+					'data' 		=> $data,
+					'sub' 		=> $sub,
+					'sub2' 		=> $sub2,
+					'parent' 	=> $parent,
+				]
+			);
+			$this->template->render('index-dir2');
+			return false;
+		} 
+		else if ((isset($_GET['checksheet']) && $_GET['checksheet'] && $_GET['sub2'])) {
 
 			$parent 	=  $this->db->get_where('checksheet_process', ['id' => $_GET['p'], 'company_id' => $this->company])->row();
 			$sub 		=  $this->db->get_where('checksheet_process_sub', ['id' => $_GET['sub'], 'company_id' => $this->company])->row();
+			$sub2 		=  $this->db->get_where('checksheet_process_sub2', ['id' => $_GET['sub2'], 'company_id' => $this->company])->row();
 			$dir 		=  $this->db->get_where('checksheet_process_dir', ['id' => $_GET['checksheet'], 'company_id' => $this->company])->row();
 			$data 		=  $this->db->get_where('checksheet_process_data', ['dir_id' => $_GET['checksheet'], 'company_id' => $this->company])->result();
 
@@ -96,6 +117,7 @@ class Process_checksheets extends Admin_Controller
 					'data' 			=> $data,
 					'dir' 			=> $dir,
 					'sub' 			=> $sub,
+					'sub2' 			=> $sub2,
 					'parent' 		=> $parent,
 					'fExecution' 	=> $fExecution,
 					'fChecking' 	=> $fChecking,
@@ -186,6 +208,7 @@ class Process_checksheets extends Admin_Controller
 		if ($id) {
 			$sheet 		= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
 			$dataDir 	= $this->db->get_where('view_checksheet_process_dir', ['id' => $sheet->dir_id])->row();
+			$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row();
 			// $items 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
 			$items 		= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
 			// $items 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
@@ -211,6 +234,7 @@ class Process_checksheets extends Admin_Controller
 					'fExecution' 	=> $fExecution,
 					'fChecking' 	=> $fChecking,
 					'dataDir' 		=> $dataDir,
+					'dataSub2'		=> $get_sub2
 				]
 			);
 
@@ -239,6 +263,8 @@ class Process_checksheets extends Admin_Controller
 			];
 			$dataDir = $this->db->get_where('view_checksheet_process_dir', ['id' => $dir])->row();
 
+			$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row();
+
 			$this->template->set(
 				[
 					'data' 			=> $sheet,
@@ -246,6 +272,7 @@ class Process_checksheets extends Admin_Controller
 					'fExecution' 	=> $fExecution,
 					'fChecking' 	=> $fChecking,
 					'dataDir' 		=> $dataDir,
+					'sub_id'		=> $get_sub2->id_sub
 				]
 			);
 
@@ -824,6 +851,60 @@ class Process_checksheets extends Admin_Controller
 
 	/* DIRECTORY PROCESS */
 
+	public function save_process_sub2()
+	{
+		$post 			= $this->input->post();
+
+		if (!isset($post['id'])) {
+			$name 			= $post['name'];
+			$is_exist 		= $this->db->get_where('checksheet_process_sub2', ['name' => $name, 'status' => '1', 'id_sub' => $post['sub_id']])->num_rows();
+
+			if ($is_exist > 0) {
+				$return = [
+					'status' => 0,
+					'msg' => 'Folder Name is already exist',
+				];
+				echo json_encode($return);
+				return false;
+			}
+
+			$this->db->trans_begin();
+			$data = [
+				'name' 			=> strtoupper($name),
+				'process_id' 	=> $post['process_id'],
+				'id_sub' 		=> $post['sub_id'],
+				'company_id' 	=> $this->company,
+				'created_by' 	=> $this->auth->user_id(),
+				'created_at' 	=> date('Y-m-d H:i:s'),
+			];
+
+			$this->db->insert('checksheet_process_sub2', $data);
+		} else {
+			$name	= $post['name'];
+			$data 	= [
+				'name' => strtoupper($name),
+				'modified_by' => $this->auth->user_id(),
+				'modified_at' => date('Y-m-d H:i:s'),
+			];
+			$this->db->update('checksheet_process_sub2', $data, ['id' => $post['id']]);
+		}
+
+		if ($this->db->trans_status() === FALSE) {
+			$this->db->trans_rollback();
+			$Return		= array(
+				'status'		=> 0,
+				'msg'			=> 'Folder failed created. Query Error'
+			);
+		} else {
+			$this->db->trans_commit();
+			$Return		= array(
+				'status'		=> 1,
+				'msg'			=> 'Folder successfull created'
+			);
+		}
+		echo json_encode($Return);
+	}
+
 	public function save_process_dir()
 	{
 		$post 			= $this->input->post();
@@ -881,7 +962,7 @@ class Process_checksheets extends Admin_Controller
 	public function edit_process_dir($id)
 	{
 		if ($id) {
-			$data = $this->db->get_where('checksheet_process_dir', ['id' => $id])->row();
+			$data = $this->db->get_where('checksheet_process_sub2', ['id' => $id])->row();
 			echo json_encode(['data' => $data]);
 		}
 	}
@@ -998,12 +1079,15 @@ class Process_checksheets extends Admin_Controller
 		$execution		= $this->db->get_where('checksheet_execution', ['item_id' => $sheet->id])->row();
 		$execution_date	= $this->db->get_where('checksheet_execution_date', ['item_id' => $sheet->id])->row();
 
+		$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $sheet->sub_id])->row();
+
 		$ArrNote = [];
 		foreach ($notes as $note) {
 			$ArrNote[$note->item_id] = $note;
 		}
 		$this->template->set([
 			'data' 			=> $sheet,
+			'dataSub2' 		=> $get_sub2,
 			'width' 		=> $width,
 			'count' 		=> $count,
 			'col_width' 	=> $col_width,

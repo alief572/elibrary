@@ -189,7 +189,7 @@
 						success: function(result) {
 							if (result.status == 1) {
 								Swal.fire("Success!", result.msg, "success", 3000).then(function() {
-									window.location.href = siteurl + active_controller + '?p=' + <?= $dataDir->process_id; ?> + '&sub=' + <?= $dataDir->sub_id; ?> + '&checksheet=' + <?= $dataDir->id; ?>
+									window.location.href = siteurl + active_controller + '?p=' + <?= $dataDir->process_id; ?> + '&sub='+<?= $sub_id ?>+'&sub2=' + <?= $dataDir->sub_id; ?> + '&checksheet=' + <?= $dataDir->id; ?>
 								})
 							} else {
 								Swal.fire("Warning!", result.msg, "warning", 3000)

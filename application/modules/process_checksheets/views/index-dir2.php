@@ -10,7 +10,7 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h3 class="m-0">
-						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Folder
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id.'&sub='.$sub2->id_sub); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Folder
 					</h3>
 					<button type="button" id="add-folder" class="btn btn-primary"><i class="fa fa-plus"></i> Add Folder</button>
 				</div>
@@ -22,12 +22,13 @@
 								<input data type="text" name="search" id="search" class="form-control w-200px d-inline-block" placeholder="Search">
 							</div>
 						</div>
-						<input type="hidden" id="process_id" value="<?= $sub->process_id; ?>">
-						<input type="hidden" id="sub_id" value="<?= $sub->id; ?>">
+						<input type="hidden" id="process_id" value="<?= $sub2->process_id; ?>">
+						<input type="hidden" id="id_sub" value="<?= $sub2->id; ?>">
 						<nav class="breadcrumb py-2 line-height-0 m-0">
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)); ?>"><i class="fa fa-home"></i></a>
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id; ?>"><?= $parent->name; ?></a>
-							<span class="breadcrumb-item active"><?= $sub->name; ?></span>
+							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id.'&sub='.$sub->id; ?>"><?= $sub->name; ?></a>
+							<span class="breadcrumb-item active"><?= $sub2->name; ?></span>
 						</nav>
 					</div>
 					<table class="table table-sm table-bordered datatable">
@@ -43,7 +44,7 @@
 							if ($data) foreach ($data as $dt) : $n++; ?>
 								<tr>
 									<td class="py-2">
-										<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->process_id . "&sub=" . $dt->id_sub . "&sub2=" . $dt->id); ?>">
+										<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->process_id . "&sub=" . $_GET['sub'] . "&sub2=".$dt->sub_id."&checksheet=" . $dt->id); ?>">
 											<h4 class="mb-0 d-flex align-items-end">
 												<i class="fa fa-folder mr-2 text-warning" style="font-size: 28px;"></i><?= $dt->name; ?>
 											</h4>
@@ -168,7 +169,7 @@
 	$(document).on('click', '#save-folder', function() {
 		const name = $('#folder-name').val();
 		const process_id = $('#process_id').val();
-		const sub_id = $('#sub_id').val();
+		const sub_id = $('#id_sub').val();
 		const id = $('#id').val();
 
 		if (!name) {
@@ -186,7 +187,7 @@
 		}).then((value) => {
 			if (value.isConfirmed) {
 				$.ajax({
-					url: siteurl + active_controller + 'save_process_sub2',
+					url: siteurl + active_controller + 'save_process_dir',
 					dataType: 'JSON',
 					type: 'POST',
 					data: {
