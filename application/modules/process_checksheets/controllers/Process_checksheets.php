@@ -974,8 +974,8 @@ class Process_checksheets extends Admin_Controller
 		$id 		 = $this->input->post('id');
 
 		$this->db->trans_begin();
-		$this->db->update('checksheet_process_dir', ['status' => '0'], ['id' => $id]);
-		// $this->db->update('checksheet_process_sub', ['status' => '0'], ['id' => $id]);
+		// $this->db->update('checksheet_process_dir', ['status' => '0'], ['id' => $id]);
+		$this->db->update('checksheet_process_sub2', ['status' => '0'], ['id' => $id]);
 
 		// $check_dir 	 = $this->db->get_where('checksheet_process_dir', ['sub_id' => $id, 'company_id' => $this->company])->num_rows();
 
