@@ -991,7 +991,10 @@
 		<tr>
 			<td class="text-center"><span class="h2">*</span></td>
 			<td><textarea name="items[` + n + `][item_name]" class="form-control" placeholder="Item Check"></textarea></td>
-			<td><textarea name="items[` + n + `][standard_check]" class="form-control" placeholder="Standard Check"></textarea></td>
+			<td>
+				<textarea name="items[` + n + `][standard_check]" class="form-control" placeholder="Standard Check"></textarea>
+				<input type="file" name="items[` + n + `][upload_standard_check]" class="form-control">
+			</td>
 			<td>
 				<div class="form-check">
 					<label class="form-check-label">

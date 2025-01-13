@@ -30,7 +30,7 @@
 					<?= $n; ?>
 				</td>
 				<td class="py-2"><?= $item->item_name; ?></td>
-				<td class="py-2"><?= $item->standard_check; ?></td>
+				<td class="py-2"><?= $item->standard_check; ?> <br><br> <?= (file_exists($item->upload_standard_check)) ? '<a href="'.base_url($item->upload_standard_check).'" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File</a>' : '' ?></td>
 				<td class="py-2">
 					<?php if ($item->check_type == 'boolean') : ?>
 						<label for="">Yes/No</label>

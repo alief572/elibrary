@@ -1,6 +1,7 @@
 <?php
 
 defined('BASEPATH') or exit('No direct script access allowed');
+
 use Mpdf\Mpdf;
 
 class Checksheets extends Admin_Controller
@@ -346,8 +347,37 @@ class Checksheets extends Admin_Controller
 				}
 
 				if ($items) {
+					$no = 1;
 					foreach ($items as $item) {
 						if (isset($item['id'])) {
+							$upload_standard_check = '';
+							if (isset($_FILES['items']['name'][$no]['upload_standard_check'])) {
+								$_FILES['file'] = [
+									'name'     => $_FILES['items']['name'][$no]['upload_standard_check'],
+									'type'     => $_FILES['items']['type'][$no]['upload_standard_check'],
+									'tmp_name' => $_FILES['items']['tmp_name'][$no]['upload_standard_check'],
+									'error'    => $_FILES['items']['error'][$no]['upload_standard_check'],
+									'size'     => $_FILES['items']['size'][$no]['upload_standard_check'],
+								];
+
+								$config['upload_path'] = './assets/images/directory/master_checksheet/'; //path folder
+								$config['allowed_types'] = 'gif|jpg|png|jpeg|bmp|pdf|webp'; //type yang dapat diakses bisa anda sesuaikan
+								$config['max_size'] = 100000000; // Maximum file size in kilobytes (2MB).
+								$config['encrypt_name'] = TRUE; // Encrypt the uploaded file's name.
+								$config['remove_spaces'] = TRUE; // Remove spaces from the file name.
+
+								$this->load->library('upload', $config);
+								$this->upload->initialize($config);
+
+								if ($this->upload->do_upload('file')) {
+									$data_upload = $this->upload->data();
+									$upload_standard_check = 'assets/images/directory/master_checksheet/' . $data_upload['file_name'];
+								}
+							}
+
+							if($upload_standard_check !== '') {
+								$item['upload_standard_check'] = $upload_standard_check;
+							}
 							$item['modified_by'] = $this->auth->user_id();
 							$item['modified_at'] = date('Y-m-d H:i:s');
 							$this->db->update('checksheet_data_items', $item, ['id' => $item['id']]);
@@ -358,6 +388,7 @@ class Checksheets extends Admin_Controller
 								->get()->result();
 
 							if (count($check_checksheet) > 0) {
+
 								unset($item['modified_by']);
 								unset($item['modified_at']);
 								unset($item['checksheet_data_number']);
@@ -375,6 +406,32 @@ class Checksheets extends Admin_Controller
 							// ], ['checkheet_item_id' => $item['id']]);
 
 						} else {
+							$upload_standard_check = '';
+							if (isset($_FILES['items']['name'][$no]['upload_standard_check'])) {
+								$_FILES['file'] = [
+									'name'     => $_FILES['items']['name'][$no]['upload_standard_check'],
+									'type'     => $_FILES['items']['type'][$no]['upload_standard_check'],
+									'tmp_name' => $_FILES['items']['tmp_name'][$no]['upload_standard_check'],
+									'error'    => $_FILES['items']['error'][$no]['upload_standard_check'],
+									'size'     => $_FILES['items']['size'][$no]['upload_standard_check'],
+								];
+
+								$config['upload_path'] = './assets/images/directory/master_checksheet/'; //path folder
+								$config['allowed_types'] = 'gif|jpg|png|jpeg|bmp|pdf|webp'; //type yang dapat diakses bisa anda sesuaikan
+								$config['max_size'] = 100000000; // Maximum file size in kilobytes (2MB).
+								$config['encrypt_name'] = TRUE; // Encrypt the uploaded file's name.
+								$config['remove_spaces'] = TRUE; // Remove spaces from the file name.
+
+								$this->load->library('upload', $config);
+								$this->upload->initialize($config);
+
+								if ($this->upload->do_upload('file')) {
+									$data_upload = $this->upload->data();
+									$upload_standard_check = 'assets/images/directory/master_checksheet/' . $data_upload['file_name'];
+								}
+							}
+
+							$item['upload_standard_check'] = $upload_standard_check;
 							$item['created_by'] = $this->auth->user_id();
 							$item['created_at'] = date('Y-m-d H:i:s');
 							$item['checksheet_data_number'] = $data['number'];
@@ -386,6 +443,9 @@ class Checksheets extends Admin_Controller
 								->get()->result();
 
 							if (count($check_checksheet) > 0) {
+
+
+
 								unset($item['created_by']);
 								unset($item['created_at']);
 								unset($item['checksheet_data_number']);
@@ -396,6 +456,8 @@ class Checksheets extends Admin_Controller
 								}
 							}
 						}
+
+						$no++;
 					}
 				}
 
@@ -570,7 +632,7 @@ class Checksheets extends Admin_Controller
 	/* ===================== */
 	public function print_document()
 	{
-		
+
 		$folder = $_GET['p'];
 		$file = $_GET['f'];
 

@@ -42,7 +42,15 @@
 						<input type="hidden" name="items[<?= $n; ?>][id]" value="<?= $item->id; ?>">
 					</td>
 					<td class="py-2"><textarea class="form-control" name="items[<?= $n; ?>][item_name]" placeholder="Item Name"><?= $item->item_name; ?></textarea></td>
-					<td class="py-2"><textarea class="form-control" name="items[<?= $n; ?>][standard_check]" placeholder="Standard Check"><?= $item->standard_check; ?></textarea></td>
+					<td class="py-2">
+						<textarea class="form-control" name="items[<?= $n; ?>][standard_check]" placeholder="Standard Check"><?= $item->standard_check; ?></textarea>
+						<input type="file" name="items[<?= $n; ?>][upload_standard_check]" class="form-control" id="">
+						<?php  
+							if(file_exists($item->upload_standard_check)) {
+								echo '<a href="'.base_url($item->upload_standard_check).'" class="btn btn-sm btn-primary" target="blank"><i class="fa fa-file"></i> View File</a>';
+							}
+						?>
+					</td>
 					<td class="py-2">
 						<div class="form-check">
 							<label class="form-check-label">
