@@ -961,12 +961,49 @@ class Process_checksheets extends Admin_Controller
 		echo json_encode($Return);
 	}
 
-	public function edit_process_dir($id)
+	public function edit_process_sub2($id)
 	{
 		if ($id) {
 			$data = $this->db->get_where('checksheet_process_sub2', ['id' => $id])->row();
 			echo json_encode(['data' => $data]);
 		}
+	}
+
+	public function edit_process_dir($id)
+	{
+		if ($id) {
+			$data = $this->db->get_where('checksheet_process_dir', ['id' => $id])->row();
+			echo json_encode(['data' => $data]);
+		}
+	}
+
+	public function delete_process_sub2()
+	{
+		$id 		 = $this->input->post('id');
+
+		$this->db->trans_begin();
+		// $this->db->update('checksheet_process_dir', ['status' => '0'], ['id' => $id]);
+		$this->db->update('checksheet_process_sub2', ['status' => '0'], ['id' => $id]);
+
+		// $check_dir 	 = $this->db->get_where('checksheet_process_dir', ['sub_id' => $id, 'company_id' => $this->company])->num_rows();
+
+		// if ($check_dir > 0) {
+		// }
+
+		if ($this->db->trans_status() === FALSE) {
+			$this->db->trans_rollback();
+			$Return		= array(
+				'status'		=> 0,
+				'msg'			=> 'Delete Folder failed. Error!'
+			);
+		} else {
+			$this->db->trans_commit();
+			$Return		= array(
+				'status'		=> 1,
+				'msg'			=> 'Delete Folder successfull'
+			);
+		}
+		echo json_encode($Return);
 	}
 
 	public function delete_process_dir()
@@ -975,7 +1012,7 @@ class Process_checksheets extends Admin_Controller
 
 		$this->db->trans_begin();
 		// $this->db->update('checksheet_process_dir', ['status' => '0'], ['id' => $id]);
-		$this->db->update('checksheet_process_sub2', ['status' => '0'], ['id' => $id]);
+		$this->db->update('checksheet_process_dir', ['status' => '0'], ['id' => $id]);
 
 		// $check_dir 	 = $this->db->get_where('checksheet_process_dir', ['sub_id' => $id, 'company_id' => $this->company])->num_rows();
 

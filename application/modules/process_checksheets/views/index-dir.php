@@ -151,7 +151,7 @@
 
 	$(document).on('click', '.edit', function() {
 		const id = $(this).data('id')
-		$.getJSON(siteurl + active_controller + 'edit_process_dir/' + id, function(data) {
+		$.getJSON(siteurl + active_controller + 'edit_process_sub2/' + id, function(data) {
 			var items = [];
 			$('#modalId .modal-title').text('Edit Folder')
 			$('#modalId').modal('show')
@@ -238,7 +238,7 @@
 		}).then((value) => {
 			if (value.isConfirmed) {
 				$.ajax({
-					url: siteurl + active_controller + 'delete_process_dir',
+					url: siteurl + active_controller + 'delete_process_sub2',
 					dataType: 'JSON',
 					type: 'POST',
 					data: {
