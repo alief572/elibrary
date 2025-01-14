@@ -11,11 +11,13 @@
 						<input type="hidden" name="checksheet_name" value="<?= $data->name; ?>">
 						<div class="row mb-3">
 							<label for="" class="col-md-2 control-label">Directory</label>
-							<div class="col-md-4">:
+							<div class="col-md-6">:
 								<i class="fa fa-folder text-warning"></i>
 								<label for=""><?= $dataDir->process_name; ?></label>
 								<i class="fa fa-angle-right"></i>
 								<label for=""><?= $dataDir->sub_name; ?></label>
+								<i class="fa fa-angle-right"></i>
+								<label for=""><?= $dataDir->sub_name2; ?></label>
 								<i class="fa fa-angle-right"></i>
 								<label for=""><?= $dataDir->dir_name; ?></label>
 							</div>
