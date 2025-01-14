@@ -81,6 +81,12 @@
 												<input type="hidden" name="details[<?= $n; ?>][checksheet_item_id]" value="<?= $it->id; ?>">
 												<input type="hidden" name="details[<?= $n; ?>][item_name]" value="<?= $it->item_name; ?>">
 												<input type="hidden" name="details[<?= $n; ?>][standard_check]" value="<?= $it->standard_check; ?>">
+												<?php 
+													if(file_exists($it->upload_standard_check) && ($it->upload_standard_check !== null && $it->upload_standard_check !== '')) {
+														echo '<br>';
+														echo '<a href="'.base_url($it->upload_standard_check).'" class="btn btn-sm btn-primary"><i class="fa fa-file"></i> View File</a>';
+													}
+												?>
 												<input type="hidden" name="details[<?= $n; ?>][check_type]" value="<?= $it->check_type; ?>">
 											</td>
 											<td><?= $it->item_name; ?></td>
@@ -102,7 +108,7 @@
 
 					<div class="text-right">
 						<button type="button" class="btn btn-primary" id="save"><i class="fa fa-save"></i> Save</button>
-						<!-- <a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->checksheet_id . '&sub=' . $data->checksheet_detail_id . '&checksheet=' . $dir); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Back</a> -->
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $dataDir->process_id . '&sub=' . $dataDir->id_sub . '&sub2='.$dataDir->sub_id.'&checksheet=' . $dataDir->id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Back</a>
 					</div>
 				</div>
 			</div>
