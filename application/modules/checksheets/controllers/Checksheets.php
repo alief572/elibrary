@@ -320,9 +320,9 @@ class Checksheets extends Admin_Controller
 	{
 		$data 						= $this->input->post();
 
-		$items = $data['items'];
-		unset($data['items']);
+		$items = (isset($data['items'])) ? $data['items'] : '';
 		if ($data) {
+			unset($data['items']);
 			try {
 				$id							= isset($data['id']) ? $data['id'] : '';
 				$data['company_id']			= $this->company;
@@ -346,7 +346,7 @@ class Checksheets extends Admin_Controller
 					$detail_id = $data['id'];
 				}
 
-				if ($items) {
+				if ($items !== '') {
 					$no = 1;
 					foreach ($items as $item) {
 						if (isset($item['id'])) {
