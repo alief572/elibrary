@@ -375,9 +375,6 @@ class Checksheets extends Admin_Controller
 								}
 							}
 
-							if($upload_standard_check !== '') {
-								$item['upload_standard_check'] = $upload_standard_check;
-							}
 							$item['modified_by'] = $this->auth->user_id();
 							$item['modified_at'] = date('Y-m-d H:i:s');
 							$this->db->update('checksheet_data_items', $item, ['id' => $item['id']]);
@@ -389,13 +386,16 @@ class Checksheets extends Admin_Controller
 
 							if (count($check_checksheet) > 0) {
 
+								if ($upload_standard_check !== '') {
+									$item['upload_standard_check'] = $upload_standard_check;
+								}
+
 								unset($item['modified_by']);
 								unset($item['modified_at']);
 								unset($item['checksheet_data_number']);
 								unset($item['id']);
 								foreach ($check_checksheet as $insert_item) {
-									$where = ['checksheet_item_id' => $id_item, 'checksheet_process_data_number' => $insert_item->number];
-									$this->db->update('checksheet_process_details', $item, $where);
+									$update_data = $this->db->update('checksheet_process_details', $item, ['checksheet_item_id' => $id_item, 'checksheet_process_data_number' => $insert_item->number]);
 								}
 							}
 
