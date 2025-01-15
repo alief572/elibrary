@@ -375,6 +375,9 @@ class Checksheets extends Admin_Controller
 								}
 							}
 
+							if ($upload_standard_check !== '') {
+								$item['upload_standard_check'] = $upload_standard_check;
+							}
 							$item['modified_by'] = $this->auth->user_id();
 							$item['modified_at'] = date('Y-m-d H:i:s');
 							$this->db->update('checksheet_data_items', $item, ['id' => $item['id']]);
@@ -385,10 +388,6 @@ class Checksheets extends Admin_Controller
 								->get()->result();
 
 							if (count($check_checksheet) > 0) {
-
-								if ($upload_standard_check !== '') {
-									$item['upload_standard_check'] = $upload_standard_check;
-								}
 
 								unset($item['modified_by']);
 								unset($item['modified_at']);
@@ -443,8 +442,6 @@ class Checksheets extends Admin_Controller
 								->get()->result();
 
 							if (count($check_checksheet) > 0) {
-
-
 
 								unset($item['created_by']);
 								unset($item['created_at']);
