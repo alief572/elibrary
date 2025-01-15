@@ -20,18 +20,19 @@
 		</div>
 	</div>
 
-	<table class="table table-sm table-bordered datatable">
-		<thead class="table-light">
-			<tr>
-				<th class="p-2" width="5%">No</th>
-				<th class="p-2">Checksheet Name</th>
-				<th class="p-2">Frequency</th>
-				<th class="p-2 text-center" width="10%">Opsi</th>
-			</tr>
-		</thead>
-		<tbody>
-			<!-- <?php if ($checksheets) $n = 0;
-					foreach ($checksheets as $cs) : $n++; ?>
+	<div class="table-responsive">
+		<table class="table table-sm table-bordered datatable">
+			<thead class="table-light">
+				<tr>
+					<th class="p-2" width="5%">No</th>
+					<th class="p-2">Checksheet Name</th>
+					<th class="p-2">Frequency</th>
+					<th class="p-2 text-center" width="10%">Opsi</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- <?php if ($checksheets) $n = 0;
+						foreach ($checksheets as $cs) : $n++; ?>
 				<tr>
 					<td class="py-2" width="5%"><?= $n; ?></td>
 					<td class="py-2"><?= $cs->checksheet_detail_data_name; ?></td>
@@ -41,8 +42,9 @@
 					</td>
 				</tr>
 			<?php endforeach; ?> -->
-		</tbody>
-	</table>
+			</tbody>
+		</table>
+	</div>
 </form>
 
 <script>

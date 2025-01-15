@@ -165,7 +165,7 @@
 			const id = $(this).val();
 			const dir = $('#dir').val();
 			$.get(siteurl + active_controller + 'load_detail_data/' + id + "/" + dir, function(data) {
-				$('#modalId .modal-body table tbody').html(data)
+				$('#modalId .modal-body .table-responsive table tbody').html(data)
 			})
 		})
 
