@@ -85,7 +85,15 @@
 												<?= $n; ?>
 											</td>
 											<td><?= $it->item_name; ?></td>
-											<td><?= $it->standard_check; ?></td>
+											<td>
+												<?= $it->standard_check; ?>
+												<?php
+												if (file_exists($it->upload_standard_check) && $it->upload_standard_check !== '' && $it->upload_standard_check !== null) {
+													echo '<br>';
+													echo '<a href="' . base_url($it->upload_standard_check) . '" class="btn btn-sm btn-sm" target="_blank"><i class="fa fa-file"></i> View File</a>';
+												}
+												?>
+											</td>
 											<?php for ($i = 1; $i <= $count; $i++) :
 												if (
 													($fChecking[$data->frequency_checking] == 'Daily' && $i == date('d')) ||

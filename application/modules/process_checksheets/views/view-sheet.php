@@ -42,11 +42,11 @@
 			</tr>
 			<tr>
 				<?php for ($i = 1; $i <= $count; $i++) {
-					$weekend="";
-					$tanggalkolom=date("Y-m",strtotime($data->periode))."-".$i;
-					if(date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend="table-danger";
-					if($data->frequency_checking!=1) $weekend="";?>
-					<th class="text-center <?=$weekend?>"><?= $name_col . " " . $i; ?></th>
+					$weekend = "";
+					$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . $i;
+					if (date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend = "table-danger";
+					if ($data->frequency_checking != 1) $weekend = ""; ?>
+					<th class="text-center <?= $weekend ?>"><?= $name_col . " " . $i; ?></th>
 				<?php } ?>
 			</tr>
 		</thead>
@@ -58,21 +58,29 @@
 						<?= $n; ?>
 					</td>
 					<td><?= $it->item_name; ?></td>
-					<td><?= $it->standard_check; ?></td>
-					<?php for ($i = 1; $i <= $count; $i++) { 
-						$weekend="";
-						$tanggalkolom=date("Y-m",strtotime($data->periode))."-".$i;
-						if(date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend="table-danger";
-						if($data->frequency_checking!=1) $weekend="";?>
+					<td>
+						<?= $it->standard_check; ?>
+						<?php 
+							if(file_exists($it->upload_standard_check) && $it->upload_standard_check !== '' && $it->upload_standard_check !== null) {
+								echo '<br>';
+								echo '<a href="'.base_url($it->upload_standard_check).'" class="btn btn-sm btn-sm" target="_blank"><i class="fa fa-file"></i> View File</a>';
+							}
+ 						?>
+					</td>
+					<?php for ($i = 1; $i <= $count; $i++) {
+						$weekend = "";
+						$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . $i;
+						if (date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend = "table-danger";
+						if ($data->frequency_checking != 1) $weekend = ""; ?>
 						<?php $nn = "n" . $i; ?>
 						<?php $Nn = "note" . $i; ?>
 						<td class=" 
-							<?php if($weekend==""){ ?>
+							<?php if ($weekend == "") { ?>
 								<?= ($it->$nn == '') ? 'bg-light' : ''; ?>
 							<?php
-							}else{
+							} else {
 								echo $weekend;
-							}								
+							}
 							?>">
 							<?php if ($it->check_type == 'boolean') : ?>
 								<?php if ($it->$nn == 'no') : ?>
