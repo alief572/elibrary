@@ -248,7 +248,7 @@ class Process_checksheets extends Admin_Controller
 	{
 		$sheet 			= $this->db->get_where('checksheet_detail_data', ['id' => $id])->row();
 		if ($sheet) {
-			$items 			= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->number])->result();
+			$items 			= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->number, 'status' => 1])->result();
 			$fExecution 	= [
 				'1' => 'Once Time',
 				'2' => 'Weekly~Daily',
