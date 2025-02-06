@@ -62,7 +62,10 @@
 						<?= $it->standard_check; ?>
 						<?php
 						$get_checksheet_data = $this->db->get_where('checksheet_data_items', array('id' => $it->checksheet_item_id))->row();
-						if (file_exists($get_checksheet_data->upload_standard_check) && $get_checksheet_data->upload_standard_check !== '' && $get_checksheet_data->upload_standard_check !== null) {
+						if (!empty($get_checksheet_data) && 
+						file_exists($get_checksheet_data->upload_standard_check) && 
+						$get_checksheet_data->upload_standard_check !== '' && 
+						$get_checksheet_data->upload_standard_check !== null) {
 							echo '<br>';
 							echo '<a href="' . base_url($it->upload_standard_check) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File</a>';
 						}
