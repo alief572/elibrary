@@ -69,7 +69,7 @@
 							$get_checksheet_data->upload_standard_check !== null
 						) {
 							echo '<br>';
-							echo '<a href="' . base_url($get_checksheet_data->upload_standard_check) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File (' . $it->checksheet_item_id . ')</a>';
+							echo '<a href="' . base_url($get_checksheet_data->upload_standard_check) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File </a>';
 						}
 						?>
 					</td>
