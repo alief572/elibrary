@@ -87,6 +87,40 @@ function has_permission($permission_name = '')
     return $return;
 }
 
+function has_permission_v2($id_menu)
+{
+    $ci = &get_instance();
+
+    $get_user_group = $ci->db->get_where('user_groups', array('user_id' => $ci->auth->user_id()))->row();
+
+    $get_menus_access = $ci->db->get_where('group_menus', array('group_id' => $get_user_group->id_group, 'menu_id' => $id_menu))->row();
+
+    $read = (!empty($get_menus_access)) ? $get_menus_access->read : 0;
+    $create = (!empty($get_menus_access)) ? $get_menus_access->create : 0;
+    $update = (!empty($get_menus_access)) ? $get_menus_access->update : 0;
+    $delete = (!empty($get_menus_access)) ? $get_menus_access->delete : 0;
+    $approve = (!empty($get_menus_access)) ? $get_menus_access->approve : 0;
+    $download = (!empty($get_menus_access)) ? $get_menus_access->download : 0;
+
+    if ($ci->auth->user_id() == '1') {
+        $read = 1;
+        $create = 1;
+        $update = 1;
+        $delete = 1;
+        $approve = 1;
+        $download = 1;
+    }
+
+    return json_encode([
+        'read' => $read,
+        'create' => $create,
+        'update' => $update,
+        'delete' => $delete,
+        'approve' => $approve,
+        'download' => $download
+    ]);
+}
+
 /**
  * @param string $kode_tambahan
  *

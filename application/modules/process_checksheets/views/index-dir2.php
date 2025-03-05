@@ -1,3 +1,6 @@
+<?php
+$menus_perm = json_decode(has_permission_v2(15), true);
+?>
 <style>
 	.cursor-pointer:hover div.dir-tools .btn-dropdown {
 		display: block !important;
@@ -10,9 +13,11 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h3 class="m-0">
-						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id.'&sub='.$sub2->id_sub); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Folder
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id . '&sub=' . $sub2->id_sub); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Folder
 					</h3>
-					<button type="button" id="add-folder" class="btn btn-primary"><i class="fa fa-plus"></i> Add Folder</button>
+					<?php if ($menus_perm['create'] == '1') : ?>
+						<button type="button" id="add-folder" class="btn btn-primary"><i class="fa fa-plus"></i> Add Folder</button>
+					<?php endif; ?>
 				</div>
 				<div class="card-body">
 					<div class="d-flex justify-content-between align-items-center">
@@ -27,7 +32,7 @@
 						<nav class="breadcrumb py-2 line-height-0 m-0">
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)); ?>"><i class="fa fa-home"></i></a>
 							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id; ?>"><?= $parent->name; ?></a>
-							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id.'&sub='.$sub->id; ?>"><?= $sub->name; ?></a>
+							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id . '&sub=' . $sub->id; ?>"><?= $sub->name; ?></a>
 							<span class="breadcrumb-item active"><?= $sub2->name; ?></span>
 						</nav>
 					</div>
@@ -44,7 +49,7 @@
 							if ($data) foreach ($data as $dt) : $n++; ?>
 								<tr>
 									<td class="py-2">
-										<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->process_id . "&sub=" . $_GET['sub'] . "&sub2=".$dt->sub_id."&checksheet=" . $dt->id); ?>">
+										<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->process_id . "&sub=" . $_GET['sub'] . "&sub2=" . $dt->sub_id . "&checksheet=" . $dt->id); ?>">
 											<h4 class="mb-0 d-flex align-items-end">
 												<i class="fa fa-folder mr-2 text-warning" style="font-size: 28px;"></i><?= $dt->name; ?>
 											</h4>
@@ -52,8 +57,12 @@
 									</td>
 									<td class="py-2 text-center"><?= $dt->created_at; ?></td>
 									<td class="py-2 text-center">
-										<button type="button" class="btn btn-xs btn-icon btn-warning edit" data-id="<?= $dt->id; ?>"><i class="fa fa-edit"></i></button>
-										<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>"><i class="fa fa-trash"></i></button>
+										<?php if ($menus_perm['update'] == '1') : ?>
+											<button type="button" class="btn btn-xs btn-icon btn-warning edit" data-id="<?= $dt->id; ?>"><i class="fa fa-edit"></i></button>
+										<?php endif; ?>
+										<?php if ($menus_perm['delete'] == '1') : ?>
+											<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>"><i class="fa fa-trash"></i></button>
+										<?php endif; ?>
 									</td>
 								</tr>
 							<?php endforeach; ?>

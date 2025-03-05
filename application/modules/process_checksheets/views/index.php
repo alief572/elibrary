@@ -1,3 +1,6 @@
+<?php
+$menus_perm = json_decode(has_permission_v2(15), true);
+?>
 <style>
 	.cursor-pointer:hover div.dir-tools .btn-dropdown {
 		display: block !important;
@@ -10,7 +13,9 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h3 class="m-0"><i class="fa fa-home"></i> List Folder</h3>
-					<button type="button" class="btn btn-primary" id="add-folder"><i class="fa fa-plus"></i> New Folder</button>
+					<?php if ($menus_perm['create'] == '1') : ?>
+						<button type="button" class="btn btn-primary" id="add-folder"><i class="fa fa-plus"></i> New Folder</button>
+					<?php endif; ?>
 				</div>
 				<div class="card-body">
 					<div class="input-group  w-25">
@@ -38,8 +43,12 @@
 									</td>
 									<td class="py-2 text-center"><?= $dt->created_at; ?></td>
 									<td class="py-2 text-center">
-										<button type="button" class="btn btn-warning btn-xs btn-icon edit" data-id="<?= $dt->id; ?>"><i class="fa fa-edit"></i></button>
-										<button type="button" class="btn btn-danger btn-xs btn-icon delete" data-id="<?= $dt->id; ?>"><i class="fa fa-trash"></i></button>
+										<?php if ($menus_perm['update'] == '1') : ?>
+											<button type="button" class="btn btn-warning btn-xs btn-icon edit" data-id="<?= $dt->id; ?>"><i class="fa fa-edit"></i></button>
+										<?php endif; ?>
+										<?php if ($menus_perm['delete'] == '1') : ?>
+											<button type="button" class="btn btn-danger btn-xs btn-icon delete" data-id="<?= $dt->id; ?>"><i class="fa fa-trash"></i></button>
+										<?php endif; ?>
 									</td>
 								</tr>
 							<?php endforeach; ?>
