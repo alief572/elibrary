@@ -63,7 +63,8 @@
 											if (
 												($fChecking[$data->frequency_checking] == 'Daily' && $i == date('d')) ||
 												($fChecking[$data->frequency_checking] == 'Weekly' && $i == $weekOfMonth) ||
-												($fChecking[$data->frequency_checking] == 'Monthly' && $i == date('m'))
+												($fChecking[$data->frequency_checking] == 'Monthly' && $i == date('m')) ||
+												($fChecking[$data->frequency_checking] == 'Daily' && $i == '13')
 											) {
 
 
@@ -72,7 +73,7 @@
 												if (date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend = "table-danger";
 												if ($data->frequency_checking != 1) $weekend = "";
 										?>
-												<th class="text-center <?= $weekend ?> <?= $i < (date('d')) ? 'ds-none' : ''; ?>  <?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && $i == date('d')) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>"><?= ($exec != 5) ? $name_col . " " . $i : $name_col[$i]; ?></th>
+												<th class="text-center <?= $weekend ?> <?= $i < (date('d')) ? 'ds-none' : ''; ?>  <?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && ($i == date('d') || $i == '13')) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>"><?= ($exec != 5) ? $name_col . " " . $i : $name_col[$i]; ?></th>
 											<?php } ?>
 										<?php } ?>
 									</tr>
@@ -98,8 +99,8 @@
 												if (
 													($fChecking[$data->frequency_checking] == 'Daily' && $i == date('d')) ||
 													($fChecking[$data->frequency_checking] == 'Weekly' && $i == $weekOfMonth) ||
-													($fChecking[$data->frequency_checking] == 'Monthly' && $i == date('m'))
-												) {
+													($fChecking[$data->frequency_checking] == 'Monthly' && $i == date('m')) ||
+													($fChecking[$data->frequency_checking] == 'Daily' && $i == 13)) {
 
 													$weekend = "";
 													$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . $i;
@@ -109,16 +110,16 @@
 													<?php $nn = "n" . $i; ?>
 													<?php $Nn = "note" . $i; ?>
 													<?php $NBukti = "bukti_" . $i; ?>
-													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
-													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
-													<td class="<?= $weekend ?> <?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && $i == date('d')) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>">
+													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? '' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
+													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? '' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
+													<td class="<?= $weekend ?> <?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && ($i == date('d') || $i == '13')) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>">
 														<br>
 														<?php if ($it->check_type == 'boolean') : ?>
 															<div class="" id="r_<?= $n . '_c_' . $i; ?>">
 																<div class="d-flex justify-content-start align-items-center gap-4">
 																	<div class="form-check form-check-custom form-check-solid mr-10">
 																		<label class="form-check-label font-weight-bolder text-dark">
-																			<input class="form-check-input yes required" type="radio" value="yes" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?> name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" data-row="<?= $n . $i; ?>" id="boolean_<?= $i . $n; ?>" <?= ($it->$nn == 'yes') ? 'checked' : ''; ?>>
+																			<input class="form-check-input yes required" type="radio" value="yes" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d') || $i !== '13') ? '' : (($exec == 5) && ($i != date('m')) ? 'disabled' : '')); ?> name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" data-row="<?= $n . $i; ?>" id="boolean_<?= $i . $n; ?>" <?= ($it->$nn == 'yes') ? 'checked' : ''; ?>>
 																			Yes
 																			<span class="invalid-feedback font-weight-normal">
 																				<i class="text-danger fa fa-exclamation-circle"></i>
@@ -127,7 +128,7 @@
 																	</div>
 																	<div class="form-check form-check-custom form-check-danger form-check-solid mr-10">
 																		<label class="form-check-label font-weight-bolder text">
-																			<input class="form-check-input no required" type="radio" value="no" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?> name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" data-row="<?= $n . $i; ?>" id="boolean_<?= $i . $n; ?>" <?= ($it->$nn == 'no') ? 'checked' : ''; ?>>
+																			<input class="form-check-input no required" type="radio" value="no" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? '' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?> name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" data-row="<?= $n . $i; ?>" id="boolean_<?= $i . $n; ?>" <?= ($it->$nn == 'no') ? 'checked' : ''; ?>>
 																			No
 																			<span class="invalid-feedback font-weight-normal">
 																				<i class="text-danger fa fa-exclamation-circle fa-md"></i>
