@@ -110,8 +110,8 @@
 													<?php $nn = "n" . $i; ?>
 													<?php $Nn = "note" . $i; ?>
 													<?php $NBukti = "bukti_" . $i; ?>
-													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
-													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
+													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? '' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
+													<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? '' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
 													<td class="<?= $weekend ?> <?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && ($i == date('d') || $i == '13')) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>">
 														<br>
 														<?php if ($it->check_type == 'boolean') : ?>
