@@ -57,6 +57,9 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 							if ($data) foreach ($data as $dt) : $n++; ?>
 								<?php
 								$diss = '';
+								if (date('d', strtotime($dt->updated_at)) == date('d')) {
+									$diss = 'table-warning';
+								}
 								if ($fChecking[$dt->frequency_checking] == 'Daily') {
 									if (date('m') > date('m', strtotime($dt->periode))) {
 										$diss = 'bg-disabled';
@@ -68,7 +71,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 									}
 								}
 								?>
-								<tr class="<?= (date('d', strtotime($dt->updated_at)) == date('d') ? 'table-warning' : ''); ?> <?= $diss ?>">
+								<tr class="<?= $diss ?>">
 									<td class="py-2">
 										<h4 class="mb-0 d-flex align-items-end">
 											<i class="fa fa-file-alt mr-2 text-success" style="font-size: 28px;"></i><?= $dt->checksheet_name; ?>
@@ -164,6 +167,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 			info: true,
 			pageLength: 20,
 			responsive: true,
+			ordering: false,
 			stateLoadParams: function(settings, data) {
 				$('#searchText').val(data.search.search)
 			}

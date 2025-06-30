@@ -91,12 +91,40 @@ class Process_checksheets extends Admin_Controller
 			$this->template->render('index-dir2');
 			return false;
 		} else if ((isset($_GET['checksheet']) && $_GET['checksheet'] && $_GET['sub2'])) {
+			$this->db->select('*');
+			$this->db->from('checksheet_process');
+			$this->db->where('id', $_GET['p']);
+			$this->db->where('company_id', $this->company);
+			$this->db->order_by('created_at', 'desc');
+			$parent = $this->db->get()->row();
 
-			$parent 	=  $this->db->get_where('checksheet_process', ['id' => $_GET['p'], 'company_id' => $this->company])->row();
-			$sub 		=  $this->db->get_where('checksheet_process_sub', ['id' => $_GET['sub'], 'company_id' => $this->company])->row();
-			$sub2 		=  $this->db->get_where('checksheet_process_sub2', ['id' => $_GET['sub2'], 'company_id' => $this->company])->row();
-			$dir 		=  $this->db->get_where('checksheet_process_dir', ['id' => $_GET['checksheet'], 'company_id' => $this->company])->row();
-			$data 		=  $this->db->get_where('checksheet_process_data', ['dir_id' => $_GET['checksheet'], 'company_id' => $this->company])->result();
+			$this->db->select('*');
+			$this->db->from('checksheet_process_sub');
+			$this->db->where('id', $_GET['sub']);
+			$this->db->where('company_id', $this->company);
+			$this->db->order_by('created_at', 'desc');
+			$sub = $this->db->get()->row();
+
+			$this->db->select('*');
+			$this->db->from('checksheet_process_sub2');
+			$this->db->where('id', $_GET['sub2']);
+			$this->db->where('company_id', $this->company);
+			$this->db->order_by('created_at', 'desc');
+			$sub2 = $this->db->get()->row();
+
+			$this->db->select('*');
+			$this->db->from('checksheet_process_dir');
+			$this->db->where('id', $_GET['checksheet']);
+			$this->db->where('company_id', $this->company);
+			$this->db->order_by('created_at', 'desc');
+			$dir = $this->db->get()->row();
+
+			$this->db->select('*');
+			$this->db->from('checksheet_process_data');
+			$this->db->where('dir_id', $_GET['checksheet']);
+			$this->db->where('company_id', $this->company);
+			$this->db->order_by('created_at', 'desc');
+			$data = $this->db->get()->result();
 
 			$fExecution 	= [
 				'1' => 'Once Time',
