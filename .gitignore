@@ -12,3 +12,7 @@ application/logs/*
 #/vendor/
 directory/*
 */config/database.php
+docker-compose.yml
+docker/apache/Dockerfile
+docker/mysql/init.sql
+docker/php/php.ini
