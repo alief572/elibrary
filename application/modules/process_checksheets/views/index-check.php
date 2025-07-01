@@ -95,17 +95,17 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 										<button type="button" data-toggle="dropdown" class="btn dropdown-toggle btn-xs py-1 px-2 btn-primary"><i class="fa fa-cog"></i></button>
 										<div class="dropdown-menu text-center px-2 w-50 w-lg-auto" aria-labelledby="triggerId">
 											<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-primary view"><i class="fa fa-eye"></i></button>
-											<?php if ($menus_perm['update'] == '1' && $diss == '') : ?>
+											<?php if ($menus_perm['update'] == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
 												<a href="<?= base_url($this->uri->segment(1) . '/edit_checkhseet/' . $dt->id); ?>" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-warning" title="Edit Checksheet"><i class="fa fa-pen"></i></a>
 											<?php endif; ?>
-											<?php if ($diss == '') : ?>
+											<?php if ($diss == '' || $diss == 'table-warning') : ?>
 												<a href="<?= base_url($this->uri->segment(1) . '/checking/?sheet=' . $dt->id); ?>" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-info exec"><i class="fas fa-arrow-right"></i></a>
 												<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-success check"><i class="fas fa-clipboard-check"></i></button>
 											<?php endif; ?>
-											<?php if ($menus_perm['delete'] == '1' && $diss == '') : ?>
+											<?php if ($menus_perm['delete'] == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
 												<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-danger delete"><i class="fa fa-trash"></i></button>
 											<?php endif; ?>
-											<?php if ($diss == '') : ?>
+											<?php if ($diss == '' || $diss == 'table-warning') : ?>
 												<a target="_blank" href="<?= base_url($this->uri->segment(1) . '/print_sheet/?sheet=' . $dt->id); ?>" type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-secondary"><i class="fa fa-print text-"></i></a>
 											<?php endif; ?>
 										</div>
