@@ -134,21 +134,21 @@
 														<tbody>
 															<tr>
 																<th>Compliance</th>
-																<td class="text-center"><?= ($C) ? $C : '0'; ?></td>
+																<td class="text-center"><?= isset($C) ? $C : '0'; ?></td>
 															</tr>
 															<tr>
 																<th>Not Compliance</th>
-																<td class="text-center"><?= ($NC) ? $NC : '0'; ?></td>
+																<td class="text-center"><?= isset($NC) ? $NC : '0'; ?></td>
 															</tr>
 															<tr>
 																<th>Not Applicable</th>
-																<td class="text-center"><?= ($NA) ? $NA : '0'; ?></td>
+																<td class="text-center"><?= isset($NA) ? $NA : '0'; ?></td>
 															</tr>
 														</tbody>
 														<tfoot>
 															<tr>
 																<th>% Compliance</th>
-																<th class="text-center"><?= ($C && $NC) ? round(($C / ($C + $NC)) * 100) : '0'; ?>%</th>
+																<th class="text-center"><?= (isset($C) && isset($NC)) ? round(($C / ($C + $NC)) * 100) : '0'; ?>%</th>
 															</tr>
 														</tfoot>
 													</table>

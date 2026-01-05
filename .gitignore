@@ -11,7 +11,8 @@ application/logs/*
 !application/logs/.htaccess
 #/vendor/
 directory/*
-*/config/database.php
+#assets/images/directory/master_checksheet
+application/config/database.php
 docker-compose.yml
 docker/apache/Dockerfile
 docker/mysql/init.sql

@@ -29,7 +29,7 @@
 											<tr class="">
 												<td><?= $n; ?></td>
 												<td class="text-left"><?= $dt->nm_perusahaan; ?></td>
-												<td class="text-left"><?= ($dt->branch_name) ?: 'Main Company'; ?></td>
+												<td class="text-left"><?= isset($dt->branch_name) ?$dt->branch_name: 'Main Company'; ?></td>
 												<td class="text-center">
 													<a href="<?= base_url($this->uri->segment(1) . "?b=" . $dt->id); ?>" class="btn btn-sm btn-icon btn-warning detail" data-id="<?= $dt->id; ?>" title="Edit Data"><i class="fa fa-arrow-circle-right"></i></a>
 												</td>
