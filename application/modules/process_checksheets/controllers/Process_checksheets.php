@@ -812,6 +812,7 @@ class Process_checksheets extends Admin_Controller
 				'name' 			=> strtoupper($name),
 				'process_id' 	=> $post['process_id'],
 				'company_id' 	=> $this->company,
+				'periode_tahun' => $post['periode_tahun'],
 				'created_by' 	=> $this->auth->user_id(),
 				'created_at' 	=> date('Y-m-d H:i:s'),
 			];
@@ -821,6 +822,7 @@ class Process_checksheets extends Admin_Controller
 			$name	= $post['name'];
 			$data 	= [
 				'name' => strtoupper($name),
+				'periode_tahun' => $post['periode_tahun'],
 				'modified_by' => $this->auth->user_id(),
 				'modified_at' => date('Y-m-d H:i:s'),
 			];

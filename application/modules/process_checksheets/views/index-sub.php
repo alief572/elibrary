@@ -99,6 +99,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 	}
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 	$(document).ready(function() {
 		oTable = $('.datatable').DataTable({
@@ -133,9 +134,15 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 		$('#modalId .modal-title').text('New Folder')
 		$('#modalId').modal('show')
 		$('#modalId .modal-body').html(`
+			<div class="form-group">
 			<label for="">Folder Name</label>
 			<input type="text" id="folder-name" class="form-control" placeholder="Folder Name">
-			<span class="invalid-feedback">Folder Name not be empty</span>`)
+			<span class="invalid-feedback">Folder Name not be empty</span>
+			</div>
+			<div class="form-group">
+			<label>Tahun Periode</label>
+			<input type="number" name="periode_tahun" class="form-control form-control-sm" value="<?= date('Y') ?>">
+			</div>`)
 		$('.btn-save').html(`
 		<button type="button" class="btn btn-primary" id="save-sub-folder"><i class="fa fa-save"></i> Save</button>
 		`)
@@ -148,10 +155,16 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 			$('#modalId .modal-title').text('Edit Folder')
 			$('#modalId').modal('show')
 			$('#modalId .modal-body').html(`
+			<div class="form-group">
 			<label for="">Folder Name</label>
 			<input type="text" id="id" class="form-control d-none" value="` + data.data.id + `">
 			<input type="text" id="folder-name" class="form-control" placeholder="New Folder" value="` + data.data.name + `">
 			<span class="invalid-feedback">Folder Name not be empty</span>
+			</div>
+			<div class="form-group">
+			<label>Periode Tahun</label>
+			<input type="number" class="form-control form-control-sm" name="periode_tahun" value="` + data.data.periode_tahun + `">
+			</div>
 			`)
 			$('.btn-save').html(`<button type="button" class="btn btn-primary" id="save-sub-folder"><i class="fas fa-save"></i> Save</button>`)
 		});
@@ -161,9 +174,24 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 		const name = $('#folder-name').val();
 		const process_id = $('#process_id').val();
 		const id = $('#id').val();
+		const periode_tahun = $('input[name="periode_tahun"]').val();
 
 		if (!name) {
 			$('#folder-name').addClass('is-invalid')
+			return false;
+		}
+
+		if (periode_tahun.length <= 0) {
+			Swal.fire({
+				icon: 'warning',
+				title: 'Warning !',
+				text: 'Period must be filled !',
+				showConfirmButton: false,
+				showCancelButton: false,
+				allowEscapeKey: false,
+				allowOutsideClick: false
+			});
+
 			return false;
 		}
 
@@ -184,6 +212,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 						process_id,
 						name,
 						id,
+						periode_tahun
 					},
 					success: function(result) {
 						if (result.status == 1) {
