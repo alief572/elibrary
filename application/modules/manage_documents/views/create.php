@@ -1,12 +1,12 @@
 <div class="content d-flex flex-column flex-column-fluid px-5 pb-0" id="kt_content">
-	<div class="container mx-auto">
+	<div class="container">
 		<div class="card card-custom">
 			<div class="row">
-				<div class="col-md-4 bg-dark-25 pr-0">
+				<div class="col-md-4 bg-dark-25 pr-md-0">
 					<div class="card-header pb-8 pt-3 h-20px">
 						<span class="card-title text-dark-75"><i class="fa fa-folder mr-2 text-warning"></i>Directories</span>
 					</div>
-					<div class="card-body px-4 py-1 overflow-auto h-500px">
+					<div class="card-body px-4 py-1 overflow-auto h-md-500px">
 						<table class="table table-condensed">
 							<?php if ($mainFolder) foreach ($mainFolder as $main) : ?>
 								<tr data-id="<?= $main->id; ?>" class="tree-folder cursor-pointer" data-folder="<?= $main->description; ?>" data-parent_id="<?= $main->id; ?>">
@@ -19,10 +19,11 @@
 						<!-- <div id="kt_tree_2" class="tree-demo">
 						</div> -->
 					</div>
+					<hr class="p-0 m-0">
 				</div>
 
-				<div class="col-md-8 pl-0">
-					<div class="card-header px-0 border-1 border-left pb-11 pt-0 h-20px">
+				<div class="col-md-8 pl-md-0">
+					<div class="card-header px-0 border-1 border-left pb-0 pt-0">
 						<!-- <input type="hidden" id="active_parent_id" value="ec"> -->
 						<!-- <span class="card-title text-dark-75"><i class="fa fa-file mr-2 text-success"></i>List File & Folder</span> -->
 						<div class="px-1">
@@ -144,9 +145,13 @@
 		</div>
 	</div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js" integrity="sha512-MSOo1aY+3pXCOCdGAYoBZ6YGI0aragoQsg1mKKBHXCYPIWxamwOE7Drh+N5CPgGI5SA9IEKJiPjdfqWFWmZtRA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 	$(document).ready(function() {
+		$('.modal-dialog').draggable({
+			handle: ".modal-header"
+		});
+		
 		$('#kt_tree_2').jstree({
 			"core": {
 				"themes": {
@@ -226,7 +231,7 @@
 		}
 	});
 
-	$(document).on("dblclick", ".folder", function() {
+	$(document).on("click", ".open_folder", function() {
 		let id = $(this).data('id');
 		let main = $(this).data('folder');
 
@@ -260,7 +265,7 @@
 		}
 	});
 
-	$(document).on("dblclick", ".folder-procedure", function() {
+	$(document).on("click", ".folder-procedure", function() {
 		const id = $(this).data('id');
 		if (id) {
 			$('#data-file').load(siteurl + active_controller + 'list_procedures/' + id)
@@ -393,7 +398,7 @@
 				success: function(data) {
 					console.log(data);
 					if (data.parent_id != '0') {
-						$('#data-file').load(siteurl + active_controller + 'load_file/' + data.parent_id+'/'+folder)
+						$('#data-file').load(siteurl + active_controller + 'load_file/' + data.parent_id + '/' + folder)
 						$('#back').data('id', data.parent_id);
 						$('a#add-folder').data('id', data.parent_id);
 						$('a#add-file').data('id', data.parent_id);

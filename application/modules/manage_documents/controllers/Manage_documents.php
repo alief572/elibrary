@@ -16,12 +16,12 @@ class Manage_documents extends Admin_Controller
 		$this->template->page_icon('fa fa-file-alt');
 		$this->MainData 	= $this->db->get_where('view_directories', ['parent_id' => '0'])->result();
 		$this->sts = [
-			'' => '<span class="label label-light-secondary label-pill label-inline mr-2 text-dark-50">!Null!</span>',
-			'OPN' => '<span class="label label-light-primary label-pill label-inline mr-2">New</span>',
-			'REV' => '<span class="label label-light-warning label-pill label-inline mr-2">Waiting Review</span>',
-			'COR' => '<span class="label label-light-danger label-pill label-inline mr-2">Need Correction</span>',
-			'APV' => '<span class="label label-light-info label-pill label-inline mr-2">Waiting Approval</span>',
-			'PUB' => '<span class="label label-light-success label-pill label-inline mr-2">Published</span>',
+			'' => '<span class="label label-light-secondary label-pill label-inline text-dark-50">Undefined</span>',
+			'OPN' => '<span class="label label-light-primary label-pill label-inline">New</span>',
+			'REV' => '<span class="label label-light-warning label-pill label-inline">Waiting Review</span>',
+			'COR' => '<span class="label label-light-danger label-pill label-inline">Need Correction</span>',
+			'APV' => '<span class="label label-light-info label-pill label-inline">Waiting Approval</span>',
+			'PUB' => '<span class="label label-light-success label-pill label-inline">Published</span>',
 		];
 	}
 
