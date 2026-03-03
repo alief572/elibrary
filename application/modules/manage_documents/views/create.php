@@ -1,9 +1,9 @@
-<div class="content d-flex flex-column flex-column-fluid px-5 pb-0" id="kt_content">
+<div class="content d-flex flex-column flex-column-fluid px-md-5 pb-0" id="kt_content">
 	<div class="container">
 		<div class="card card-custom">
 			<div class="row">
 				<div class="col-md-4 bg-dark-25 pr-md-0">
-					<div class="card-header pb-8 pt-3 h-20px">
+					<div class="card-header py-3">
 						<span class="card-title text-dark-75"><i class="fa fa-folder mr-2 text-warning"></i>Directories</span>
 					</div>
 					<div class="card-body px-4 py-1 overflow-auto h-md-500px">
@@ -151,7 +151,7 @@
 		$('.modal-dialog').draggable({
 			handle: ".modal-header"
 		});
-		
+
 		$('#kt_tree_2').jstree({
 			"core": {
 				"themes": {
