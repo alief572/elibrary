@@ -43,25 +43,21 @@
 												<div class="row">
 													<div class="col-md-6">
 														<div class="form-group">
-															<label class="font-size-h5"><strong><span class="text-danger">*</span> Kelompok Proces</strong></label>
+															<label class="font-size-h5"><strong><span class="text-danger">*</span> Nama Proses</strong></label>
 															<div class="">
-																<select name="group_procedure" id="group_procedure" class="form-control select2">
-																	<option value=""></option>
-																	<?php foreach ($grProcess as $pro) : ?>
-																		<option value="<?= $pro->id; ?>"><?= $pro->name; ?></option>
-																	<?php endforeach; ?>
-																</select>
+																<input name="name" id="name" class="form-control" placeholder="Nama Proses" aria-describedby="helpId"></input>
+																<small class="text-danger invalid-feedback">Nama Proses</small>
 															</div>
 														</div>
+
 													</div>
 
 													<div class="col-md-6">
 														<div class="form-group">
 															<label class="font-size-h5"><strong><span class="text-danger">*</span> Status</strong></label>
 															<div class="">
-																<select name="status" id="status" class="form-control select2">
-																	<option value="DFT" selected>Draft</option>
-																</select>
+																<input type="hidden" name="status" id="status" class="form-control" readonly value="DFT">
+																<input type="text" class="form-control form-control-solid" readonly value="DRAFT">
 															</div>
 														</div>
 													</div>
@@ -70,19 +66,23 @@
 												<div class="row">
 													<div class="col-md-6">
 														<div class="form-group">
-															<label class="font-size-h5"><strong><span class="text-danger">*</span> Nama Proses</strong></label>
+															<label class="font-size-h5"><strong><span class="text-danger">*</span> Nomor</strong></label>
 															<div class="">
-																<input name="name" id="name" class="form-control" placeholder="Nama Proses" aria-describedby="helpId"></input>
-																<small class="text-danger invalid-feedback">Nama Proses</small>
+																<input name="nomor" id="nomor" class="form-control" placeholder="Nomor" aria-describedby="helpId"></input>
+																<small class="text-danger invalid-feedback">Nomor</small>
 															</div>
 														</div>
 													</div>
 													<div class="col-md-6">
 														<div class="form-group">
-															<label class="font-size-h5"><strong><span class="text-danger">*</span> Nomor</strong></label>
+															<label class="font-size-h5"><strong><span class="text-danger">*</span> Kelompok Proces</strong></label>
 															<div class="">
-																<input name="nomor" id="nomor" class="form-control" placeholder="Nomor" aria-describedby="helpId"></input>
-																<small class="text-danger invalid-feedback">Nomor</small>
+																<select name="group_procedure" id="group_procedure" class="form-control select2">
+																	<option value=""></option>
+																	<?php foreach ($grProcess as $pro) : ?>
+																		<option value="<?= $pro->id; ?>"><?= $pro->name; ?></option>
+																	<?php endforeach; ?>
+																</select>
 															</div>
 														</div>
 													</div>

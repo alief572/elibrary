@@ -70,15 +70,12 @@
 													<div class="col-md-6">
 														<div class="form-group">
 															<label class="font-size-h5"><strong><span class="text-danger">*</span> Status</strong></label>
-															<div class="">
-																<select name="status" id="status" class="form-control select2" <?= ($data->status == 'DFT') ? '' : 'disabled'; ?>>
-																	<option value="<?= ($data->status) ?: 'DFT'; ?>" selected><?= ($data->status) ? $sts[$data->status] : 'Draft'; ?></option>
-																</select>
+															<div class=""><?= $sts[$data->status] ?>
+																<input type="hidden" name="status" id="status" class="form-control" value="<?= $data->status; ?>" readonly>
 															</div>
 														</div>
 													</div>
 												</div>
-												<hr>
 												<div class="row">
 													<div class="col-md-6">
 														<div class="form-group">
