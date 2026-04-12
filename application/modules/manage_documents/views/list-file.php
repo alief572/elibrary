@@ -36,16 +36,20 @@
 							</div>
 							<?php if ($list->flag_type == 'FOLDER'): ?>
 								<div class="open_folder d-inline" data-id="<?= $list->id; ?>" data-parent_id="<?= $parent_id; ?>" data-folder="<?= $main; ?>">
-									<i class='fa fa-folder text-warning mr-2 fa-2x py-0' style='vertical-align:middle;'></i><span class="my-auto"><?= $list->name; ?></span>
+									<i class='fa fa-folder text-warning mr-2 py-0' style='vertical-align:middle;'></i><span class="my-auto"><?= $list->name; ?></span>
 								</div>
 							<?php else: ?>
-								<i class='text-success fa-2x fa fa-file mr-2 py-0' style='vertical-align:middle;'></i>
+								<i class='text-success fa fa-file mr-2 py-0' style='vertical-align:middle;'></i>
 								<span class="my-auto"><?= $list->name; ?></span>
 							<?php endif; ?>
 						</td>
 						<td style="vertical-align: middle;" class="py-0">
-							<?php if ($list->flag_type == 'FILE') : ?>
-								<?= $sts[$list->status]; ?>
+							<?php if ($list->flag_type == 'LINK') : ?>
+								<a target="_blank" href="<?= $list->file_link; ?>" title="Direct Preview Link">
+									<i class="text-success fas fa-external-link-square-alt"></i>
+								</a>
+							<?php elseif ($list->flag_type == 'FILE'): ?>
+								<i class="text-info fa fa-file-alt"></i>
 							<?php endif; ?>
 						</td>
 						<td style="vertical-align: middle;" class="py-0">

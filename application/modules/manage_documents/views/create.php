@@ -547,16 +547,16 @@
 			return false;
 		}
 
-		if (image == '' || image == null) {
-			$('#image').addClass('is-invalid')
-			Swal.fire({
-				title: "Error Message!",
-				text: 'Empty file, please input file first.....',
-				icon: "warning"
-			});
+		// if (image == '' || image == null) {
+		// 	$('#image').addClass('is-invalid')
+		// 	Swal.fire({
+		// 		title: "Error Message!",
+		// 		text: 'Empty file, please input file first.....',
+		// 		icon: "warning"
+		// 	});
 
-			return false;
-		}
+		// 	return false;
+		// }
 
 		Swal.fire({
 			title: "Are you sure?",

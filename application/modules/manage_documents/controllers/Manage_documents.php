@@ -87,7 +87,7 @@ class Manage_documents extends Admin_Controller
 	public function load_file($id = null, $folder = '')
 	{
 		if ($id != '0') {
-			$data_file 	= $this->db->get_where('view_directories', ['parent_id' => $id, 'flag_type !=' => 'LINK', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
+			$data_file 	= $this->db->get_where('view_directories', ['parent_id' => $id, 'status !=' => 'DEL', 'company_id' => $this->company])->result();
 			$prev 		= $this->db->get_where('view_directories', ['id' => $id])->row()->parent_id;
 
 			$this->template->set('prev', $prev);
@@ -409,9 +409,31 @@ class Manage_documents extends Admin_Controller
 	{
 		$data = $this->input->post();
 		$mainFolder = $data['folder'];
+		$source = isset($data['document_source']) ? $data['document_source'] : 'upload';
+		$documentLink = isset($data['document_link']) ? trim($data['document_link']) : '';
+		$fileUploaded = isset($_FILES['image']) && !empty($_FILES['image']['name']);
+		$linkProvided = $documentLink !== '';
+
+		if ($fileUploaded && $linkProvided) {
+			echo json_encode([
+				'status' => 0,
+				'msg' => 'Hanya satu dari upload file atau input link yang boleh dipilih.'
+			]);
+			return;
+		}
+
+		if (!$fileUploaded && !$linkProvided) {
+			echo json_encode([
+				'status' => 0,
+				'msg' => 'Pilih upload file atau masukkan link dokumen.'
+			]);
+			return;
+		}
+
 		try {
 			$parent_name = $this->db->get_where('view_directories', ['id' => $data['parent_id']])->row()->name;
-			if ($_FILES['image']['name']) {
+			$id = (!$data['id']) ? uniqid(date('m')) : $data['id'];
+			if ($fileUploaded) {
 				if (!is_dir("./directory/$mainFolder/$this->company/" . $parent_name)) {
 					mkdir("./directory/$mainFolder/$this->company/" . $parent_name, 0755, TRUE);
 					chmod("./directory/$mainFolder/$this->company/" . $parent_name, 0755);  // octal; correct value of mode
@@ -421,7 +443,6 @@ class Manage_documents extends Admin_Controller
 				$config['upload_path'] 		= "./directory/$mainFolder/$this->company/$parent_name"; //path folder
 				$config['allowed_types'] 	= 'pdf|xlsx|docx'; //type yang dapat diakses bisa anda sesuaikan
 				$config['encrypt_name'] 	= true; //Enkripsi nama yang terupload
-				$id 						= (!$data['id']) ? uniqid(date('m')) : $data['id'];
 
 
 				$this->upload->initialize($config);
@@ -438,6 +459,7 @@ class Manage_documents extends Admin_Controller
 					$data['size']			= $size;
 					$data['ext']			= $ext;
 					$data['company_id']		= $this->company;
+					$data['file_link']		= null;
 					$data['flag_type']		= 'FILE';
 					$dist 					= isset($data['distribute_id']) ? implode(",", $data['distribute_id']) : null;
 					$data['distribute_id']	= $dist;
@@ -445,8 +467,9 @@ class Manage_documents extends Admin_Controller
 					unset($data['old_file']);
 
 					if ($old_file != null) {
-						if (file_exists("./directory/$mainFolder/$this->company/$parent_name" . $old_file)) {
-							unlink("./directory/$mainFolder/$this->company/$parent_name" . $old_file);
+						$filePath = "./directory/$mainFolder/$this->company/$parent_name/" . $old_file;
+						if (file_exists($filePath)) {
+							unlink($filePath);
 						}
 					}
 
@@ -499,6 +522,47 @@ class Manage_documents extends Admin_Controller
 					echo json_encode($Return);
 					return false;
 				endif;
+			} elseif ($linkProvided) {
+
+				$data['id']            = $id;
+				$data['file_link']     = $documentLink;
+				$data['file_name']     = null;
+				$data['size']          = null;
+				$data['ext']           = null;
+				$data['flag_type']     = 'LINK';
+				$data['company_id']    = $this->company;
+				$data['name']          = $data['description'];
+				$dist                  = isset($data['distribute_id']) ? implode(",", $data['distribute_id']) : null;
+				$data['distribute_id'] = $dist;
+
+				if (isset($data['old_file']) && !empty($data['old_file'])) {
+					$filePath = "./directory/$mainFolder/$this->company/$parent_name/" . $data['old_file'];
+					if (file_exists($filePath)) {
+						unlink($filePath);
+					}
+				}
+				unset($data['old_file']);
+				$this->db->trans_begin();
+				$check = $this->db->get_where('directory', ['id' => $data['id']])->num_rows();
+
+				if (intval($check) == '0') {
+					$data['created_by'] = $this->auth->user_id();
+					$data['created_at'] = date('Y-m-d H:i:s');
+					$data['note'] = 'First upload link';
+					$data['status'] = isset($data['status']) ? $data['status'] : (($data['flag_record'] == 'Y') ? 'PUB' : 'OPN');
+					$this->_update_history($data);
+					unset($data['note']);
+					unset($data['folder']);
+					$this->db->insert('directory', $data);
+				} else {
+					$data['modified_by'] = $this->auth->user_id();
+					$data['modified_at'] = date('Y-m-d H:i:s');
+					$data['note'] = 'Update document link';
+					$this->_update_history($data);
+					unset($data['folder']);
+					unset($data['note']);
+					$this->db->update('director', $data, ['id' => $data['id']]);
+				}
 			} else {
 				$Return = [
 					'status' => 0,
@@ -535,7 +599,7 @@ class Manage_documents extends Admin_Controller
 	{
 		$dataLog = [
 			'directory_id'  => $data['id'],
-			'new_status' 	 	=> $data['status'],
+			'new_status'    => isset($data['status']) ? $data['status'] : "NEW",
 			'note' 		    => $data['note'],
 			'updated_by'    => $this->auth->user_id(),
 			'updated_at'    => date('Y-m-d H:i:s'),
