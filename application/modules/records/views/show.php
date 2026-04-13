@@ -37,7 +37,17 @@
                                 $dir = 'RECORDS';
                             }
                         ?>
-                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%"></iframe>
+                        <?php elseif ($file->ext == '.xlsx' || $file->ext == '.xls') :
+                            if ($type == 'form') {
+                                $dir = 'FORMS';
+                            } else if ($type == 'guide') {
+                                $dir = 'GUIDES';
+                            } else if ($type == 'record') {
+                                $dir = 'RECORDS';
+                            }
+                        ?>
+                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="600"></iframe>
                         <?php else : ?>
                             <iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
                         <?php endif; ?>
