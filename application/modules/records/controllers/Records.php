@@ -489,7 +489,7 @@ class Records extends Admin_Controller
 				chown("./directory/RECORDS/$this->company/", 'www-data');
 			}
 			$config['upload_path'] 		= "./directory/RECORDS/$this->company/"; //path folder
-			$config['allowed_types'] 	= 'pdf'; //type yang dapat diakses bisa anda sesuaikan
+			$config['allowed_types'] 	= 'xlsx|xls|pdf'; //type yang dapat diakses bisa anda sesuaikan
 			$config['encrypt_name'] 	= true; //Enkripsi nama yang terupload
 			// $config['file_name'] 		= $new_name;
 			$id 						= (!$data['id']) ? uniqid(date('m')) : $data['id'];
