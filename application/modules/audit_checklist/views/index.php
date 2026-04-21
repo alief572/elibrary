@@ -23,6 +23,7 @@
 									<td class="text-center"><?= $k; ?></td>
 									<td><?= $v->name; ?></td>
 									<td class="text-center">
+										<button type="button" class="btn btn-xs btn-icon btn-success view" data-toggle="tootltip" title="View" data-id="<?= $v->id; ?>"><i class="fa fa-eye" aria-hidden="true"></i></button>
 										<a href="<?= base_url($this->uri->segment(1) . "/edit/" . $v->id); ?>" class="btn btn-xs btn-icon btn-warning" data-toggle="tootltip" title="Edit" data-id="<?= $v->id; ?>"><i class="fa fa-edit" aria-hidden="true"></i></a>
 										<a href="<?= base_url($this->uri->segment(1) . "/audit/" . $v->id); ?>" class="btn btn-xs btn-icon btn-info" data-toggle="tootltip" title="Audit Temuan" data-id="<?= $v->id; ?>"><i class="fa fa-clipboard-check"></i></a>
 										<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-toggle="tootltip" title="Delete" data-id="<?= $v->id; ?>"><i class="fa fa-trash" aria-hidden="true"></i></button>
@@ -39,7 +40,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modalID" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="staticBackdropLabel"></h5>
@@ -49,7 +50,7 @@
 			</div>
 			<div class="modal-body"></div>
 			<div class="modal-footer justify-content-end">
-				<button type="button" class="btn btn-primary save min-w-100px"><i class="fa fa-save"></i>Save</button>
+				<button type="button" class="btn btn-primary save min-w-100px d-none"><i class="fa fa-save"></i>Save</button>
 				<button type="button" class="btn btn-danger text-end" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Close</button>
 			</div>
 		</div>
@@ -59,6 +60,15 @@
 <script>
 	$(document).ready(function() {
 		Datatable()
+
+		$(document).on('click', '.view', function() {
+			const id = $(this).data('id')
+			const url = siteurl + active_controller + 'view/' + id;
+			$('.modal-title').html('View Audit Checklist')
+			$('#modalID').modal('show')
+			$('.modal-body').load(url)
+			$('.save').addClass('d-none')
+		})
 
 		$(document).on('click', '#add', function() {
 			const url = siteurl + active_controller + 'add';

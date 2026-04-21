@@ -160,6 +160,41 @@ class Audit_checklist extends Admin_Controller
         $this->template->render('edit');
     }
 
+    public function view($id)
+    {
+        $data        = $this->db->get_where('audit_checklist', ['id' => $id, 'status' => '1'])->row();
+        $procedures  = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
+
+        $this->db->select('*')->from('view_cross_reference_details');
+        $this->db->where("find_in_set($data->procedure_id, procedure_id)");
+        $this->db->where("company_id", $this->company);
+        $Cross = $this->db->get()->result();
+
+        $ArrData = [];
+        foreach ($Cross as $dt) {
+            $ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
+            $ArrData['standards'][$dt->requirement_id][] = $dt;
+        }
+        $ArrStd = [];
+        foreach ($Cross as $dtstd) {
+            $ArrStd[$dtstd->requirement_id] = $dtstd;
+        }
+
+        /* Checklist */
+        $checklist = $this->db->get_where('audit_checklist_details', ['checklist_id' => $id, 'status' => '1'])->result();
+
+        $this->template->set([
+            'data'       => $data,
+            'Cross'      => $Cross,
+            'ArrData'    => $ArrData,
+            'ArrStd'     => $ArrStd,
+            'procedures'  => $procedures,
+            'checklist'  => $checklist,
+        ]);
+
+        $this->template->render('view_checklist');
+    }
+
     public function save()
     {
         $data       = $this->input->post();
@@ -600,13 +635,18 @@ class Audit_checklist extends Admin_Controller
             }
 
             /* Satndard */
-            $standard = $this->db->get_where('requirements', ['company_id' => $this->company, 'status' => '1'])->result();
-            $ArrDtlStd = array_column(json_decode(json_encode($standard)), 'name', 'id');
+            $company_id = (isset($cklst->company_id)) ? $cklst->company_id : $this->company;
 
             $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("company_id", $this->company);
-            $Cross = $query->get()->result();
-            $ArrPro = array_column(json_decode(json_encode($Cross)), 'chapter', 'id');
+                ->where("company_id", $company_id);
+            $all_cross = $query->get()->result();
+            
+            $ArrDtlStd = [];
+            $ArrPro = [];
+            if ($all_cross) foreach ($all_cross as $c) {
+                $ArrDtlStd[$c->requirement_id] = $c->name;
+                $ArrPro[$c->id] = $c->chapter;
+            }
 
             $AdtAudit = $this->db->get_where('audit_non_checklist_audit_details', ['audit_id' => $audit->id, 'status' => '1'])->result();
 

@@ -41,7 +41,7 @@
 								<tr>
 									<td class="text-center"><?= $k; ?></td>
 									<td class="text-center"><?= date('d M Y', strtotime($v->date)); ?></td>
-									<td><?= $v->procedure_name; ?></td>
+									<td><a href="javascript:void(0)" class="view font-weight-bold" data-id="<?= $v->id; ?>"><?= $v->procedure_name; ?></a></td>
 									<td>
 										<?php
 										if ($ArrDtl[$v->id]) foreach ($ArrDtl[$v->id] as $n => $x) : ?>
@@ -90,6 +90,24 @@
 	</div>
 </div>
 
+<div class="modal fade" id="modalViewPasal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="staticBackdropLabel">View Pasal</h5>
+				<span class="btn-close cursor-pointer" data-dismiss="modal" aria-label="Close">
+					<div class="fa fa-times"></div>
+				</span>
+			</div>
+			<div class="modal-body">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
 	$(document).ready(function() {
 		Datatable()
@@ -100,6 +118,55 @@
 			$('.modal-title').html('View Audit Checklist')
 			$('#modalID').modal('show')
 			$('.modal-body').load(url)
+		})
+
+		$(document).on('click', '.read', function() {
+			let id = $(this).data('id')
+			$.ajax({
+				url: siteurl + active_controller + 'view_pasal/' + id,
+				type: 'GET',
+				dataType: 'JSON',
+				success: function(result) {
+					if (result) {
+						let html = `
+						<div class="form-group">
+							<label class="font-weight-bold"><strong>Pasal</strong></label>
+							<div class="">
+							` + result.chapter + `
+							</div>
+						</div>
+
+						<!-- Nav tabs -->
+						<ul class="nav nav-fill nav-pills" id="myTab" role="tablist">
+							<li class="nav-item" role="presentation">
+								<a class="nav-link nav-pill active" id="indo-tab" data-toggle="tab" data-target="#indo" type="button" role="tab" aria-controls="indo" aria-selected="true">Indonesian</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link nav-pill" id="eng-tab" data-toggle="tab" data-target="#eng" type="button" role="tab" aria-controls="eng" aria-selected="false">English</a>
+							</li>
+						</ul>
+
+						<!-- Tab panes -->
+						<div class="tab-content mt-4 border rounded-lg p-5">
+							<div class="tab-pane active pt-4 pb-4" id="indo" role="tabpanel" aria-labelledby="indo-tab">
+							` + result.desc_indo + `
+							</div>
+							<div class="tab-pane pt-4 pb-4" id="eng" role="tabpanel" aria-labelledby="eng-tab">
+							` + result.desc_eng + `
+							</div>
+						</div>
+						`;
+						$('#modalViewPasal .modal-body').html(html);
+						$('#modalViewPasal').modal('show')
+					} else {
+						Swal.fire('Warning', 'Data not valid. Please try again!', 'warning', 3000)
+					}
+
+				},
+				error: function() {
+					Swal.fire('Error!', 'Server timeout. Please try again!', 'error', 5000)
+				}
+			})
 		})
 
 		$(document).on('click', '.save', function(e) {
