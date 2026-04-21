@@ -30,7 +30,7 @@ class Company_reference extends Admin_Controller
 	{
 		$data   = $this->ReferenceModel->getOpenByCompany($this->company);
 		$done   = $this->ReferenceModel->getDoneAll();
-		$refIds = array_map(fn($d) => $d->id, $data);
+		$refIds = array_map(function($d) { return $d->id; }, $data);
 
 		$this->template->set([
 			'data'   => $data,
@@ -187,7 +187,7 @@ class Company_reference extends Admin_Controller
 				$this->company,
 				$this->auth->user_id()
 			);
-		} catch (\Throwable $th) {
+		} catch (\Exception $th) {
 			$this->db->trans_rollback();
 			$Return = ['status' => 0, 'msg' => $th->getMessage()];
 		}

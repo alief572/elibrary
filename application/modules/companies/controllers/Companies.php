@@ -105,7 +105,7 @@ class Companies extends Admin_Controller
                     'msg'            => 'Data company successfull saved. Thanks you.'
                 );
             }
-        } catch (\Throwable $th) {
+        } catch (\Exception $th) {
             $this->db->trans_rollback();
             $return        = array(
                 'status'        => 0,
