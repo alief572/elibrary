@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^python - <<'PY'\nfrom pathlib import Path\ntext = Path\\('application/modules/manage_documents/controllers/Manage_documents\\.php'\\)\\.read_text\\(encoding='utf-8', errors='replace'\\)\nstart = text\\.index\\('public function save_upload\\(\\)'\\)\nend = text\\.index\\('private function _update_history', start\\)\nprint\\(repr\\(text\\[start:end\\]\\)\\)\nPY$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

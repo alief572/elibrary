@@ -18,16 +18,16 @@
         <table class="table table-hover datatable">
           <thead>
             <tr class="table-light">
-              <th width="40px">No</th>
-              <th width="150px">Nomor</th>
+              <th width="30px">No</th>
+              <th width="120px">Nomor</th>
               <th>File Name</th>
-              <th width="200px">Kelompok Proses</th>
-              <th width="100px" class="text-center">Revisi</th>
-              <th class="text-center">Authority</th>
+              <th width="150px">Kelompok Proses</th>
+              <th width="80px" class="text-center">Revisi</th>
+              <th width="150px" class="text-center">Authority</th>
               <!-- <th width="180px" class="text-center">Created Date</th> -->
               <!-- <th width="150px" class="text-center">Created By</th> -->
-              <th width="150px" class="text-center">Status</th>
-              <th width="100px" class="text-center">Action</th>
+              <th width="100px" class="text-center">Status</th>
+              <th width="60px" class="text-center">Action</th>
             </tr>
           </thead>
           <tbody>

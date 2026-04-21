@@ -45,13 +45,13 @@
 							<table id="example2" class="table datatable table-bordered table-sm table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -96,13 +96,13 @@
 							<table id="tblReview" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -134,13 +134,13 @@
 							<table id="tblCorrection" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -174,13 +174,13 @@
 							<table id="tblApproval" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -215,14 +215,14 @@
 							<table id="tblRevision" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
 										<th class="p-2 text-left">Reason</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -258,13 +258,13 @@
 							<table id="example1" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -296,13 +296,13 @@
 							<table class="table datatable table-bordered table-sm table-condensed table-hover datatable">
 								<thead class="text-center table-light">
 									<tr class="text-center">
-										<th class="p-2" width="40">No.</th>
-										<th class="p-2" width="150">Nomor</th>
+										<th class="p-2" width="30">No.</th>
+										<th class="p-2" width="120">Nomor</th>
 										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="200">Kelompok Proses</th>
-										<th class="p-2" width="100">Revisi</th>
-										<th class="p-2" width="130">Status</th>
-										<th class="p-2" width="70">Action</th>
+										<th class="p-2" width="150">Kelompok Proses</th>
+										<th class="p-2" width="80">Revisi</th>
+										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
 								<tbody>

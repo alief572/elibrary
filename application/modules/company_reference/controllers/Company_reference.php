@@ -4,7 +4,10 @@
  * @author Syamsudin
  * @copyright Copyright (c) 2021, Syamsudin
  *
- * This is controller for Folders
+ * Controller untuk Company Reference.
+ * Tanggung jawab: menerima input HTTP, mendelegasikan ke model,
+ * dan merender view atau mengembalikan JSON response.
+ * Tidak ada logika query database di sini (SRP).
  */
 
 class Company_reference extends Admin_Controller
@@ -15,6 +18,7 @@ class Company_reference extends Admin_Controller
 		$this->load->helper('download');
 		$this->load->library(array('upload', 'Image_lib'));
 		$this->load->model('company_reference/Company_reference_model', 'ReferenceModel');
+		$this->load->model('company_reference/Compliance_model', 'ComplianceModel');
 
 		$this->template->set('title', 'Company Reference');
 		$this->template->set('icon', 'fa fa-building');
@@ -24,26 +28,15 @@ class Company_reference extends Admin_Controller
 
 	public function index()
 	{
-		$data		= $this->db->get_where('view_references', ['status' => 'OPN', 'company_id' => $this->company])->result();
-		$done		= $this->db->get_where('view_references', ['status' => 'DONE'])->result();
-		$lsStd 		= $this->db->get_where('view_ref_standards')->result();
-		$lsReg 		= $this->db->get_where('view_ref_regulations')->result();
-
-		$ArrStd = [];
-		foreach ($lsStd as $std) {
-			$ArrStd[$std->reference_id][] = $std->name;
-		}
-
-		$ArrReg = [];
-		foreach ($lsReg as $reg) {
-			$ArrReg[$reg->reference_id][] = $reg->name;
-		}
+		$data   = $this->ReferenceModel->getOpenByCompany($this->company);
+		$done   = $this->ReferenceModel->getDoneAll();
+		$refIds = array_map(fn($d) => $d->id, $data);
 
 		$this->template->set([
-			'data' 		=> $data,
-			'done' 		=> $done,
-			'ArrStd' 	=> $ArrStd,
-			'ArrReg' 	=> $ArrReg,
+			'data'   => $data,
+			'done'   => $done,
+			'ArrStd' => $this->ReferenceModel->getStandardsGrouped($refIds),
+			'ArrReg' => $this->ReferenceModel->getRegulationsGrouped($refIds),
 		]);
 
 		$this->template->render('index');
@@ -51,13 +44,10 @@ class Company_reference extends Admin_Controller
 
 	public function add()
 	{
-		$Companies 		= $this->db->get_where('companies', ['id_perusahaan' => $this->company])->result();
-		$branch = $this->db->get_where('company_branch', ['company_id' => $this->company])->result();
-
 		$this->template->set([
-			'title' 		=> 'Add Company Reference',
-			'Companies' 	=> $Companies,
-			'branch' 		=> $branch
+			'title'     => 'Add Company Reference',
+			'Companies' => $this->ReferenceModel->getCompanyById($this->company),
+			'branch'    => $this->ReferenceModel->getBranchesByCompany($this->company),
 		]);
 
 		$this->template->render('add');
@@ -65,114 +55,85 @@ class Company_reference extends Admin_Controller
 
 	public function edit($id = '', $branch = null)
 	{
-		$Data 			= $this->db->get_where('view_references', ['id' => $id, 'status' => 'OPN', 'branch_id' => $branch])->row();
-		$datStd 		= $this->db->get_where('view_ref_standards', ['reference_id' => $id])->result();
-		$companies 		= $this->db->get_where('companies')->result();
-		$dataReg 		= $this->db->get_where('view_ref_regulations', ['reference_id' => $id, 'branch_id' => $branch])->result();
-		$standards		= $this->db->get_where('requirements', ['status' => '1'])->result();
-		$regulations	= $this->db->get_where('view_regulation_subjects', ['status' => 'PUB'])->result();
-		$subjects 		= $this->db->get_where('view_compliance_subjects', ['company_id' => $this->company, 'status' => '1', 'branch_id' => $branch])->result();
-
-		$ArrRegulation = [];
-		if ($regulations) foreach ($regulations as $v) {
-			$ArrRegulation[$v->subject_id][$v->regulation_id] = $v->regulation_id;
-			$ArrRegulation[$v->subject_id][$v->regulation_id] = $v->name;
-		}
-
-		$ArrReg = [];
-		foreach ($dataReg as $reg) {
-			$ArrReg[$reg->subject][] = $reg;
-		}
+		$Data = $this->ReferenceModel->findOpenById($id, $branch);
 
 		if ($Data) {
+			$dataReg = $this->ReferenceModel->getRegsByRef($id, $branch);
+
+			$ArrReg = [];
+			foreach ($dataReg as $reg) {
+				$ArrReg[$reg->subject][] = $reg;
+			}
+
 			$this->template->set([
-				'title' 		=> 'Edit Company Reference',
-				'Data' 			=> $Data,
-				'datStd' 		=> $datStd,
-				'dataReg' 		=> $dataReg,
-				'Companies' 	=> $companies,
-				'standards' 	=> $standards,
-				'subjects' 		=> $subjects,
-				'ArrReg' 		=> $ArrReg,
-				'ArrRegulation' 	=> json_encode($ArrRegulation),
+				'title'         => 'Edit Company Reference',
+				'Data'          => $Data,
+				'datStd'        => $this->ReferenceModel->getStandardsByRef($id),
+				'dataReg'       => $dataReg,
+				'Companies'     => $this->ReferenceModel->getAllCompanies(),
+				'standards'     => $this->ReferenceModel->getActiveRequirements(),
+				'subjects'      => $this->ReferenceModel->getSubjects($this->company, $branch),
+				'ArrReg'        => $ArrReg,
+				'ArrRegulation' => json_encode($this->ReferenceModel->getRegulationsForDropdown()),
 			]);
 			$this->template->render('edit');
 		} else {
-			$data = [
+			$this->template->render('../views/errors/html/error_404_custome', [
 				'heading' => 'Error!',
-				'message' => 'Data not found..'
-			];
-			$this->template->render('../views/errors/html/error_404_custome', $data);
+				'message' => 'Data not found..',
+			]);
 		}
 	}
 
 	public function view($id = null, $branch = null)
 	{
-		if ($id) {
-			$Data 			= $this->db->get_where('view_references', ['id' => $id, 'status' => 'OPN'])->row();
-			$datStd 		= $this->db->get_where('view_ref_standards', ['reference_id' => $id])->result();
-			$companies 		= $this->db->get_where('companies')->result();
-			$subjects 		= $this->db->get_where('view_compliance_subjects', ['company_id' => $this->company, 'status' => '1', 'branch_id' => $branch])->result();
-			$dataReg 		= $this->db->get_where('view_ref_regulations', ['reference_id' => $id])->result();
-			$standards		= $this->db->get_where('requirements', ['status' => '1'])->result();
-			$regulations	= $this->db->get_where('regulations', ['status' => 'PUB'])->result();
+		if (!$id) return;
 
-			if ($Data) {
-				$this->template->set([
-					'title' 		=> 'View Company Reference',
-					'Data' 			=> $Data,
-					'datStd' 		=> $datStd,
-					'dataReg' 		=> $dataReg,
-					'Companies' 	=> $companies,
-					'standards' 	=> $standards,
-					'subjects' 		=> $subjects,
-					'regulations' 	=> $regulations,
-				]);
-				$this->template->render('view');
-			} else {
-				$data = [
-					'heading' => 'Error!',
-					'message' => 'Data not found..'
-				];
-				$this->template->render('../views/errors/html/error_404_custome', $data);
-			}
+		$Data = $this->ReferenceModel->findOpenByIdOnly($id);
+
+		if ($Data) {
+			$this->template->set([
+				'title'       => 'View Company Reference',
+				'Data'        => $Data,
+				'datStd'      => $this->ReferenceModel->getStandardsByRef($id),
+				'dataReg'     => $this->ReferenceModel->getRegsByRefOnly($id),
+				'Companies'   => $this->ReferenceModel->getAllCompanies(),
+				'standards'   => $this->ReferenceModel->getActiveRequirements(),
+				'subjects'    => $this->ReferenceModel->getSubjects($this->company, $branch),
+				'regulations' => $this->ReferenceModel->getPublishedRegulationsAll(),
+			]);
+			$this->template->render('view');
+		} else {
+			$this->template->render('../views/errors/html/error_404_custome', [
+				'heading' => 'Error!',
+				'message' => 'Data not found..',
+			]);
 		}
 	}
 
 	public function save()
 	{
-		$Data 		= $this->input->post();
+		$Data = $this->input->post();
 
-		if ($Data) {
-			$this->db->trans_begin();
-			$saved 	= $this->ReferenceModel->saveData($Data);
-			if (isset($saved['id'])) {
-				if ($this->db->trans_status() === FALSE) {
-					$this->db->trans_rollback();
-					$Return		= array(
-						'status'		=> 0,
-						'msg'			=> 'Data Chapter failed to save. Please try again.',
-					);
-				} else {
-					$this->db->trans_commit();
-					$Return		= array(
-						'status'		=> 1,
-						'msg'			=> 'Data Chapter successfully saved..',
-						'id'			=> $saved['id']
-					);
-				}
-			} else {
+		if (!$Data) {
+			echo json_encode(['status' => 0, 'msg' => 'Data not valid, please try again!']);
+			return;
+		}
+
+		$this->db->trans_begin();
+		$saved = $this->ReferenceModel->saveData($Data);
+
+		if (isset($saved['id'])) {
+			if ($this->db->trans_status() === FALSE) {
 				$this->db->trans_rollback();
-				$Return		= array(
-					'status'		=> 0,
-					'msg'			=> 'Company name has already been created',
-				);
+				$Return = ['status' => 0, 'msg' => 'Data Chapter failed to save. Please try again.'];
+			} else {
+				$this->db->trans_commit();
+				$Return = ['status' => 1, 'msg' => 'Data Chapter successfully saved..', 'id' => $saved['id']];
 			}
 		} else {
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Data not valid, please try again!',
-			);
+			$this->db->trans_rollback();
+			$Return = ['status' => 0, 'msg' => 'Company name has already been created'];
 		}
 
 		echo json_encode($Return);
@@ -181,123 +142,56 @@ class Company_reference extends Admin_Controller
 	public function delete()
 	{
 		$id = $this->input->post('id');
-		echo '<pre>';
-		print_r($id);
-		echo '</pre>';
-		if (($id)) {
-			$this->db->trans_begin();
-			$this->db->delete('references', ['id' => $id]);
-			$this->db->delete('ref_standards', ['reference_id' => $id]);
-			$this->db->delete('cross_reference_details', ['reference_id' => $id]);
 
-			$this->db->delete('ref_regulations', ['reference_id' => $id]);
-			$this->db->delete('compliance_details', ['reference_id' => $id]);
-			$this->db->delete('compliance_opports', ['reference_id' => $id]);
-		} else {
-			$this->db->trans_rollback();
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Data not valid. Please try again.',
-			);
+		if (!$id) {
+			echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
+			return;
 		}
 
-		if ($this->db->trans_status() === FALSE) {
-			$this->db->trans_rollback();
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Failed to delete data.. Please try again.',
-			);
-		} else {
-			$this->db->trans_commit();
-			$Return		= array(
-				'status'		=> 1,
-				'msg'			=> 'Successfully deleted data..',
-			);
-		}
-
-		echo json_encode($Return);
+		echo json_encode($this->ReferenceModel->deleteReference($id));
 	}
 
 	public function delete_reg()
 	{
 		$id = $this->input->post('id');
-		if (($id)) {
-			$this->db->trans_begin();
-			$this->db->delete('ref_regulations', ['id' => $id]);
-		} else {
-			$this->db->trans_rollback();
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Data not valid. Please try again.',
-			);
+
+		if (!$id) {
+			echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
+			return;
 		}
 
-		if ($this->db->trans_status() === FALSE) {
-			$this->db->trans_rollback();
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Failed to delete data.. Please try again.',
-			);
-		} else {
-			$this->db->trans_commit();
-			$Return		= array(
-				'status'		=> 1,
-				'msg'			=> 'Successfully deleted data..',
-			);
-		}
-
-		echo json_encode($Return);
+		echo json_encode($this->ReferenceModel->deleteRegulation($id));
 	}
 
 	/* New Compliance */
 	public function select_subjects($branch = null)
 	{
-		$axist_subjects = $this->db->get_where('compliance_subject', ['company_id' => $this->company, 'branch_id' => $branch])->result_array();
-		$subjects	= $this->db->get('subjects')->result();
-		$this->template->render('select_subjects', ['subjects' => $subjects, 'axist_subjects' => $axist_subjects]);
+		$this->template->render('select_subjects', [
+			'subjects'       => $this->ComplianceModel->getAllSubjects(),
+			'axist_subjects' => $this->ComplianceModel->getExistingSubjects($this->company, $branch),
+		]);
 	}
 
 	public function save_subject()
 	{
 		try {
-			$post 		= $this->input->post();
-			$data =
-				[
-					'subject_id' => $post['subject_id'],
-					'company_id' => $this->company,
-					'created_at' => date('Y-m-d H:i:s'),
-					'created_by' => $this->auth->user_id(),
-				];
+			$post = $this->input->post();
 
-			if ($data) {
-				$this->db->trans_begin();
-				$this->db->insert('compliance_subject', $data);
-				if ($this->db->trans_status() === FALSE) {
-					$this->db->trans_rollback();
-					$Return		= array(
-						'status' => 0,
-						'msg'	 => 'Data Chapter failed to save. Please try again.',
-					);
-				} else {
-					$this->db->trans_commit();
-					$Return		= array(
-						'status' => 1,
-						'msg'	 => 'Data Chapter successfully saved..',
-					);
-				}
-			} else {
-				$Return		= array(
-					'status' => 0,
-					'msg'	 => 'Data not valid, please try again!',
-				);
+			if (empty($post['subject_id'])) {
+				echo json_encode(['status' => 0, 'msg' => 'Data not valid, please try again!']);
+				return;
 			}
+
+			$Return = $this->ComplianceModel->saveSubject(
+				$post['subject_id'],
+				$this->company,
+				$this->auth->user_id()
+			);
 		} catch (\Throwable $th) {
 			$this->db->trans_rollback();
-			$Return		= array(
-				'status' => 0,
-				'msg'	 => $th->getMessage(),
-			);
+			$Return = ['status' => 0, 'msg' => $th->getMessage()];
 		}
+
 		echo json_encode($Return);
 	}
 }
