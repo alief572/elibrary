@@ -163,7 +163,7 @@ class Audit_checklist extends Admin_Controller
     public function save()
     {
         $data       = $this->input->post();
-        $checklist  = $data['checklist'];
+        $checklist  = isset($data['checklist']) ? $data['checklist'] : [];
         unset($data['checklist']);
         $this->db->trans_begin();
         if ($data) {
@@ -228,13 +228,13 @@ class Audit_checklist extends Admin_Controller
             if ($this->db->trans_status() === FALSE) {
                 $this->db->trans_rollback();
                 $Return = [
-                    'msg'       => "Successfull delete data.",
+                    'msg'       => "Failed deleting data, please try again.",
                     'status'    => 0
                 ];
             } else {
                 $this->db->trans_commit();
                 $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
+                    'msg'       => "Successfull delete data.",
                     'status'    => 1
                 ];
             }
@@ -258,13 +258,13 @@ class Audit_checklist extends Admin_Controller
             if ($this->db->trans_status() === FALSE) {
                 $this->db->trans_rollback();
                 $Return = [
-                    'msg'       => "Successfull delete data.",
+                    'msg'       => "Failed deleting data, please try again.",
                     'status'    => 0
                 ];
             } else {
                 $this->db->trans_commit();
                 $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
+                    'msg'       => "Successfull delete data.",
                     'status'    => 1
                 ];
             }
@@ -454,13 +454,13 @@ class Audit_checklist extends Admin_Controller
     function saveAudit()
     {
         $data       = $this->input->post();
-        $temuan     = $data['temuan'];
-        $detail     = $data['detail'];
+        $temuan     = isset($data['temuan']) ? $data['temuan'] : [];
+        $detail     = isset($data['detail']) ? $data['detail'] : [];
         unset($data['temuan']);
         unset($data['detail']);
 
-        $data['auditor'] = json_encode($data['auditor']);
-        $data['auditee'] = json_encode($data['auditee']);
+        $data['auditor'] = json_encode(isset($data['auditor']) ? $data['auditor'] : []);
+        $data['auditee'] = json_encode(isset($data['auditee']) ? $data['auditee'] : []);
         $this->db->trans_begin();
         if ($data) {
             if (isset($data['id']) && $data['id']) {
@@ -543,13 +543,13 @@ class Audit_checklist extends Admin_Controller
             if ($this->db->trans_status() === FALSE) {
                 $this->db->trans_rollback();
                 $Return = [
-                    'msg'       => "Successfull delete data.",
+                    'msg'       => "Failed deleting data, please try again.",
                     'status'    => 0
                 ];
             } else {
                 $this->db->trans_commit();
                 $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
+                    'msg'       => "Successfull delete data.",
                     'status'    => 1
                 ];
             }
@@ -647,13 +647,13 @@ class Audit_checklist extends Admin_Controller
             if ($this->db->trans_status() === FALSE) {
                 $this->db->trans_rollback();
                 $Return = [
-                    'msg'       => "Successfull delete data.",
+                    'msg'       => "Failed deleting data, please try again.",
                     'status'    => 0
                 ];
             } else {
                 $this->db->trans_commit();
                 $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
+                    'msg'       => "Successfull delete data.",
                     'status'    => 1
                 ];
             }
@@ -672,7 +672,9 @@ class Audit_checklist extends Admin_Controller
         if (!is_dir('./directory/AUDIT/' . $this->company . '/')) {
             mkdir('./directory/AUDIT/' . $this->company . '/', 0755, TRUE);
             chmod('./directory/AUDIT/' . $this->company . '/', 0755);  // octal; correct value of mode
-            chown('./directory/AUDIT/' . $this->company . '/', 'www-data');
+            if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+                chown('./directory/AUDIT/' . $this->company . '/', 'www-data');
+            }
         }
 
         $config['upload_path']       = './directory/AUDIT/' . $this->company . '/';
