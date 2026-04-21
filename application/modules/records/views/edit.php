@@ -87,7 +87,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modelId" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+	<div class="modal-dialog modal-dialog-centered modal-xl" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">Modal title</h5>
@@ -96,8 +96,7 @@
 				</button>
 			</div>
 			<form id="form-flow-detail">
-				<div id="content_modal">
-				</div>
+				<div id="content_modal"></div>
 			</form>
 		</div>
 	</div>

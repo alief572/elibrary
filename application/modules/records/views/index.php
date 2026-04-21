@@ -537,7 +537,6 @@
 				$('.modal-title').html('View Form')
 				$('#content_modal').load(siteurl + active_controller + 'view_form/' + id)
 				$('#modelId').modal('show')
-				$('.modal-dialog').css('max-width', '')
 			} else {
 				Swal.fire('Warning!!', 'Not available data to process', 'waring', 2000);
 			}

@@ -304,7 +304,9 @@ class Records extends Admin_Controller
 			if (!is_dir("./directory/$dir")) {
 				mkdir("./directory/$dir", 0755, TRUE);
 				chmod("./directory/$dir", 0755);  // octal; correct value of mode
-				chown("./directory/$dir", 'www-data');
+				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+					chown("./directory/$dir", 'www-data');
+				}
 			}
 			// $new_name 					= $this->fixForUri($data['description']);
 			$config['upload_path'] 		= "./directory/$dir"; //path folder
@@ -486,7 +488,9 @@ class Records extends Admin_Controller
 			if (!is_dir("./directory/RECORDS/$this->company/")) {
 				mkdir("./directory/RECORDS/$this->company/", 0755, TRUE);
 				chmod("./directory/RECORDS/$this->company/", 0755);  // octal; correct value of mode
-				chown("./directory/RECORDS/$this->company/", 'www-data');
+				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+					chown("./directory/RECORDS/$this->company/", 'www-data');
+				}
 			}
 			$config['upload_path'] 		= "./directory/RECORDS/$this->company/"; //path folder
 			$config['allowed_types'] 	= 'xlsx|xls|pdf'; //type yang dapat diakses bisa anda sesuaikan
@@ -764,7 +768,9 @@ class Records extends Admin_Controller
 		if (!is_dir('./directory/FLOW_IMG/' . $this->company . '/')) {
 			mkdir('./directory/FLOW_IMG/' . $this->company . '/', 0755, TRUE);
 			chmod('./directory/FLOW_IMG/' . $this->company . '/', 0755);  // octal; correct value of mode
-			chown('./directory/FLOW_IMG/' . $this->company . '/', 'www-data');
+			if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+				chown('./directory/FLOW_IMG/' . $this->company . '/', 'www-data');
+			}
 		}
 
 		$cpt = count($_FILES['img_flow']['name']);
@@ -833,7 +839,9 @@ class Records extends Admin_Controller
 		if (!is_dir('./directory/FLOW_FILE/' . $this->company . '/')) {
 			mkdir('./directory/FLOW_FILE/' . $this->company . '/', 0755, TRUE);
 			chmod('./directory/FLOW_FILE/' . $this->company . '/', 0755);  // octal; correct value of mode
-			chown('./directory/FLOW_FILE/' . $this->company . '/', 'www-data');
+			if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+				chown('./directory/FLOW_FILE/' . $this->company . '/', 'www-data');
+			}
 		}
 
 		//upload an image options
@@ -948,7 +956,9 @@ class Records extends Admin_Controller
 				if (!is_dir("./directory/FORMS/$this->company/")) {
 					mkdir("./directory/FORMS/$this->company/", 0755, TRUE);
 					chmod("./directory/FORMS/$this->company/", 0755);  // octal; correct value of mode
-					chown("./directory/FORMS/$this->company/", 'www-data');
+					if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+						chown("./directory/FORMS/$this->company/", 'www-data');
+					}
 				}
 				$config['upload_path'] 		= "./directory/FORMS/$this->company"; //path folder
 				$config['allowed_types'] 	= 'pdf'; //type yang dapat diakses bisa anda sesuaikan
@@ -1142,7 +1152,9 @@ class Records extends Admin_Controller
 			if (!is_dir("./directory/GUIDES/$this->company")) {
 				mkdir("./directory/GUIDES/$this->company", 0755, TRUE);
 				chmod("./directory/GUIDES/$this->company", 0755);  // octal; correct value of mode
-				chown("./directory/GUIDES/$this->company", 'www-data');
+				if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+					chown("./directory/GUIDES/$this->company", 'www-data');
+				}
 			}
 			$config['upload_path'] 		= "./directory/GUIDES/$this->company"; //path folder
 			$config['allowed_types'] 	= 'pdf'; //type yang dapat diakses bisa anda sesuaikan

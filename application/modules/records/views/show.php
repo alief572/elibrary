@@ -19,9 +19,17 @@
     </ul>
     <div class="tab-content mt-5">
         <div class="tab-pane position-relative fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
-            <div style="width:92%;min-height:100%;background-color: red;position: absolute;opacity: 0;"></div>
-            <?php if (isset($file->link_form) && $file->link_form) : ?>
-                <iframe src="<?= $file->link_form ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+            <?php 
+            $isMobile = preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER["HTTP_USER_AGENT"]);
+            if (isset($file->link_form) && $file->link_form) : 
+                $url = $file->link_form;
+                if($isMobile){
+                    $url = "https://docs.google.com/gview?embedded=true&url=" . $url . "&rm=minimal";
+                } else {
+                    $url .= "#toolbar=0&navpanes=0";
+                }
+            ?>
+                <iframe src="<?= $url ?>" frameborder="0" width="100%" height="500px"></iframe>
             <?php else : ?>
                 <?php if ($file->status == 'DEL') : ?>
                     <h4>404 Not Found!</h4>
@@ -36,8 +44,15 @@
                             } else if ($type == 'record') {
                                 $dir = 'RECORDS';
                             }
+                            
+                            $file_url = base_url("directory/$dir/$file->company_id/$file->file_name");
+                            if($isMobile){
+                                $src = "https://docs.google.com/gview?embedded=true&url=" . $file_url . "&rm=minimal";
+                            } else {
+                                $src = $file_url . "#toolbar=0&navpanes=0";
+                            }
                         ?>
-                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%"></iframe>
+                            <iframe src="<?= $src ?>" frameborder="0" width="100%" height="500px"></iframe>
                         <?php elseif ($file->ext == '.xlsx' || $file->ext == '.xls') :
                             if ($type == 'form') {
                                 $dir = 'FORMS';
@@ -47,9 +62,9 @@
                                 $dir = 'RECORDS';
                             }
                         ?>
-                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="600"></iframe>
+                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="500px"></iframe>
                         <?php else : ?>
-                            <iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+                            <iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="500px"></iframe>
                         <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
