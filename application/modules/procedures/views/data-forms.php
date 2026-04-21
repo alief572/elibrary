@@ -2,6 +2,7 @@
 		<thead>
 			<tr class="table-light">
 				<th width="50" class="text-center p-2">No</th>
+				<th class="text-center p-2">Number</th>
 				<th class="text-center p-2">Name</th>
 				<th width="" class="text-center p-2">Link Form</th>
 				<th width="50" class="text-center p-2">File</th>
@@ -14,6 +15,7 @@
 				<?php foreach ($getForms as $form) : $n++; ?>
 					<tr>
 						<td class="p-2 text-center"><?= $n; ?></td>
+						<td class="p-2"><?= $form->number; ?></td>
 						<td class="p-2"><?= $form->name; ?></td>
 						<td class="p-2">
 							<?php if ($form->link_form) : ?>

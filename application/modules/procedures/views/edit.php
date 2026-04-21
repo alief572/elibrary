@@ -534,6 +534,7 @@
 										<thead>
 											<tr class="table-light">
 												<th width="50" class="p-2 text-center">No</th>
+												<th class="p-2 text-center">Number</th>
 												<th class="p-2 text-center">Name</th>
 												<th width="100" class="p-2 text-">Link Form</th>
 												<th width="50" class="p-2 text-center">File</th>
@@ -546,6 +547,7 @@
 												<?php foreach ($getForms as $form) : $n++; ?>
 													<tr>
 														<td class="p-2 text-center"><?= $n; ?></td>
+														<td class="p-2"><?= $form->number; ?></td>
 														<td class="p-2"><?= $form->name; ?></td>
 														<td class="p-2 text-center">
 															<a target="_blank" href="<?= $form->link_form; ?>">

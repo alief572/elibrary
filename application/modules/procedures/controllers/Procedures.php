@@ -54,6 +54,12 @@ class Procedures extends Admin_Controller
 		};
 		
 
+		$groups 		= $this->db->get('group_procedure')->result();
+		$ArrGroup 		= [];
+		foreach ($groups as $grp) {
+			$ArrGroup[$grp->id] = $grp->name;
+		}
+
 		$this->template->set('title', 'List of Procedures');
 		$this->template->set([
 			'dataDraft' => $dataDraft,
@@ -64,6 +70,7 @@ class Procedures extends Admin_Controller
 			'dataRvi' 	=> $dataRvi,
 			'dataDel' 	=> $dataDel,
 			'ArrReason' => $ArrReason,
+			'ArrGroup' 	=> $ArrGroup,
 		]);
 		$this->template->set('status', $this->sts);
 		$this->template->render('index');
@@ -222,10 +229,10 @@ class Procedures extends Admin_Controller
 				$Data['created_by'] = $this->auth->user_id();
 				$Data['created_at'] = date('Y-m-d H:i:s');
 				$this->db->insert('procedures', $Data);
-				$pro_id = $this->db->order_by('id', 'DESC')->get_where('procedures')->row()->id;
-				$thisData = $this->db->get_where('procedures', ['company_id' => $this->company, 'name' => $Data['name']])->row();
+				$pro_id = $this->db->insert_id();
+				$thisData = $this->db->get_where('procedures', ['id' => $pro_id])->row();
 				$dataLog = [
-					'directory_id' 	=> $thisData->id,
+					'directory_id' 	=> $pro_id,
 					'new_status' 	=> $thisData->status,
 					'doc_type' 		=> 'Procedure',
 					'note' 			=> 'New input data procedure',
@@ -1009,6 +1016,7 @@ class Procedures extends Admin_Controller
 				endif;
 			}
 
+			$this->db->trans_begin();
 			if (intval($check) == '0') {
 				$data['created_by']		= $this->auth->user_id();
 				$data['created_at']		= date('Y-m-d H:i:s');
@@ -1031,7 +1039,7 @@ class Procedures extends Admin_Controller
 			$this->_update_history($dataLog);
 		}
 
-		if ($this->db->trans_status() === 'FALSE') {
+		if ($this->db->trans_status() === FALSE) {
 			$this->db->trans_rollback();
 			$Return = [
 				'status' => 0,

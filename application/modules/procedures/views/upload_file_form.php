@@ -12,6 +12,13 @@
 				<input type="hidden" name="forms[type]" value="form">
 			</div>
 
+			<div class=" row">
+				<label class="col-12 col-form-label"><span class="text-danger"></span> Form Number :</label>
+				<div class="col-12">
+					<input type="text" class="form-control" id="number" placeholder="Form Number" name="forms[number]" value="<?= isset($data) ? $data->number : ''; ?>" autocomplete="off" />
+				</div>
+			</div>
+
 			<div class="form-group row mb-0">
 				<label class="col-12 col-form-label"><span class="text-danger"></span> Type Form :</label>
 				<div class="col-12">

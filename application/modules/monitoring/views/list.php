@@ -19,7 +19,10 @@
           <thead>
             <tr class="table-light">
               <th width="40px">No</th>
+              <th width="150px">Nomor</th>
               <th>File Name</th>
+              <th width="200px">Kelompok Proses</th>
+              <th width="100px" class="text-center">Revisi</th>
               <th class="text-center">Authority</th>
               <!-- <th width="180px" class="text-center">Created Date</th> -->
               <!-- <th width="150px" class="text-center">Created By</th> -->
@@ -33,12 +36,15 @@
               foreach ($procedures as $list) : $n++; ?>
                 <tr>
                   <td style="vertical-align: middle;" class="text-center"><?= $n; ?></td>
+                  <td style="vertical-align: middle;"><?= $list->nomor; ?></td>
                   <td class="text-dark-75" style="vertical-align: middle;">
                     <div class="d-flex justify-content-start">
                       <i class='text-success fa fa-file-alt mr-2 fa-2x py-0' style='vertical-align:middle;'></i>
                       <span class="h5 mb-0 pt-2"><?= $list->name; ?></span>
                     </div>
                   </td>
+                  <td style="vertical-align: middle;"><?= (isset($ArrGroup[$list->group_procedure])) ? $ArrGroup[$list->group_procedure] : '-'; ?></td>
+                  <td style="vertical-align: middle;" class="text-center">Rev. <?= $list->revision; ?></td>
                   <td class="text-center" style="vertical-align: middle;">
                     <?php if ($list->status == 'REV') : ?>
                       <?= $ArrPosition[$list->reviewer_id]; ?>

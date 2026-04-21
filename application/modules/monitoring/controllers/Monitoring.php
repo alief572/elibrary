@@ -147,7 +147,7 @@ class Monitoring extends Admin_Controller
 	public function review()
 	{
 		/* REVIEW */
-		$procedures 	= $this->db->get_where('view_procedures', ['company_id' => $this->company, 'status' => 'REV'])->result();
+		$procedures 	= $this->db->get_where('procedures', ['company_id' => $this->company, 'status' => 'REV'])->result();
 		$ArrPosts 		= $this->ArrPosts;
 		$users = $this->db->get_where('users')->result();
 		$positions = $this->db->get_where('positions', ['company_id' => $this->company])->result_array();
@@ -158,6 +158,9 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'REVIEW PROCEDURES',
 			'procedures' 	=> $procedures,
@@ -165,6 +168,7 @@ class Monitoring extends Admin_Controller
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosts'		=> $ArrPosts,
 			'ArrPosition'		=> $ArrPosition,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 
 		$this->template->render('list');
@@ -217,7 +221,7 @@ class Monitoring extends Admin_Controller
 	public function correction()
 	{
 		/* CORRECTION */
-		$procedures 	= $this->db->get_where('view_procedures', ['company_id' => $this->company, 'status' => 'COR'])->result();
+		$procedures 	= $this->db->get_where('procedures', ['company_id' => $this->company, 'status' => 'COR'])->result();
 		$users 			= $this->db->get_where('users')->result();
 		$positions 		= $this->db->get_where('positions', ['company_id' => $this->company])->result_array();
 		$ArrPosition 	= array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
@@ -227,6 +231,9 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'CORRECTION PROCEDURES',
 			'procedures' 	=> $procedures,
@@ -234,6 +241,7 @@ class Monitoring extends Admin_Controller
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosition'	=> $ArrPosition,
 			'ArrPosts'		=> $this->ArrPosts,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
@@ -295,7 +303,7 @@ class Monitoring extends Admin_Controller
 	public function approval()
 	{
 		/* APPROVAL */
-		$procedures 	= $this->db->get_where('view_procedures', ['company_id' => $this->company, 'status' => 'APV'])->result();
+		$procedures 	= $this->db->get_where('procedures', ['company_id' => $this->company, 'status' => 'APV'])->result();
 		$users = $this->db->get_where('users')->result();
 		$positions = $this->db->get_where('positions', ['company_id' => $this->company])->result_array();
 		$ArrPosition = array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
@@ -306,6 +314,9 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'APPROVAL PROCEDURES',
 			'procedures' 	=> $procedures,
@@ -313,6 +324,7 @@ class Monitoring extends Admin_Controller
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosts'		=> $this->ArrPosts,
 			'ArrPosition'	=> $ArrPosition,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
@@ -368,7 +380,7 @@ class Monitoring extends Admin_Controller
 	public function publised()
 	{
 		/* CORRECTION */
-		$procedures 	= $this->db->order_by('modified_at', 'DESC')->get_where('view_procedures', ['company_id' => $this->company, 'status' => 'PUB'])->result();
+		$procedures 	= $this->db->order_by('modified_at', 'DESC')->get_where('procedures', ['company_id' => $this->company, 'status' => 'PUB'])->result();
 		$users = $this->db->get_where('users')->result();
 
 		$ArrUsers = [];
@@ -376,12 +388,16 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'PUBLISHED PROCEDURES',
 			'procedures' 	=> $procedures,
 			'sts'			=> $this->sts,
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosts'		=> $this->ArrPosts,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
@@ -475,7 +491,7 @@ class Monitoring extends Admin_Controller
 	public function revision()
 	{
 		/* CORRECTION */
-		$procedures 	= $this->db->get_where('view_procedures', [
+		$procedures 	= $this->db->get_where('procedures', [
 			'company_id' => $this->company, 'status' => 'RVI'
 		])->result();
 		$users = $this->db->get_where('users')->result();
@@ -487,6 +503,9 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'REVISION PROCEDURES',
 			'procedures' 	=> $procedures,
@@ -494,6 +513,7 @@ class Monitoring extends Admin_Controller
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosition'	=> $ArrPosition,
 			'ArrPosts'		=> $this->ArrPosts,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
@@ -585,7 +605,7 @@ class Monitoring extends Admin_Controller
 	public function review_deletion()
 	{
 		/* CORRECTION */
-		$procedures 	= $this->db->get_where('view_procedures', [
+		$procedures 	= $this->db->get_where('procedures', [
 			'company_id' => $this->company,
 			'status' => 'HLD',
 			'deletion_status' => 'OPN'
@@ -597,12 +617,16 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'REVIEW DELETION PROCEDURES',
 			'procedures' 	=> $procedures,
 			'sts'			=> $this->sts,
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosts'		=> $this->ArrPosts,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
@@ -650,7 +674,7 @@ class Monitoring extends Admin_Controller
 	public function approval_deletion()
 	{
 		/* CORRECTION */
-		$procedures 	= $this->db->get_where('view_procedures', [
+		$procedures 	= $this->db->get_where('procedures', [
 			'company_id' => $this->company,
 			'status' => 'HLD',
 			'deletion_status' => 'REV'
@@ -662,12 +686,16 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'APPROVAL DELETION PROCEDURES',
 			'procedures' 	=> $procedures,
 			'sts'			=> $this->sts,
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosts'		=> $this->ArrPosts,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
@@ -714,7 +742,7 @@ class Monitoring extends Admin_Controller
 	public function deletion_document()
 	{
 		/* CORRECTION */
-		$procedures 	= $this->db->get_where('view_procedures', [
+		$procedures 	= $this->db->get_where('procedures', [
 			'company_id' => $this->company,
 			'status' => 'HLD',
 			'deletion_status' => 'APV'
@@ -726,12 +754,16 @@ class Monitoring extends Admin_Controller
 			$ArrUsers[$user->id_user] = $user;
 		}
 
+		$group_procedure = $this->db->get_where('group_procedure')->result_array();
+		$ArrGroup = array_combine(array_column($group_procedure, 'id'), array_column($group_procedure, 'name'));
+
 		$this->template->set([
 			'title'			=> 'NEED ACTION TO DELETE PROCEDURES',
 			'procedures' 	=> $procedures,
 			'sts'			=> $this->sts,
 			'ArrUsers'		=> $ArrUsers,
 			'ArrPosts'		=> $this->ArrPosts,
+			'ArrGroup'		=> $ArrGroup,
 		]);
 		$this->template->render('list');
 	}
