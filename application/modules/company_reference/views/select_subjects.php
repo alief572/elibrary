@@ -1,10 +1,12 @@
 <div class="mb-3 row flex-nowrap">
+	<input type="hidden" name="reference_id" id="reference_id" value="<?= $reference_id; ?>">
+	<input type="hidden" name="branch_id" id="branch_id" value="<?= $branch; ?>">
 	<label for="" class="col-3 col-form-label font-weight-bold">Select Subject</label>
 	<div class="col-9">
 		<select name="subject_id" id="subject_id" required class="form-control select2">
 			<option value=""></option>
 			<?php foreach ($subjects as $subj) : ?>
-				<option value="<?= $subj->id; ?>" <?= (in_array($subj->id, array_column($axist_subjects,'subject_id'))) ? 'disabled' : ''; ?>><?= $subj->name; ?></option>
+				<option value="<?= $subj->id; ?>" <?= (in_array($subj->id, array_column($exist_subjects, 'subject_id'))) ? 'disabled' : ''; ?>><?= $subj->name; ?></option>
 			<?php endforeach; ?>
 		</select>
 	</div>

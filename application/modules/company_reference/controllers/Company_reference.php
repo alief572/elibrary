@@ -1,4 +1,5 @@
-<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (!defined('BASEPATH'))
+	exit('No direct script access allowed');
 
 /*
  * @author Syamsudin
@@ -28,13 +29,14 @@ class Company_reference extends Admin_Controller
 
 	public function index()
 	{
-		$data   = $this->ReferenceModel->getOpenByCompany($this->company);
-		$done   = $this->ReferenceModel->getDoneAll();
-		$refIds = array_map(function($d) { return $d->id; }, $data);
+		$data = $this->ReferenceModel->getOpenByCompany($this->company);
+		$done = $this->ReferenceModel->getDoneAll();
+		$refIds = array_map(function ($d) {
+			return $d->id; }, $data);
 
 		$this->template->set([
-			'data'   => $data,
-			'done'   => $done,
+			'data' => $data,
+			'done' => $done,
 			'ArrStd' => $this->ReferenceModel->getStandardsGrouped($refIds),
 			'ArrReg' => $this->ReferenceModel->getRegulationsGrouped($refIds),
 		]);
@@ -45,9 +47,9 @@ class Company_reference extends Admin_Controller
 	public function add()
 	{
 		$this->template->set([
-			'title'     => 'Add Company Reference',
+			'title' => 'Add Company Reference',
 			'Companies' => $this->ReferenceModel->getCompanyById($this->company),
-			'branch'    => $this->ReferenceModel->getBranchesByCompany($this->company),
+			'branch' => $this->ReferenceModel->getBranchesByCompany($this->company),
 		]);
 
 		$this->template->render('add');
@@ -66,14 +68,14 @@ class Company_reference extends Admin_Controller
 			}
 
 			$this->template->set([
-				'title'         => 'Edit Company Reference',
-				'Data'          => $Data,
-				'datStd'        => $this->ReferenceModel->getStandardsByRef($id),
-				'dataReg'       => $dataReg,
-				'Companies'     => $this->ReferenceModel->getAllCompanies(),
-				'standards'     => $this->ReferenceModel->getActiveRequirements(),
-				'subjects'      => $this->ReferenceModel->getSubjects($this->company, $branch),
-				'ArrReg'        => $ArrReg,
+				'title' => 'Edit Company Reference',
+				'Data' => $Data,
+				'datStd' => $this->ReferenceModel->getStandardsByRef($id),
+				'dataReg' => $dataReg,
+				'Companies' => $this->ReferenceModel->getAllCompanies(),
+				'standards' => $this->ReferenceModel->getActiveRequirements(),
+				'subjects' => $this->ReferenceModel->getSubjects($this->company, $branch),
+				'ArrReg' => $ArrReg,
 				'ArrRegulation' => json_encode($this->ReferenceModel->getRegulationsForDropdown()),
 			]);
 			$this->template->render('edit');
@@ -87,19 +89,20 @@ class Company_reference extends Admin_Controller
 
 	public function view($id = null, $branch = null)
 	{
-		if (!$id) return;
+		if (!$id)
+			return;
 
 		$Data = $this->ReferenceModel->findOpenByIdOnly($id);
 
 		if ($Data) {
 			$this->template->set([
-				'title'       => 'View Company Reference',
-				'Data'        => $Data,
-				'datStd'      => $this->ReferenceModel->getStandardsByRef($id),
-				'dataReg'     => $this->ReferenceModel->getRegsByRefOnly($id),
-				'Companies'   => $this->ReferenceModel->getAllCompanies(),
-				'standards'   => $this->ReferenceModel->getActiveRequirements(),
-				'subjects'    => $this->ReferenceModel->getSubjects($this->company, $branch),
+				'title' => 'View Company Reference',
+				'Data' => $Data,
+				'datStd' => $this->ReferenceModel->getStandardsByRef($id),
+				'dataReg' => $this->ReferenceModel->getRegsByRefOnly($id),
+				'Companies' => $this->ReferenceModel->getAllCompanies(),
+				'standards' => $this->ReferenceModel->getActiveRequirements(),
+				'subjects' => $this->ReferenceModel->getSubjects($this->company, $branch),
 				'regulations' => $this->ReferenceModel->getPublishedRegulationsAll(),
 			]);
 			$this->template->render('view');
@@ -164,11 +167,13 @@ class Company_reference extends Admin_Controller
 	}
 
 	/* New Compliance */
-	public function select_subjects($branch = null)
+	public function select_subjects($branch = null, $reference_id)
 	{
 		$this->template->render('select_subjects', [
-			'subjects'       => $this->ComplianceModel->getAllSubjects(),
-			'axist_subjects' => $this->ComplianceModel->getExistingSubjects($this->company, $branch),
+			'subjects' => $this->ComplianceModel->getAllSubjects(),
+			'exist_subjects' => $this->ComplianceModel->getExistingSubjects($this->company, $reference_id),
+			'branch' => $branch,
+			'reference_id' => $reference_id,
 		]);
 	}
 
@@ -181,14 +186,14 @@ class Company_reference extends Admin_Controller
 				echo json_encode(['status' => 0, 'msg' => 'Data not valid, please try again!']);
 				return;
 			}
-
 			$Return = $this->ComplianceModel->saveSubject(
 				$post['subject_id'],
 				$this->company,
-				$this->auth->user_id()
+				$this->auth->user_id(),
+				$post['reference_id'],
+				isset($post['branch_id']) ? $post['branch_id'] : null
 			);
 		} catch (\Exception $th) {
-			$this->db->trans_rollback();
 			$Return = ['status' => 0, 'msg' => $th->getMessage()];
 		}
 

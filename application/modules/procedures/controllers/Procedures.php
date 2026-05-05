@@ -97,7 +97,7 @@ class Procedures extends Admin_Controller
 		$Data 			= $this->db->get_where('procedures', ['company_id' => $this->company, 'id' => $id])->row();
 
 		if ($Data) {
-			$Data_detail 	= $this->db->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
+			$Data_detail 	= $this->db->order_by("CAST(number AS UNSIGNED)", "ASC")->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
 			$grProcess	= $this->db->get_where('group_procedure', ['status' => 'ACT'])->result();
 			$getForms	= $this->db->get_where('dir_forms', ['procedure_id' => $id, 'status !=' => 'DEL'])->result();
 			$getGuides	= $this->db->get_where('dir_guides', ['procedure_id' => $id, 'status !=' => 'DEL'])->result();
@@ -164,7 +164,7 @@ class Procedures extends Admin_Controller
 		}
 
 		if ($Data) {
-			$Data_detail 		= $this->db->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
+			$Data_detail = $this->db->order_by("CAST(number AS UNSIGNED)", "ASC")->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
 			$this->template->set([
 				'title' 		=> 'Procedures',
 				'data' 			=> $Data,
@@ -467,7 +467,7 @@ class Procedures extends Admin_Controller
 	{
 		$Data_detail = '';
 		if ($id) {
-			$Data_detail 	= $this->db->order_by('number asc')->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
+			$Data_detail 	= $this->db->order_by("CAST(number AS UNSIGNED)", "ASC")->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
 			$getForms	= $this->db->get_where('dir_forms', ['procedure_id' => $id, 'status !=' => 'DEL'])->result();
 			$getguides	= $this->db->get_where('dir_guides', ['procedure_id' => $id, 'status !=' => 'DEL'])->result();
 			$ArrForms = [];
@@ -1532,7 +1532,7 @@ class Procedures extends Admin_Controller
 		// $mpdf->showImageErrors = true;
 		$mpdf->curlAllowUnsafeSslRequests = true;
 		$procedure 			= $this->db->get_where('procedures', ['id' => $id])->row();
-		$flowDetail 		= $this->db->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
+		$flowDetail 		= $this->db->order_by("CAST(number AS UNSIGNED)", "ASC")->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
 		$getForms			= $this->db->get_where('dir_forms', ['procedure_id' => $id, 'status !=' => 'DEL'])->result();
 		$getGuides			= $this->db->get_where('dir_guides', ['procedure_id' => $id, 'status !=' => 'DEL'])->result();
 		$users 				= $this->db->get_where('view_users', ['status' => 'ACT', 'id_user !=' => '1', 'company_id' => $this->company])->result();

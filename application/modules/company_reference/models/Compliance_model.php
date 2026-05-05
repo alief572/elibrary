@@ -31,12 +31,17 @@ class Compliance_model extends BF_Model
    * @param  int|null  $branchId
    * @return array
    */
-  public function getExistingSubjects($companyId, $branchId)
+  public function getExistingSubjects($companyId, $referenceId, $branchId = null)
   {
-    return $this->db->get_where('compliance_subject', [
+    $where = [
       'company_id' => $companyId,
-      'branch_id'  => $branchId,
-    ])->result_array();
+      'reference_id' => $referenceId,
+    ];
+
+    if ($branchId) {
+      $where['branch_id'] = $branchId;
+    }
+    return $this->db->get_where('compliance_subject', $where)->result_array();
   }
 
   /**
@@ -58,11 +63,13 @@ class Compliance_model extends BF_Model
    * @param  int    $userId
    * @return array  ['status' => 1|0, 'msg' => '...']
    */
-  public function saveSubject($subjectId, $companyId, $userId)
+  public function saveSubject($subjectId, $companyId, $userId, $referenceId, $branchId = null)
   {
     $data = [
       'subject_id' => $subjectId,
       'company_id' => $companyId,
+      'branch_id'  => $branchId,
+      'reference_id' => $referenceId,
       'created_at' => date('Y-m-d H:i:s'),
       'created_by' => $userId,
     ];
