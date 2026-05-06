@@ -55,12 +55,12 @@ class Company_reference extends Admin_Controller
 		$this->template->render('add');
 	}
 
-	public function edit($id = '', $branch = null)
+	public function edit($id = '')
 	{
-		$Data = $this->ReferenceModel->findOpenById($id, $branch);
+		$Data = $this->ReferenceModel->findOpenById($id);
 
 		if ($Data) {
-			$dataReg = $this->ReferenceModel->getRegsByRef($id, $branch);
+			$dataReg = $this->ReferenceModel->getRegsByRef($id);
 
 			$ArrReg = [];
 			foreach ($dataReg as $reg) {
@@ -74,7 +74,7 @@ class Company_reference extends Admin_Controller
 				'dataReg' => $dataReg,
 				'Companies' => $this->ReferenceModel->getAllCompanies(),
 				'standards' => $this->ReferenceModel->getActiveRequirements(),
-				'subjects' => $this->ReferenceModel->getSubjects($id, $branch),
+				'subjects' => $this->ReferenceModel->getSubjects($id),
 				'ArrReg' => $ArrReg,
 				'ArrRegulation' => json_encode($this->ReferenceModel->getRegulationsForDropdown()),
 			]);
@@ -102,7 +102,7 @@ class Company_reference extends Admin_Controller
 				'dataReg' => $this->ReferenceModel->getRegsByRefOnly($id),
 				'Companies' => $this->ReferenceModel->getAllCompanies(),
 				'standards' => $this->ReferenceModel->getActiveRequirements(),
-				'subjects' => $this->ReferenceModel->getSubjects($this->company, $branch),
+				'subjects' => $this->ReferenceModel->getSubjects($id, $branch),
 				'regulations' => $this->ReferenceModel->getPublishedRegulationsAll(),
 			]);
 			$this->template->render('view');

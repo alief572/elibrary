@@ -91,12 +91,11 @@ class Company_reference_model extends BF_Model
   /**
    * Cari satu reference berdasarkan id, status OPN, dan branch.
    */
-  public function findOpenById($id, $branchId)
+  public function findOpenById($id)
   {
     return $this->db->get_where('view_references', [
-      'id'        => $id,
-      'status'    => 'OPN',
-      'branch_id' => $branchId,
+      'id'     => $id,
+      'status' => 'OPN',
     ])->row();
   }
 
@@ -122,11 +121,10 @@ class Company_reference_model extends BF_Model
   /**
    * Ambil daftar regulations untuk sebuah reference dan branch.
    */
-  public function getRegsByRef($refId, $branchId)
+  public function getRegsByRef($refId)
   {
     return $this->db->get_where('view_ref_regulations', [
       'reference_id' => $refId,
-      'branch_id'    => $branchId,
     ])->result();
   }
 
