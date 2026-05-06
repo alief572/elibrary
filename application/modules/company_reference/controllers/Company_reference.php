@@ -78,10 +78,6 @@ class Company_reference extends Admin_Controller
 				'ArrReg' => $ArrReg,
 				'ArrRegulation' => json_encode($this->ReferenceModel->getRegulationsForDropdown()),
 			]);
-			echo '<pre>';
-			print_r($this->ReferenceModel->getSubjects($id, $branch));
-			echo '</pre>';
-			exit;
 			$this->template->render('edit');
 		} else {
 			$this->template->render('../views/errors/html/error_404_custome', [
