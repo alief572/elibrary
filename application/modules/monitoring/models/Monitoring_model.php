@@ -1,213 +1,230 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-/* 
- * @author Yunas Handra
- * @copyright Copyright (c) 2016, Yunas Handra
- * 
- * This is model class for table "log_5masterbarang"
- */
-
 class Monitoring_model extends BF_Model
 {
-
-    /**
-     * @var string  User Table Name
-     */
-    protected $table_name = 'log_5masterbarang';
-    protected $key        = 'kodebarang';
-
-    /**
-     * @var string Field name to use for the created time column in the DB table
-     * if $set_created is enabled.
-     */
-    protected $created_field = 'created_on';
-
-    /**
-     * @var string Field name to use for the modified time column in the DB
-     * table if $set_modified is enabled.
-     */
-    protected $modified_field = 'modified_on';
-
-    /**
-     * @var bool Set the created time automatically on a new record (if true)
-     */
-    protected $set_created = true;
-
-    /**
-     * @var bool Set the modified time automatically on editing a record (if true)
-     */
-    protected $set_modified = true;
-    /**
-     * @var string The type of date/time field used for $created_field and $modified_field.
-     * Valid values are 'int', 'datetime', 'date'.
-     */
-    /**
-     * @var bool Enable/Disable soft deletes.
-     * If false, the delete() method will perform a delete of that row.
-     * If true, the value in $deleted_field will be set to 1.
-     */
-    protected $soft_deletes = true;
-
-    protected $date_format = 'datetime';
-
-    /**
-     * @var bool If true, will log user id in $created_by_field, $modified_by_field,
-     * and $deleted_by_field.
-     */
-    protected $log_user = true;
-
-    /**
-     * Function construct used to load some library, do some actions, etc.
-     */
     public function __construct()
     {
         parent::__construct();
     }
 
+    /* FETCH METHODS */
+
+    public function getProceduresByCompany($companyId)
+    {
+        return $this->db->get_where('procedures', ['company_id' => $companyId, 'status !=' => 'DEL'])->result();
+    }
+
+    public function getActiveDirectory($companyId)
+    {
+        return $this->db->order_by('created_at', 'ASC')->get_where('directory', [
+            'parent_id' => '0',
+            'active' => 'Y',
+            'status !=' => 'DEL'
+        ])->result();
+    }
+
+    public function getRecentFiles($limit = 10)
+    {
+        return $this->db->order_by('created_at', 'DESC')->get_where('directory', [
+            'parent_id !=' => '0',
+            'active' => 'Y',
+            'flag_type' => 'FILE',
+            'status !=' => 'DEL',
+            'created_at like' => date('Y-m-d') . "%"
+        ])->result();
+    }
+
+    public function getProcedureById($id)
+    {
+        return $this->db->get_where('procedures', ['id' => $id])->row();
+    }
+
+    public function getDirectoryLogs($id)
+    {
+        return $this->db->order_by('updated_at', 'ASC')->get_where('directory_log', ['directory_id' => $id])->result();
+    }
+
+    public function getProceduresByStatus($companyId, $status)
+    {
+        return $this->db->get_where('procedures', ['company_id' => $companyId, 'status' => $status])->result();
+    }
+
+    public function getProceduresByStatusAndDeletion($companyId, $status, $deletionStatus)
+    {
+        return $this->db->get_where('procedures', [
+            'company_id' => $companyId,
+            'status' => $status,
+            'deletion_status' => $deletionStatus
+        ])->result();
+    }
+
+    public function getAllUsers()
+    {
+        return $this->db->get_where('users')->result();
+    }
+
+    public function getPositionsByCompany($companyId)
+    {
+        return $this->db->get_where('positions', ['company_id' => $companyId])->result_array();
+    }
+
+    public function getGroupProcedures()
+    {
+        return $this->db->get_where('group_procedure')->result_array();
+    }
+
+    /* ACTION METHODS */
+
     private function _update_history($data)
     {
-        $data['note']              = $data['note'];
-        $data['updated_by']        = $this->auth->user_id();
-        $data['updated_at']        = date('Y-m-d H:i:s');
-
-        $this->db->insert('directory_log', $data);
+        $data['updated_by'] = $this->auth->user_id();
+        $data['updated_at'] = date('Y-m-d H:i:s');
+        return $this->db->insert('directory_log', $data);
     }
 
     public function review($data = null)
     {
-
         if ($data) {
-            $this->db->update(
-                'procedures',
-                [
-                    'status'         => $data['status'],
-                    'modified_by'     => $this->auth->user_id(),
-                    'modified_at'     => date('Y-m-d H:i:s'),
-                    'reviewed_by'     => $this->auth->user_id(),
-                    'reviewed_at'     => date('Y-m-d H:i:s'),
-                ],
-                ['id' => $data['id']]
-            );
-            $thisData = $this->db->get_where('procedures', ['id' => $data['id']])->row();
-            $data['directory_id']     = $data['id'];
-            $data['new_status']       = $data['status'];
-            $data['old_status']       = $thisData->status;
-            $data['doc_type']         = 'Procedure';
-            unset($data['id']);
-            unset($data['status']);
-            $this->_update_history($data);
-        } else {
-            return false;
+            $thisData = $this->getProcedureById($data['id']);
+            $update = [
+                'status'      => $data['status'],
+                'modified_by' => $this->auth->user_id(),
+                'modified_at' => date('Y-m-d H:i:s'),
+                'reviewed_by' => $this->auth->user_id(),
+                'reviewed_at' => date('Y-m-d H:i:s'),
+            ];
+            $this->db->update('procedures', $update, ['id' => $data['id']]);
+
+            $log = [
+                'directory_id' => $data['id'],
+                'new_status'   => $data['status'],
+                'old_status'   => $thisData->status,
+                'doc_type'     => 'Procedure',
+                'note'         => $data['note'] ?? ''
+            ];
+            $this->_update_history($log);
+            return true;
         }
+        return false;
     }
 
     public function approval($data = null)
     {
         if ($data) {
-            $this->db->update(
-                'procedures',
-                [
-                    'status'         => $data['status'],
-                    'modified_by'     => $this->auth->user_id(),
-                    'modified_at'     => date('Y-m-d H:i:s'),
-                    'approved_by'     => $this->auth->user_id(),
-                    'approved_at'     => date('Y-m-d H:i:s'),
-                ],
-                ['id' => $data['id']]
-            );
-            $thisData = $this->db->get_where('procedures', ['id' => $data['id']])->row();
-            $data['directory_id']     = $data['id'];
-            $data['new_status']       = $data['status'];
-            $data['old_status']       = $thisData->status;
-            $data['doc_type']         = 'Procedure';
-            unset($data['id']);
-            unset($data['status']);
-            $this->_update_history($data);
-        } else {
-            return false;
+            $thisData = $this->getProcedureById($data['id']);
+            $update = [
+                'status'      => $data['status'],
+                'modified_by' => $this->auth->user_id(),
+                'modified_at' => date('Y-m-d H:i:s'),
+                'approved_by' => $this->auth->user_id(),
+                'approved_at' => date('Y-m-d H:i:s'),
+            ];
+            $this->db->update('procedures', $update, ['id' => $data['id']]);
+
+            $log = [
+                'directory_id' => $data['id'],
+                'new_status'   => $data['status'],
+                'old_status'   => $thisData->status,
+                'doc_type'     => 'Procedure',
+                'note'         => $data['note'] ?? ''
+            ];
+            $this->_update_history($log);
+            return true;
         }
+        return false;
     }
 
     public function revision($data = null)
     {
         if ($data) {
-            $this->db->update(
-                'procedures',
-                [
-                    'status'         => $data['status'],
-                    'modified_by'     => $this->auth->user_id(),
-                    'modified_at'     => date('Y-m-d H:i:s'),
-                    'revision_req_by'     => $this->auth->user_id(),
-                    'revision_req_at'     => date('Y-m-d H:i:s'),
-                ],
-                ['id' => $data['id']]
-            );
+            $thisData = $this->getProcedureById($data['id']);
+            $update = [
+                'status'          => $data['status'],
+                'modified_by'     => $this->auth->user_id(),
+                'modified_at'     => date('Y-m-d H:i:s'),
+                'revision_req_by' => $this->auth->user_id(),
+                'revision_req_at' => date('Y-m-d H:i:s'),
+            ];
+            $this->db->update('procedures', $update, ['id' => $data['id']]);
 
-            $thisData = $this->db->get_where('procedures', ['id' => $data['id']])->row();
-            $data['directory_id']     = $data['id'];
-            $data['new_status']       = $data['status'];
-            $data['old_status']       = $thisData->status;
-            $data['doc_type']         = 'Procedure';
-            unset($data['id']);
-            unset($data['status']);
-            $this->_update_history($data);
-        } else {
-            return false;
+            $log = [
+                'directory_id' => $data['id'],
+                'new_status'   => $data['status'],
+                'old_status'   => $thisData->status,
+                'doc_type'     => 'Procedure',
+                'note'         => $data['note'] ?? ''
+            ];
+            $this->_update_history($log);
+            return true;
         }
+        return false;
     }
 
     public function deletion($data = null)
     {
         if ($data) {
-            $this->db->update(
-                'procedures',
-                [
-                    'status'          => $data['status'],
-                    'deletion_status' => 'OPN',
-                    'modified_by'     => $this->auth->user_id(),
-                    'modified_at'     => date('Y-m-d H:i:s'),
-                ],
-                ['id' => $data['id']]
-            );
+            $thisData = $this->getProcedureById($data['id']);
+            $update = [
+                'status'          => $data['status'],
+                'deletion_status' => 'OPN',
+                'modified_by'     => $this->auth->user_id(),
+                'modified_at'     => date('Y-m-d H:i:s'),
+            ];
+            $this->db->update('procedures', $update, ['id' => $data['id']]);
 
-            $thisData = $this->db->get_where('procedures', ['id' => $data['id']])->row();
-            $data['directory_id']     = $data['id'];
-            $data['new_status']       = $data['status'];
-            $data['old_status']       = $thisData->status;
-            $data['doc_type']         = 'Procedure';
-            unset($data['id']);
-            unset($data['status']);
-            $this->_update_history($data);
-        } else {
-            return false;
+            $log = [
+                'directory_id' => $data['id'],
+                'new_status'   => $data['status'],
+                'old_status'   => $thisData->status,
+                'doc_type'     => 'Procedure',
+                'note'         => $data['note'] ?? ''
+            ];
+            $this->_update_history($log);
+            return true;
         }
+        return false;
     }
 
     public function rev_deletion($data = null)
     {
-
         if ($data) {
-            $this->db->update(
-                'procedures',
-                [
-                    'deletion_status'     => $data['deletion_status'],
-                    'modified_by'     => $this->auth->user_id(),
-                    'modified_at'     => date('Y-m-d H:i:s'),
-                ],
-                ['id' => $data['id']]
-            );
+            $thisData = $this->getProcedureById($data['id']);
+            $update = [
+                'deletion_status' => $data['deletion_status'],
+                'modified_by'     => $this->auth->user_id(),
+                'modified_at'     => date('Y-m-d H:i:s'),
+            ];
+            if (isset($data['status'])) $update['status'] = $data['status'];
+            
+            $this->db->update('procedures', $update, ['id' => $data['id']]);
 
-            $thisData = $this->db->get_where('procedures', ['id' => $data['id']])->row();
-            $data['directory_id']     = $data['id'];
-            $data['new_status']       = $data['status'];
-            $data['old_status']       = $thisData->status;
-            $data['doc_type']         = 'Procedure';
-            unset($data['id']);
-            unset($data['status']);
-            unset($data['deletion_status']);
-            $this->_update_history($data);
-        } else {
-            return false;
+            $log = [
+                'directory_id' => $data['id'],
+                'new_status'   => $data['status'] ?? $thisData->status,
+                'old_status'   => $thisData->status,
+                'doc_type'     => 'Procedure',
+                'note'         => $data['note'] ?? ''
+            ];
+            $this->_update_history($log);
+            return true;
         }
+        return false;
+    }
+
+    public function updateDirectory($id, $data)
+    {
+        $res = $this->db->update('directory', $data, ['id' => $id]);
+        $this->_update_history(['directory_id' => $id, 'new_status' => $data['status'], 'note' => 'Update status']);
+        return $res;
+    }
+
+    public function getPictureById($id)
+    {
+        return $this->db->get_where('pictures', ['id' => $id])->row();
+    }
+
+    public function updatePicture($id, $data)
+    {
+        return $this->db->update('pictures', $data, ['id' => $id]);
     }
 }

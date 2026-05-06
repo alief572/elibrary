@@ -85,4 +85,25 @@ class Compliance_model extends BF_Model
     $this->db->trans_commit();
     return ['status' => 1, 'msg' => 'Data Chapter successfully saved..'];
   }
+
+  /**
+   * Hapus sebuah compliance subject berdasarkan id.
+   *
+   * @param  int   $id
+   * @return array ['status' => 1|0, 'msg' => '...']
+   */
+  public function deleteSubject($id)
+  {
+    $this->db->trans_begin();
+    $this->db->delete('compliance_subject', ['id' => $id]);
+    $this->db->delete('ref_regulations',    ['subject' => $id]);
+
+    if ($this->db->trans_status() === FALSE) {
+      $this->db->trans_rollback();
+      return ['status' => 0, 'msg' => 'Failed to delete subject.. Please try again.'];
+    }
+
+    $this->db->trans_commit();
+    return ['status' => 1, 'msg' => 'Successfully deleted subject..'];
+  }
 }

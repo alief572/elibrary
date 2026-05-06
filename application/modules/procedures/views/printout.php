@@ -186,15 +186,15 @@
     <h4>FLOW PROCEDURE</h4>
     <?php if ($procedure->image_flow_1 || $procedure->image_flow_2 || $procedure->image_flow_3) : ?>
       <?php if ($procedure->image_flow_1) : ?>
-        <img height="600px" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"); ?>"
+        <img height="600px" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"; ?>"
           alt="image_flow_1" class="img-fluid">
       <?php endif; ?>
       <?php if ($procedure->image_flow_2) : ?>
-        <img height="600px" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"); ?>"
+        <img height="600px" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"; ?>"
           alt="image_flow_2" class="img-fluid">
       <?php endif; ?>
       <?php if ($procedure->image_flow_3) : ?>
-        <img height="600px" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"); ?>"
+        <img height="600px" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"; ?>"
           alt="image_flow_3" class="img-fluid">
       <?php endif; ?>
     <?php else : ?>

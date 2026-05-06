@@ -1,236 +1,324 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-/* 
- * @author Yunas Handra
- * @copyright Copyright (c) 2016, Yunas Handra
- * 
- * This is model class for table "log_5masterbarang"
- */
-
 class Documents_list_model extends BF_Model
 {
-
-    /**
-     * @var string  User Table Name
-     */
     protected $table_name = 'directory';
     protected $key        = 'id';
-
-    /**
-     * @var string Field name to use for the created time column in the DB table
-     * if $set_created is enabled.
-     */
     protected $created_field = 'created_on';
-
-    /**
-     * @var string Field name to use for the modified time column in the DB
-     * table if $set_modified is enabled.
-     */
     protected $modified_field = 'modified_on';
-
-    /**
-     * @var bool Set the created time automatically on a new record (if true)
-     */
     protected $set_created = true;
-
-    /**
-     * @var bool Set the modified time automatically on editing a record (if true)
-     */
     protected $set_modified = true;
-    /**
-     * @var string The type of date/time field used for $created_field and $modified_field.
-     * Valid values are 'int', 'datetime', 'date'.
-     */
-    /**
-     * @var bool Enable/Disable soft deletes.
-     * If false, the delete() method will perform a delete of that row.
-     * If true, the value in $deleted_field will be set to 1.
-     */
     protected $soft_deletes = true;
-
     protected $date_format = 'datetime';
-
-    /**
-     * @var bool If true, will log user id in $created_by_field, $modified_by_field,
-     * and $deleted_by_field.
-     */
     protected $log_user = true;
 
-    /**
-     * Function construct used to load some library, do some actions, etc.
-     */
     public function __construct()
     {
         parent::__construct();
     }
 
-    public function meeting_open()
+    /* DIRECTORY / FILE OPERATIONS */
+
+    public function getMainData()
     {
-
-        $session = $this->session->userdata('app_session');
-        $user  = $session['nm_lengkap'];
-
-        if ($user != 'Administrator') {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE nama_pic='$user' AND
-            status=0";
-        } else {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE 
-            status=0";
-        }
-        $query = $this->db->query($query);
-        return $query->num_rows();
-
-        return false;
+        return $this->db->get_where('directory', ['parent_id' => '0'])->result();
     }
 
-    public function meeting_done()
+    public function getDirectoryById($id)
     {
-        $session = $this->session->userdata('app_session');
-        $user  = $session['nm_lengkap'];
-
-        if ($user != 'Administrator') {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE nama_pic='$user' AND
-            status=1";
-        } else {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE 
-            status=1";
-        }
-        $query = $this->db->query($query);
-        return $query->num_rows();
-
-        return false;
+        return $this->db->get_where('directory', ['id' => $id])->row();
     }
 
-    public function meeting_close()
+    public function getDirectoryByIdArray($id)
     {
-        $session = $this->session->userdata('app_session');
-        $user  = $session['nm_lengkap'];
-
-        if ($user != 'Administrator') {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE nama_pic='$user' AND
-            status=2";
-        } else {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE 
-            status=2";
-        }
-        $query = $this->db->query($query);
-        return $query->num_rows();
-
-        return false;
+        return $this->db->get_where('directory', ['id' => $id])->row_array();
     }
 
-    public function meeting_late()
+    public function getSubFolders($parentId, $companyId)
     {
-
-        $session = $this->session->userdata('app_session');
-        $user  = $session['nm_lengkap'];
-
-        if ($user != 'Administrator') {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE nama_pic='$user' 
-			AND (due_date < done_date OR (status=0 AND due_date <  NOW()))
-			";
-        } else {
-            $query = "SELECT *
-            FROM
-            tbl_meeting_detail
-            WHERE 
-            (due_date < done_date OR (status=0 AND due_date <  NOW()))
-			";
-        }
-        $query = $this->db->query($query);
-        return $query->num_rows();
-
-        return false;
+        return $this->db->get_where('directory', [
+            'parent_id' => $parentId,
+            'flag_type' => 'FOLDER',
+            'status !=' => 'DEL',
+            'company_id' => $companyId
+        ])->result();
     }
 
-    public function monitor_eoq()
+    public function getSubFiles($parentId, $companyId)
     {
-        $query = "SELECT * FROM monitor_eoq";
-        return $this->db->query($query);
+        return $this->db->get_where('directory', [
+            'parent_id' => $parentId,
+            'flag_type' => 'FILE',
+            'status !=' => 'DEL',
+            'company_id' => $companyId
+        ])->result();
     }
 
-    public function barang_masuk()
+    public function getAllFolders($companyId)
     {
-        $query = "SELECT
-            sum(log_transaksidt.jumlahrealisasi) as masuk
-            FROM
-            log_transaksidt
-            INNER JOIN log_transaksiht ON log_transaksidt.notransaksi = log_transaksiht.notransaksi
-            WHERE 
-            log_transaksiht.post='1' AND log_transaksidt.statussaldo='1' AND log_transaksiht.tipetransaksi='2'";
-        $query = $this->db->query($query);
-        if ($query->num_rows() > 0) {
-            return $query->row()->masuk;
-        }
-        return false;
+        return $this->db->get_where('directory', [
+            'flag_type' => 'FOLDER',
+            'status !=' => 'DEL',
+            'company_id' => $companyId
+        ])->result();
     }
 
-    public function barang_keluar()
+    public function getAllPublishedFiles($companyId)
     {
-        $query = "SELECT
-            sum(log_transaksidt.jumlahrealisasi) as realisasi
-            FROM
-            log_transaksidt
-            INNER JOIN log_transaksiht ON log_transaksidt.notransaksi = log_transaksiht.notransaksi
-            WHERE 
-            log_transaksiht.post='1' AND log_transaksidt.statussaldo='1' AND log_transaksiht.tipetransaksi='3'";
-        $query = $this->db->query($query);
-        if ($query->num_rows() > 0) {
-            return $query->row()->realisasi;
-        }
-        return false;
+        return $this->db->get_where('directory', [
+            'flag_type' => 'FILE',
+            'status' => 'PUB',
+            'status !=' => 'DEL',
+            'company_id' => $companyId
+        ])->result();
     }
 
-    public function pengajuan_pending()
+    public function getAllLinks($companyId)
     {
-        $query = "SELECT
-            sum(log_prapodt.jumlah) as pending
-            FROM
-            log_prapodt
-            INNER JOIN log_prapoht ON log_prapodt.nopp = log_prapoht.nopp
-            WHERE 
-            log_prapoht.sts_pp='0'";
-        $query = $this->db->query($query);
-        if ($query->num_rows() > 0) {
-            return $query->row()->pending;
-        }
-        return false;
+        return $this->db->get_where('directory', [
+            'flag_type' => 'LINK',
+            'status !=' => 'DEL',
+            'company_id' => $companyId
+        ])->result();
     }
 
-    public function pengajuan_acc()
+    public function getHistory($directoryId)
     {
-        $query = "SELECT
-            sum(log_prapodt.jumlah) as pending
-            FROM
-            log_prapodt
-            INNER JOIN log_prapoht ON log_prapodt.nopp = log_prapoht.nopp
-            WHERE 
-            log_prapoht.sts_pp='1'";
-        $query = $this->db->query($query);
-        if ($query->num_rows() > 0) {
-            return $query->row()->pending;
+        return $this->db->order_by('updated_at', 'ASC')
+            ->get_where('directory_log', ['directory_id' => $directoryId])
+            ->result();
+    }
+
+    /* PROCEDURES, FORMS, GUIDES, RECORDS */
+
+    public function getProcedureGroups()
+    {
+        return $this->db->get_where('group_procedure', ['status' => 'ACT'])->result();
+    }
+
+    public function getPublishedProcedures($companyId)
+    {
+        return $this->db->get_where('view_procedures', [
+            'company_id' => $companyId,
+            'status' => 'PUB',
+            'deleted_by' => null
+        ])->result_array();
+    }
+
+    public function getProcedureById($id)
+    {
+        return $this->db->get_where('view_procedures', ['id' => $id])->row();
+    }
+
+    public function getProcedureResult($id)
+    {
+        return $this->db->get_where('view_procedures', ['id' => $id])->result();
+    }
+
+    public function getProcedureDetails($procedureId)
+    {
+        return $this->db->order_by("CAST(number AS UNSIGNED)", "ASC")
+            ->get_where('procedure_details', ['procedure_id' => $procedureId, 'status' => '1'])
+            ->result();
+    }
+
+    public function getFormsByProcedure($procedureId, $activeOnly = true)
+    {
+        $where = ['procedure_id' => $procedureId];
+        if ($activeOnly) {
+            $where['active'] = 'Y';
+            $where['status !='] = 'DEL';
         }
-        return false;
+        return $this->db->order_by('name', 'ASC')->get_where('dir_forms', $where)->result();
+    }
+
+    public function getGuidesByProcedure($procedureId, $activeOnly = true)
+    {
+        $where = ['procedure_id' => $procedureId];
+        if ($activeOnly) {
+            $where['active'] = 'Y';
+            $where['status !='] = 'DEL';
+        }
+        return $this->db->order_by('name', 'ASC')->get_where('dir_guides', $where)->result();
+    }
+
+    public function getRecordsByProcedure($procedureId, $companyId)
+    {
+        return $this->db->order_by('name', 'ASC')->get_where('dir_records', [
+            'procedure_id' => $procedureId,
+            'status' => 'PUB',
+            'flag_type' => 'FOLDER',
+            'company_id' => $companyId,
+            'parent_id' => null
+        ])->result();
+    }
+
+    public function countRecords($procedureId, $companyId)
+    {
+        return $this->db->get_where('dir_records', [
+            'procedure_id' => $procedureId,
+            'status' => 'PUB',
+            'flag_type' => 'FILE',
+            'company_id' => $companyId
+        ])->num_rows();
+    }
+
+    public function getRecordById($id)
+    {
+        return $this->db->get_where('dir_records', ['id' => $id])->row();
+    }
+
+    public function getFormById($id)
+    {
+        return $this->db->get_where('dir_forms', ['id' => $id])->row();
+    }
+
+    public function getGuideById($id)
+    {
+        return $this->db->get_where('dir_guides', ['id' => $id])->row();
+    }
+
+    public function getRecordsFiltered($where)
+    {
+        return $this->db->get_where('dir_records', $where)->result();
+    }
+
+    /* MATERI TRAINING */
+
+    public function getMateri($companyId)
+    {
+        return $this->db->get_where('materi', ['status' => '1', 'company_id' => $companyId])->result();
+    }
+
+    public function getMateriDetails($companyId)
+    {
+        return $this->db->get_where('materi_details', ['status' => '1', 'company_id' => $companyId])->result();
+    }
+
+    public function getMateriById($id)
+    {
+        return $this->db->get_where('materi_details', ['id' => $id])->result();
+    }
+
+    public function getMateriData($detailId)
+    {
+        return $this->db->get_where('materi_detail_data', ['materi_detail_id' => $detailId, 'status' => '1'])->result();
+    }
+
+    public function getMateriFile($id)
+    {
+        return $this->db->get_where('materi_detail_data', ['id' => $id])->row();
+    }
+
+    /* GUIDES (IK) */
+
+    public function getGuidesIK($companyId)
+    {
+        return $this->db->get_where('guides', ['status' => '1', 'company_id' => $companyId])->result();
+    }
+
+    public function getGuideDetailsIK($companyId)
+    {
+        return $this->db->get_where('guide_details', ['status' => '1', 'company_id' => $companyId])->result();
+    }
+
+    public function getGuideDetailByIdIK($id, $companyId)
+    {
+        return $this->db->get_where('guide_details', ['id' => $id, 'company_id' => $companyId])->result();
+    }
+
+    public function getGuideDetailDataIK($detailId, $companyId)
+    {
+        return $this->db->get_where('view_guides_detail_data', ['guide_detail_id' => $detailId, 'company_id' => $companyId])->result();
+    }
+
+    public function getGuideDocuments($detailDataId)
+    {
+        return $this->db->get_where('guide_documents', ['guide_detail_data_id' => $detailDataId, 'status' => '1'])->result();
+    }
+
+    public function getGuideVideoData($id)
+    {
+        return $this->db->get_where('view_guides_detail_data', ['id' => $id])->row();
+    }
+
+    public function getGuideDetailDataByIdIK($id)
+    {
+        return $this->db->get_where('guide_detail_data', ['id' => $id])->row();
+    }
+
+    public function getGuideDocumentById($id)
+    {
+        return $this->db->get_where('guide_documents', ['id' => $id])->row();
+    }
+
+    /* COMPLIANCE & CROSS REFERENCE */
+
+    public function getAllReferences()
+    {
+        return $this->db->get_where('view_references')->result();
+    }
+
+    public function getComplianceReview($referenceId)
+    {
+        return $this->db->order_by('last_review', 'DESC')
+            ->get_where('compilation_reviews', ['reference_id' => $referenceId])
+            ->row();
+    }
+
+    public function getCrossReferences($companyId)
+    {
+        return $this->db->get_where('view_cross_references', ['company_id' => $companyId])->result();
+    }
+
+    public function getCrossReferenceById($id, $companyId)
+    {
+        return $this->db->get_where('view_cross_references', ['company_id' => $companyId, 'id' => $id])->row();
+    }
+
+    public function getRequirementDetails($requirementId)
+    {
+        return $this->db->get_where('requirement_details', ['requirement_id' => $requirementId])->result();
+    }
+
+    public function getCrossReferenceDetails($referenceId)
+    {
+        return $this->db->get_where('view_cross_reference_details', ['reference_id' => $referenceId])->result_array();
+    }
+
+    public function getRequirementById($id, $companyId)
+    {
+        return $this->db->get_where('requirements', ['company_id' => $companyId, 'id' => $id])->row();
+    }
+
+    public function getCrossReferenceByProcedureAndRequirement($procedureId, $requirementId, $companyId)
+    {
+        $this->db->select('chapter,procedure_id,requirement_id')->from('view_cross_reference_details');
+        $this->db->where("find_in_set($procedureId, procedure_id)");
+        $this->db->where("company_id", $companyId);
+        $this->db->where("requirement_id", $requirementId);
+        return $this->db->get()->result();
+    }
+
+    /* OTHERS */
+
+    public function getActiveUsers($companyId = null)
+    {
+        $where = ['status' => 'ACT'];
+        if ($companyId) {
+            $where['company_id'] = $companyId;
+            $where['id_user !='] = '1';
+        }
+        return $this->db->get_where('view_users', $where)->result();
+    }
+
+    public function getPositions()
+    {
+        return $this->db->get('positions')->result();
+    }
+
+    public function getUsers()
+    {
+        return $this->db->get_where('users', ['status' => 'ACT'])->result();
     }
 }

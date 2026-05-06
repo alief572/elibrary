@@ -2,14 +2,17 @@
 	<div class="d-flex flex-column-fluid">
 		<div class="container">
 			<div class="card card-stretch shadow card-custom">
-				<div class="card-header">
+				<div class="card-header d-flex justify-content-between align-items-center">
 					<h2 class="mt-5"><i class="<?= $icon; ?> mr-2"></i><?= $title; ?></h2>
+					<a href="<?= base_url($this->uri->segment(1)); ?>" class="btn btn-danger"><i class="fa fa-reply" aria-hidden="true"></i>
+						Back</a>
+
 				</div>
 				<div class="card-body">
 
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<h2 class="mb-4"><i class="fa fa-desktop"></i> Current Project</h2>
+							<h3 class="mb-4"><i class="fa fa-desktop"></i> Current Project</h3>
 							<table class="table table-striped table-bordered table-sm">
 								<tr>
 									<th width="150">Company</th>
@@ -62,20 +65,11 @@
 								</tfoot>
 							</table> -->
 						</div>
-						<!-- <div class="col-md-2">
-							<h2 class="mb-4"><i class="fa fa-tools"></i> Options</h2>
-							<div class="btn-block">
-								<button type="button" class="btn btn-success btn-block" data-id="<?= ($reference) ? $reference->id : ''; ?>" id="compilation"><i class="fa fa-bolt"></i> Compilation</button>
-								<button type="button" class="btn btn-info btn-block" data-id="<?= ($reference) ? $reference->id : ''; ?>" id="view-compilation"><i class="fa fa-eye"></i> View Compilation</button>
-								<a target="_blank" href="<?= base_url($this->uri->segment(1) . '/export_pdf/' . (($reference) ? $reference->id : '')); ?>" class="btn btn-light btn-block to-pdf" data-comp_id="<?= (($reference) ? $reference->company_id : ''); ?>"><i class="fa fa-file-pdf"></i>Export PDF</a>
-							</div>
-						</div> -->
 					</div>
-					<a href="<?= base_url($this->uri->segment(1)); ?>" class="btn btn-danger"><i class="fa fa-reply" aria-hidden="true"></i> Back</a>
 
 					<!-- <hr> -->
 					<div class="mb-5 mt-5">
-						<h2 class="mb-5"><i class="fa fa-desktop"></i> List Regulations</h2>
+						<h3 class="mb-5"><i class="fa fa-list"></i> List Regulations</h3>
 						<hr>
 						<div id="accSub" role="tablist" aria-multiselectable="true">
 							<?php if ($subjects) foreach ($subjects as $k => $sub): $k++; ?>

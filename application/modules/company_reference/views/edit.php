@@ -88,12 +88,15 @@
 
 						<div id="accSub" role="tablist" aria-multiselectable="true">
 							<div class="card mb-3 border-primary overflow-hidden" style="border-radius: 10px;">
-								<div class="card-header bg-light p-4 border-0 cursor-pointer" role="tab" id="sectionDetail">
+								<div class="card-header bg-light p-4 border-0 cursor-pointer d-flex justify-content-between align-items-center" role="tab" id="sectionDetail">
 									<h5 class="mb-0 text-primary font-weight-bolder" data-toggle="collapse"
 										data-parent="#accSub" href="#sub<?= $k; ?>" aria-expanded="true"
 										aria-controls="sub<?= $k; ?>">
 										<?= $k . ". " . $s->name; ?>
 									</h5>
+									<button type="button" class="btn btn-danger btn-icon btn-xs del-subject" data-id="<?= $s->id; ?>">
+										<i class="fa fa-trash"></i>
+									</button>
 								</div>
 
 								<div id="sub<?= $k; ?>" class="collapse" role="tabpanel" aria-labelledby="sectionDetail">
@@ -515,6 +518,47 @@
 					})
 				}
 			})
+		})
+
+		$(document).on('click', '.del-subject', function () {
+			const id = $(this).data('id')
+			const btn = $(this)
+
+			if (id) {
+				Swal.fire({
+					title: 'Confirmation!',
+					text: 'Are you sure want to delete this subject and all its regulations?',
+					icon: 'question',
+					showCancelButton: true,
+				}).then((value) => {
+					if (value.isConfirmed) {
+						$.ajax({
+							url: siteurl + active_controller + 'delete_subject',
+							type: 'POST',
+							data: { id },
+							dataType: 'JSON',
+							beforeSend: function () {
+								btn.html('<span class="spinner-border spinner-border-sm"></span>').prop('disabled', true)
+							},
+							complete: function () {
+								btn.html('<span class="fa fa-trash"></span>').prop('disabled', false)
+							},
+							success: function (result) {
+								if (result.status == 1) {
+									Swal.fire('Success!', result.msg, 'success', 1500).then(() => {
+										location.reload()
+									})
+								} else {
+									Swal.fire('Failed!', result.msg, 'warning', 1500)
+								}
+							},
+							error: function () {
+								Swal.fire('Error!', 'Server timeout. Error!', 'error', 1500)
+							}
+						})
+					}
+				})
+			}
 		})
 	})
 

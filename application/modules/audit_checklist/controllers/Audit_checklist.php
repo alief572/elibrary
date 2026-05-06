@@ -1,17 +1,11 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-/*
- * @author Hikmat
- * @copyright Copyright (c) 2024, Hikmat
- *
- */
-
 class Audit_checklist extends Admin_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('audit_checklist/Audit_checklist_model', 'AuditModel');
         $this->template->set([
             'title' => 'Audit Checklist',
             'icon' => 'fa fa-check-double'
@@ -20,71 +14,16 @@ class Audit_checklist extends Admin_Controller
         date_default_timezone_set("Asia/Bangkok");
     }
 
-    private function _getId()
-    {
-        $count    = 1;
-        $result   = $this->db->select('MAX(RIGHT(id,3)) as id')->from('audit_checklist')->where(['SUBSTR(id,3,4)' => date('ym')])->get()->row();
-
-        if ($result->id > 0) {
-            $count = $result->id + 1;
-        }
-        return "CK" . date('ym-') . sprintf("%03d", $count);
-    }
-
-    private function _getDtlId($id)
-    {
-        $count    = 1;
-        $result   = $this->db->select('MAX(RIGHT(id,3)) as id')->from('audit_checklist_details')->where(['checklist_id' => $id])->get()->row();
-
-        if ($result->id > 0) {
-            $count = $result->id + 1;
-        }
-        return $count;
-    }
-
-    private function _getAuditId()
-    {
-        $count    = 1;
-        $result   = $this->db->select('MAX(RIGHT(id,3)) as id')->from('audit_checklist_audit')->where(['SUBSTR(id,3,4)' => date('ym')])->get()->row();
-
-        if ($result->id > 0) {
-            $count = $result->id + 1;
-        }
-        return "AT" . date('ym-') . sprintf("%03d", $count);
-    }
-
-    private function _getAuditDtlId($id)
-    {
-        $count    = 1;
-        $result   = $this->db->select('MAX(RIGHT(id,3)) as id')->from('audit_checklist_audit_details')->where(['audit_id' => $id])->get()->row();
-
-        if ($result->id > 0) {
-            $count = $result->id + 1;
-        }
-        return $count;
-    }
-
-    private function _getAuditDtlId2($id)
-    {
-        $count    = 1;
-        $result   = $this->db->select('MAX(RIGHT(id,3)) as id')->from('audit_non_checklist_audit_details')->where(['audit_id' => $id])->get()->row();
-
-        if ($result->id > 0) {
-            $count = $result->id + 1;
-        }
-        return $count;
-    }
-
     public function index()
     {
-        $data = $this->db->get_where('view_audit_checklist', ['status' => '1'])->result();
+        $data = $this->AuditModel->getActiveChecklists();
         $this->template->set('data', $data);
         $this->template->render('index');
     }
 
     public function add()
     {
-        $data        = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
+        $data = $this->AuditModel->getProcedures($this->company);
         $this->template->set('title', 'Add New Checklist');
         $this->template->set('data', $data);
         $this->template->render('add');
@@ -92,10 +31,7 @@ class Audit_checklist extends Admin_Controller
 
     public function select_procedure($id = '')
     {
-        $this->db->select('*')->from('view_cross_reference_details');
-        $this->db->where("find_in_set($id, procedure_id)");
-        $this->db->where("company_id", $this->company);
-        $Data = $this->db->get()->result();
+        $Data = $this->AuditModel->getCrossReferences($id, $this->company);
 
         $ArrData = [];
         foreach ($Data as $dt) {
@@ -107,7 +43,7 @@ class Audit_checklist extends Admin_Controller
             $ArrStd[$dtstd->requirement_id] = $dtstd;
         }
 
-        $procedure         = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL'])->result();
+        $procedure = $this->AuditModel->getProcedures($this->company);
 
         $this->template->set([
             'Data'             => $Data,
@@ -121,19 +57,15 @@ class Audit_checklist extends Admin_Controller
 
     public function view_pasal($id = '')
     {
-        $Data         = $this->db->get_where('requirement_details', ['id' => $id])->row();
+        $Data = $this->AuditModel->getRequirementDetailById($id);
         echo json_encode($Data);
     }
 
     public function edit($id)
     {
-        $data        = $this->db->get_where('audit_checklist', ['id' => $id, 'status' => '1'])->row();
-        $procedures  = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
-
-        $this->db->select('*')->from('view_cross_reference_details');
-        $this->db->where("find_in_set($data->procedure_id, procedure_id)");
-        $this->db->where("company_id", $this->company);
-        $Cross = $this->db->get()->result();
+        $data        = $this->AuditModel->getChecklistById($id);
+        $procedures  = $this->AuditModel->getProcedures($this->company);
+        $Cross       = $this->AuditModel->getCrossReferences($data->procedure_id, $this->company);
 
         $ArrData = [];
         foreach ($Cross as $dt) {
@@ -145,15 +77,14 @@ class Audit_checklist extends Admin_Controller
             $ArrStd[$dtstd->requirement_id] = $dtstd;
         }
 
-        /* Checklist */
-        $checklist = $this->db->get_where('audit_checklist_details', ['checklist_id' => $id, 'status' => '1'])->result();
+        $checklist = $this->AuditModel->getChecklistDetails($id);
 
         $this->template->set([
             'data'       => $data,
             'Cross'      => $Cross,
             'ArrData'    => $ArrData,
             'ArrStd'     => $ArrStd,
-            'procedures'  => $procedures,
+            'procedures' => $procedures,
             'checklist'  => $checklist,
         ]);
 
@@ -162,13 +93,9 @@ class Audit_checklist extends Admin_Controller
 
     public function view($id)
     {
-        $data        = $this->db->get_where('audit_checklist', ['id' => $id, 'status' => '1'])->row();
-        $procedures  = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
-
-        $this->db->select('*')->from('view_cross_reference_details');
-        $this->db->where("find_in_set($data->procedure_id, procedure_id)");
-        $this->db->where("company_id", $this->company);
-        $Cross = $this->db->get()->result();
+        $data        = $this->AuditModel->getChecklistById($id);
+        $procedures  = $this->AuditModel->getProcedures($this->company);
+        $Cross       = $this->AuditModel->getCrossReferences($data->procedure_id, $this->company);
 
         $ArrData = [];
         foreach ($Cross as $dt) {
@@ -180,15 +107,14 @@ class Audit_checklist extends Admin_Controller
             $ArrStd[$dtstd->requirement_id] = $dtstd;
         }
 
-        /* Checklist */
-        $checklist = $this->db->get_where('audit_checklist_details', ['checklist_id' => $id, 'status' => '1'])->result();
+        $checklist = $this->AuditModel->getChecklistDetails($id);
 
         $this->template->set([
             'data'       => $data,
             'Cross'      => $Cross,
             'ArrData'    => $ArrData,
             'ArrStd'     => $ArrStd,
-            'procedures'  => $procedures,
+            'procedures' => $procedures,
             'checklist'  => $checklist,
         ]);
 
@@ -200,55 +126,16 @@ class Audit_checklist extends Admin_Controller
         $data       = $this->input->post();
         $checklist  = isset($data['checklist']) ? $data['checklist'] : [];
         unset($data['checklist']);
-        $this->db->trans_begin();
-        if ($data) {
-            if (isset($data['id']) && $data['id']) {
-                $data['modified_at'] = date('Y-m-d H:i:s');
-                $data['modified_by'] = $this->auth->user_id();
-                $this->db->update('audit_checklist', $data, ['id' => $data['id']]);
-            } else {
-                $data['id']         = $this->_getId();
-                $data['created_at'] = date('Y-m-d H:i:s');
-                $data['created_by'] = $this->auth->user_id();
-                $this->db->insert('audit_checklist', $data);
-            }
 
-            if ($checklist) {
-                $dtlID = $this->_getDtlId($data['id']);
-                foreach ($checklist as $ck) {
-                    $dtlID++;
-                    if (isset($ck['id']) && $ck['id']) {
-                        $ck['modified_at'] = date('Y-m-d H:i:s');
-                        $ck['modified_by'] = $this->auth->user_id();
-                        $this->db->update('audit_checklist_details', $ck, ['id' => $ck['id']]);
-                    } else {
-                        $ck['id']         = $data['id'] . sprintf("%03d", $dtlID);
-                        $ck['checklist_id'] = $data['id'];
-                        $ck['created_at'] = date('Y-m-d H:i:s');
-                        $ck['created_by'] = $this->auth->user_id();
-                        $this->db->insert('audit_checklist_details', $ck);
-                    }
-                }
-            }
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $return        = array(
-                    'status'        => 0,
-                    'msg'            => 'Data has Failed save. Please Try Again!'
-                );
+        if ($data) {
+            $success = $this->AuditModel->saveChecklist($data, $checklist, $this->auth->user_id());
+            if ($success) {
+                $return = array('status' => 1, 'msg' => 'Data has successfull saved. Thanks you.');
             } else {
-                $this->db->trans_commit();
-                $return        = array(
-                    'status'        => 1,
-                    'msg'            => 'Data has successfull saved. Thanks you.'
-                );
+                $return = array('status' => 0, 'msg' => 'Data has Failed save. Please Try Again!');
             }
         } else {
-            $this->db->trans_commit();
-            $return        = array(
-                'status'        => 0,
-                'msg'            => 'Data not valid. Please Try Again!'
-            );
+            $return = array('status' => 0, 'msg' => 'Data not valid. Please Try Again!');
         }
         echo json_encode($return);
     }
@@ -257,30 +144,15 @@ class Audit_checklist extends Admin_Controller
     {
         $id = $this->input->post('id');
         if ($id) {
-            $this->db->trans_begin();
-            $this->db->update('audit_checklist', ['status' => '0'], ['id' => $id]);
-            $this->db->update('audit_checklist_audit', ['status' => '0'], ['checklist_id' => $id]);
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
-                    'status'    => 0
-                ];
+            $success = $this->AuditModel->deleteChecklist($id);
+            if ($success) {
+                $Return = ['msg' => "Successfull delete data.", 'status' => 1];
             } else {
-                $this->db->trans_commit();
-                $Return = [
-                    'msg'       => "Successfull delete data.",
-                    'status'    => 1
-                ];
+                $Return = ['msg' => "Failed deleting data, please try again.", 'status' => 0];
             }
         } else {
-            $this->db->trans_rollback();
-            $Return = [
-                'msg'       => "Data not valid",
-                'status'    => 0
-            ];
+            $Return = ['msg' => "Data not valid", 'status' => 0];
         }
-
         echo json_encode($Return);
     }
 
@@ -288,44 +160,25 @@ class Audit_checklist extends Admin_Controller
     {
         $id = $this->input->post('id');
         if ($id) {
-            $this->db->trans_begin();
-            $this->db->update('audit_checklist_details', ['status' => '0'], ['id' => $id]);
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
-                    'status'    => 0
-                ];
+            $success = $this->AuditModel->deleteChecklistDetail($id);
+            if ($success) {
+                $Return = ['msg' => "Successfull delete data.", 'status' => 1];
             } else {
-                $this->db->trans_commit();
-                $Return = [
-                    'msg'       => "Successfull delete data.",
-                    'status'    => 1
-                ];
+                $Return = ['msg' => "Failed deleting data, please try again.", 'status' => 0];
             }
         } else {
-            $this->db->trans_rollback();
-            $Return = [
-                'msg'       => "Data not valid",
-                'status'    => 0
-            ];
+            $Return = ['msg' => "Data not valid", 'status' => 0];
         }
-
         echo json_encode($Return);
     }
 
     function audit($id)
     {
         if ($id) {
-            $cklst        = $this->db->get_where('view_audit_checklist', ['id' => $id, 'status' => '1'])->row();
-            $users      = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-
-            $procedures  = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
-
-            $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("find_in_set($cklst->procedure_id, procedure_id)")
-                ->where("company_id", $this->company);
-            $Cross = $query->get()->result();
+            $cklst      = $this->AuditModel->getChecklistByViewId($id);
+            $users      = $this->AuditModel->getUsers($this->company);
+            $procedures = $this->AuditModel->getProcedures($this->company);
+            $Cross      = $this->AuditModel->getCrossReferences($cklst->procedure_id, $this->company);
 
             $ArrData = [];
             foreach ($Cross as $dt) {
@@ -337,43 +190,16 @@ class Audit_checklist extends Admin_Controller
                 $ArrStd[$dtstd->requirement_id] = $dtstd;
             }
 
-            /* Checklist */
-            $checklist = $this->db->get_where('audit_checklist_details', ['checklist_id' => $id, 'status' => '1'])->result();
-
-
-            /* Non Chekclist */
-            // $non_checklist = $this->db->get_where('audit_non_checklist_audit_details', ['checklist_id' => $id])->result();
-
-            // echo '<pre>';
-            // print_r($non_checklist);
-            // echo '</pre>';
-            // exit;
-            // if ($non_checklist) {
-            //     $details = $this->db->get_where('audit_checklist_audit_details', ['audit_id' => $audit->id])->result();
-            //     $ArrDtl = [];
-            //     if ($details) foreach ($details as $d) {
-            //         $ArrDtl[$d->checklist_detail_id] = $d;
-            //     }
-            // }
-
-            /* Satndard */
-            $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("find_in_set($cklst->procedure_id, procedure_id)")
-                ->where(["company_id" => $this->company]);
-            $std = $query->get()->result();
-            $ArrDtlStd = [];
-            foreach ($std as $s) {
-                $ArrDtlStd[$s->requirement_id][] = $s;
-            }
+            $checklist = $this->AuditModel->getChecklistDetails($id);
 
             $this->template->set([
-                'cklst'       => $cklst,
-                'users'       => $users,
+                'cklst'      => $cklst,
+                'users'      => $users,
                 'Cross'      => $Cross,
                 'ArrData'    => $ArrData,
                 'ArrStd'     => $ArrStd,
                 'checklist'  => $checklist,
-                'procedures'  => $procedures,
+                'procedures' => $procedures,
             ]);
 
             $this->template->render('audit');
@@ -385,8 +211,8 @@ class Audit_checklist extends Admin_Controller
     function results()
     {
         $this->template->set('title', 'Audit Results');
-        $results = $this->db->get_where('view_audit_checklist_audit', ['status' => '1'])->result();
-        $details = $this->db->get_where('audit_checklist_audit_details', ['status' => '1'])->result();
+        $results = $this->AuditModel->getAuditResults();
+        $details = $this->AuditModel->getAuditDetailsAll();
 
         $ArrDtl = [];
         if ($details) foreach ($details as $k => $v) {
@@ -404,15 +230,11 @@ class Audit_checklist extends Admin_Controller
     function edit_audit($id)
     {
         if ($id) {
-            $audit    = $this->db->get_where('view_audit_checklist_audit', ['id' => $id, 'status' => '1'])->row();
-            $cklst    = $this->db->get_where('view_audit_checklist', ['id' => $audit->checklist_id, 'status' => '1'])->row();
-            $users    = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-
-            $procedures  = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
-            $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("find_in_set($cklst->procedure_id, procedure_id)")
-                ->where("company_id", $this->company);
-            $Cross = $query->get()->result();
+            $audit      = $this->AuditModel->getAuditByViewId($id);
+            $cklst      = $this->AuditModel->getChecklistByViewId($audit->checklist_id);
+            $users      = $this->AuditModel->getUsers($this->company);
+            $procedures = $this->AuditModel->getProcedures($this->company);
+            $Cross      = $this->AuditModel->getCrossReferences($cklst->procedure_id, $this->company);
 
             $ArrData = [];
             foreach ($Cross as $dt) {
@@ -424,43 +246,33 @@ class Audit_checklist extends Admin_Controller
                 $ArrStd[$dtstd->requirement_id] = $dtstd;
             }
 
-            /* Checklist */
-            $checklist = $this->db->get_where('audit_checklist_details', ['checklist_id' => $audit->checklist_id, 'status' => '1'])->result();
-
-            /* Data Audit */
-            // $audit = $this->db->get_where('audit_checklist_audit', ['checklist_id' => $id])->row();
-            $details = $this->db->get_where('audit_checklist_audit_details', ['audit_id' => $audit->id])->result();
-            $ArrDtl = [];
+            $checklist = $this->AuditModel->getChecklistDetails($audit->checklist_id);
+            $details   = $this->AuditModel->getAuditDetails($audit->id);
+            $ArrDtl    = [];
 
             if ($details) foreach ($details as $d) {
                 $ArrDtl[$d->checklist_detail_id] = $d;
             }
 
-            /* Satndard */
-            $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("find_in_set($cklst->procedure_id, procedure_id)")
-                ->where(["company_id" => $this->company]);
-            $std = $query->get()->result();
             $ArrDtlStd = [];
-            foreach ($std as $s) {
+            foreach ($Cross as $s) {
                 $ArrDtlStd[$s->requirement_id][] = $s;
             }
 
-            /* Additional Audit */
-            $AdtAudit = $this->db->get_where('audit_non_checklist_audit_details', ['audit_id' => $audit->id, 'status' => '1'])->result();
+            $AdtAudit = $this->AuditModel->getNonChecklistAuditDetails($audit->id);
 
             $this->template->set([
-                'cklst'       => $cklst,
-                'users'       => $users,
-                'audit'     => $audit,
+                'cklst'      => $cklst,
+                'users'      => $users,
+                'audit'      => $audit,
                 'Cross'      => $Cross,
                 'ArrData'    => $ArrData,
                 'ArrStd'     => $ArrStd,
-                'procedures'  => $procedures,
+                'procedures' => $procedures,
                 'checklist'  => $checklist,
-                'ArrDtl'  => $ArrDtl,
+                'ArrDtl'     => $ArrDtl,
                 'ArrDtlStd'  => $ArrDtlStd,
-                'AdtAudit'  => $AdtAudit,
+                'AdtAudit'   => $AdtAudit,
             ]);
 
             $this->template->render('audit');
@@ -471,11 +283,7 @@ class Audit_checklist extends Admin_Controller
 
     function listPasal($procedure, $standard)
     {
-
-        $this->db->select('*')->from('view_cross_reference_details');
-        $this->db->where("find_in_set($procedure, procedure_id)");
-        $this->db->where(["requirement_id" => $standard, "company_id" => $this->company]);
-        $data = $this->db->get()->result();
+        $data = $this->AuditModel->getChaptersByProcedure($procedure, $standard, $this->company);
 
         $html = '<option></option>';
         if ($data) {
@@ -496,75 +304,16 @@ class Audit_checklist extends Admin_Controller
 
         $data['auditor'] = json_encode(isset($data['auditor']) ? $data['auditor'] : []);
         $data['auditee'] = json_encode(isset($data['auditee']) ? $data['auditee'] : []);
-        $this->db->trans_begin();
+
         if ($data) {
-            if (isset($data['id']) && $data['id']) {
-                $data['modified_at'] = date('Y-m-d H:i:s');
-                $data['modified_by'] = $this->auth->user_id();
-                $this->db->update('audit_checklist_audit', $data, ['id' => $data['id']]);
+            $success = $this->AuditModel->saveAudit($data, $detail, $temuan, $this->auth->user_id());
+            if ($success) {
+                $return = array('status' => 1, 'msg' => 'Data has successfull saved. Thanks you.');
             } else {
-                $data['id']         = $this->_getAuditId();
-                $data['created_at'] = date('Y-m-d H:i:s');
-                $data['created_by'] = $this->auth->user_id();
-                $this->db->insert('audit_checklist_audit', $data);
-            }
-
-            if ($detail) {
-                $dtlID = $this->_getAuditDtlId($data['id']);
-                foreach ($detail as $ck) {
-                    $dtlID++;
-                    if (isset($ck['id']) && $ck['id']) {
-                        $ck['modified_at'] = date('Y-m-d H:i:s');
-                        $ck['modified_by'] = $this->auth->user_id();
-                        $this->db->update('audit_checklist_audit_details', $ck, ['id' => $ck['id']]);
-                    } else {
-                        $ck['id']         = $data['id'] . sprintf("%03d", $dtlID);
-                        $ck['audit_id'] = $data['id'];
-                        $ck['created_at'] = date('Y-m-d H:i:s');
-                        $ck['created_by'] = $this->auth->user_id();
-                        $this->db->insert('audit_checklist_audit_details', $ck);
-                    }
-                }
-            }
-
-            if ($temuan) {
-
-                $dtlID = $this->_getAuditDtlId2($data['id']);
-                foreach ($temuan as $v) {
-                    $dtlID++;
-                    if (isset($v['id']) && $v['id']) {
-                        $v['modified_at']   = date('Y-m-d H:i:s');
-                        $v['modified_by']   = $this->auth->user_id();
-                        $this->db->update('audit_non_checklist_audit_details', $v, ['id' => $v['id']]);
-                    } else {
-                        $v['id']            = $data['id'] . "-" . sprintf("%03d", $dtlID);
-                        $v['audit_id']      = $data['id'];
-                        $v['created_at']    = date('Y-m-d H:i:s');
-                        $v['created_by']    = $this->auth->user_id();
-                        $this->db->insert('audit_non_checklist_audit_details', $v);
-                    }
-                }
-            }
-
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $return        = array(
-                    'status'        => 0,
-                    'msg'            => 'Data has Failed save. Please Try Again!'
-                );
-            } else {
-                $this->db->trans_commit();
-                $return        = array(
-                    'status'        => 1,
-                    'msg'            => 'Data has successfull saved. Thanks you.'
-                );
+                $return = array('status' => 0, 'msg' => 'Data has Failed save. Please Try Again!');
             }
         } else {
-            $this->db->trans_commit();
-            $return        = array(
-                'status'        => 0,
-                'msg'            => 'Data not valid. Please Try Again!'
-            );
+            $return = array('status' => 0, 'msg' => 'Data not valid. Please Try Again!');
         }
         echo json_encode($return);
     }
@@ -573,44 +322,26 @@ class Audit_checklist extends Admin_Controller
     {
         $id = $this->input->post('id');
         if ($id) {
-            $this->db->trans_begin();
-            $this->db->update('audit_checklist_audit', ['status' => '0'], ['id' => $id]);
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
-                    'status'    => 0
-                ];
+            $success = $this->AuditModel->deleteAudit($id);
+            if ($success) {
+                $Return = ['msg' => "Successfull delete data.", 'status' => 1];
             } else {
-                $this->db->trans_commit();
-                $Return = [
-                    'msg'       => "Successfull delete data.",
-                    'status'    => 1
-                ];
+                $Return = ['msg' => "Failed deleting data, please try again.", 'status' => 0];
             }
         } else {
-            $this->db->trans_rollback();
-            $Return = [
-                'msg'       => "Data not valid",
-                'status'    => 0
-            ];
+            $Return = ['msg' => "Data not valid", 'status' => 0];
         }
-
         echo json_encode($Return);
     }
 
     function view_audit($id)
     {
         if ($id) {
-            $audit    = $this->db->get_where('view_audit_checklist_audit', ['id' => $id, 'status' => '1'])->row();
-            $cklst    = $this->db->get_where('view_audit_checklist', ['id' => $audit->checklist_id, 'status' => '1'])->row();
-            $users    = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-
-            $procedures  = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_at' => null])->result();
-            $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("find_in_set($cklst->procedure_id, procedure_id)")
-                ->where("company_id", $this->company);
-            $Cross = $query->get()->result();
+            $audit      = $this->AuditModel->getAuditByViewId($id);
+            $cklst      = $this->AuditModel->getChecklistByViewId($audit->checklist_id);
+            $users      = $this->AuditModel->getUsers($this->company);
+            $procedures = $this->AuditModel->getProcedures($this->company);
+            $Cross      = $this->AuditModel->getCrossReferences($cklst->procedure_id, $this->company);
 
             $ArrData = [];
             foreach ($Cross as $dt) {
@@ -622,24 +353,16 @@ class Audit_checklist extends Admin_Controller
                 $ArrStd[$dtstd->requirement_id] = $dtstd;
             }
 
-            /* Checklist */
-            $checklist = $this->db->get_where('audit_checklist_details', ['checklist_id' => $audit->checklist_id, 'status' => '1'])->result();
-
-            /* Data Audit */
-            // $audit = $this->db->get_where('audit_checklist_audit', ['checklist_id' => $id])->row();
-            $details = $this->db->get_where('audit_checklist_audit_details', ['audit_id' => $audit->id])->result();
-            $ArrDtl = [];
+            $checklist = $this->AuditModel->getChecklistDetails($audit->checklist_id);
+            $details   = $this->AuditModel->getAuditDetails($audit->id);
+            $ArrDtl    = [];
 
             if ($details) foreach ($details as $d) {
                 $ArrDtl[$d->checklist_detail_id] = $d;
             }
 
-            /* Satndard */
             $company_id = (isset($cklst->company_id)) ? $cklst->company_id : $this->company;
-
-            $query = $this->db->select('*')->from('view_cross_reference_details')
-                ->where("company_id", $company_id);
-            $all_cross = $query->get()->result();
+            $all_cross  = $this->AuditModel->getAllCrossReferences($company_id);
             
             $ArrDtlStd = [];
             $ArrPro = [];
@@ -648,7 +371,7 @@ class Audit_checklist extends Admin_Controller
                 $ArrPro[$c->id] = $c->chapter;
             }
 
-            $AdtAudit = $this->db->get_where('audit_non_checklist_audit_details', ['audit_id' => $audit->id, 'status' => '1'])->result();
+            $AdtAudit = $this->AuditModel->getNonChecklistAuditDetails($audit->id);
 
             $category = [
                 '0' => '<label class="label label-inline">OK</label>',
@@ -658,17 +381,17 @@ class Audit_checklist extends Admin_Controller
             ];
 
             $this->template->set([
-                'cklst'         => $cklst,
-                'users'         => $users,
-                'audit'         => $audit,
-                'ArrPro'        => $ArrPro,
-                'ArrData'       => $ArrData,
-                'ArrStd'        => $ArrStd,
-                'ArrDtl'        => $ArrDtl,
-                'ArrDtlStd'     => $ArrDtlStd,
-                'checklist'     => $checklist,
-                'category'      => $category,
-                'AdtAudit'      => $AdtAudit,
+                'cklst'     => $cklst,
+                'users'     => $users,
+                'audit'     => $audit,
+                'ArrPro'    => $ArrPro,
+                'ArrData'   => $ArrData,
+                'ArrStd'    => $ArrStd,
+                'ArrDtl'    => $ArrDtl,
+                'ArrDtlStd' => $ArrDtlStd,
+                'checklist' => $checklist,
+                'category'  => $category,
+                'AdtAudit'  => $AdtAudit,
             ]);
 
             $this->template->render('view');
@@ -681,87 +404,58 @@ class Audit_checklist extends Admin_Controller
     {
         $id = $this->input->post('id');
         if ($id) {
-            $this->db->trans_begin();
-            $this->db->update('audit_non_checklist_audit_details', ['status' => '0'], ['id' => $id]);
-
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $Return = [
-                    'msg'       => "Failed deleting data, please try again.",
-                    'status'    => 0
-                ];
+            $success = $this->AuditModel->deleteNonChecklistAudit($id);
+            if ($success) {
+                $Return = ['msg' => "Successfull delete data.", 'status' => 1];
             } else {
-                $this->db->trans_commit();
-                $Return = [
-                    'msg'       => "Successfull delete data.",
-                    'status'    => 1
-                ];
+                $Return = ['msg' => "Failed deleting data, please try again.", 'status' => 0];
             }
         } else {
-            $this->db->trans_rollback();
-            $Return = [
-                'msg'       => "Data not valid",
-                'status'    => 0
-            ];
+            $Return = ['msg' => "Data not valid", 'status' => 0];
         }
         echo json_encode($Return);
     }
 
     public function uploadFile()
     {
-        if (!is_dir('./directory/AUDIT/' . $this->company . '/')) {
-            mkdir('./directory/AUDIT/' . $this->company . '/', 0755, TRUE);
-            chmod('./directory/AUDIT/' . $this->company . '/', 0755);  // octal; correct value of mode
+        $upload_path = './directory/AUDIT/' . $this->company . '/';
+        if (!is_dir($upload_path)) {
+            mkdir($upload_path, 0755, TRUE);
+            chmod($upload_path, 0755);
             if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
-                chown('./directory/AUDIT/' . $this->company . '/', 'www-data');
+                chown($upload_path, 'www-data');
             }
         }
 
-        $config['upload_path']       = './directory/AUDIT/' . $this->company . '/';
-        $config['allowed_types']     = 'gif|jpg|png|jpeg';
-        $config['max_size']          = '3068';
-        $config['encryption_name']   = true;
+        $config['upload_path']     = $upload_path;
+        $config['allowed_types']   = 'gif|jpg|png|jpeg';
+        $config['max_size']        = '3068';
+        $config['encryption_name'] = true;
 
         $this->load->library('upload', $config);
         $this->upload->initialize($config);
 
         if (!$this->upload->do_upload('document')) {
-            $error = array('error' => $this->upload->display_errors());
             $return = [
                 'status' => 0,
-                'msg' => $error,
+                'msg'    => array('error' => $this->upload->display_errors()),
             ];
         } else {
             $data = $this->upload->data();
             if ($data) {
-                $this->db->trans_begin();
-                $this->db->update(
-                    'audit_checklist_audit_details',
-                    [
-                        'file_name' => $data['file_name'],
-                        'file_type' => $data['file_ext'],
-                        'file_size' => $data['file_size'],
-                    ],
-                    ['id' => $this->input->post('id')]
-                ); 
+                $fileData = [
+                    'file_name' => $data['file_name'],
+                    'file_type' => $data['file_ext'],
+                    'file_size' => $data['file_size'],
+                ];
+                $success = $this->AuditModel->updateAuditDetailFile($this->input->post('id'), $fileData);
 
-                if ($this->db->trans_status() === FALSE) {
-                    $this->db->trans_rollback();
-                    $return = array(
-                        'msg' => 'Failed Upload image delivery details.  Please try again.',
-                        'status' => 0
-                    );
-                    echo json_encode($return);
-                    return false;
-                } else {
-                    $this->db->trans_commit();
-                    $return = [
-                        'msg' => 'Upload Successfull!',
-                        'status' => 1,
-                    ];
+                if ($success) {
+                    $return = ['msg' => 'Upload Successfull!', 'status' => 1];
                     $this->session->set_flashdata('msg', 'Success Upload image delivery details.');
+                } else {
+                    $return = ['msg' => 'Failed Upload image delivery details. Please try again.', 'status' => 0];
                 }
-               
             }
         }
         echo json_encode($return);

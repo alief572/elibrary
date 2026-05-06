@@ -9,7 +9,7 @@ class Documents_list extends Admin_Controller
 
 		$this->load->model('documents_list/Documents_list_model', 'List');
 		$this->template->page_icon('fa fa-dashboard');
-		$this->MainData 	= $this->db->get_where('directory', ['parent_id' => '0'])->result();
+		$this->MainData 	= $this->List->getMainData();
 		$this->sts = [
 			'OPN' => '<span class="label label-light-primary label-pill label-inline mr-2">New Upload</span>',
 			'REV' => '<span class="label label-light-warning label-pill label-inline mr-2">Waiting Review</span>',
@@ -21,19 +21,17 @@ class Documents_list extends Admin_Controller
 
 	public function index()
 	{
-		//$this->template->set('sum_penacc', $sum_penacc);
-		// $this->template->render('index');
 		redirect('dashboard');
 	}
 
 	public function find($id)
 	{
-		$thisData 		= $this->db->get_where('directory', ['id' => $id])->row();
-		$Data 			= $this->db->get_where('directory', ['parent_id' => $id, 'flag_type' => 'FOLDER', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$DataFile 			= $this->db->get_where('directory', ['parent_id' => $id, 'flag_type' => 'FILE', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataFolder = $this->db->get_where('directory', ['flag_type' => 'FOLDER', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataFile 	= $this->db->get_where('directory', ['flag_type' => 'FILE', 'status' => 'PUB', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataLink 	= $this->db->get_where('directory', ['flag_type' => 'LINK', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
+		$thisData 		= $this->List->getDirectoryById($id);
+		$Data 			= $this->List->getSubFolders($id, $this->company);
+		$DataFile 		= $this->List->getSubFiles($id, $this->company);
+		$listDataFolder = $this->List->getAllFolders($this->company);
+		$listDataFile 	= $this->List->getAllPublishedFiles($this->company);
+		$listDataLink 	= $this->List->getAllLinks($this->company);
 
 		$ArrDataFolder = [];
 		foreach ($listDataFolder as $listFolder) {
@@ -48,7 +46,7 @@ class Documents_list extends Admin_Controller
 			$ArrDataLink[$listLink->parent_id][] = $listLink;
 		}
 
-		$dt 		= $this->db->get_where('directory', ['id' => $id])->row_array();
+		$dt 		= $this->List->getDirectoryByIdArray($id);
 		$buildBreadcumb = $this->buildBreadcumb($dt);
 
 		$this->template->set('MainData', $this->MainData);
@@ -66,24 +64,25 @@ class Documents_list extends Admin_Controller
 
 	function buildBreadcumb($data)
 	{
-		// $Breadcumb = [];
-		$data = $this->db->get_where('directory', ['id' => $data['parent_id']])->row();
+		if (!isset($data['parent_id'])) return '';
+
+		$data = $this->List->getDirectoryById($data['parent_id']);
 
 		if ($data) {
 			if ($data->parent_id != '0') {
 				$Breadcumb[] =  $data;
 			}
 			return isset($Breadcumb) ? $Breadcumb : '';
-			$this->buildBreadcumb($data);
 		}
+		return '';
 	}
 
 	public function show($id)
 	{
-		$file 		= $this->db->get_where('directory', ['id' => $id])->row();
-		// pre
-		$dir_name 	= $this->db->get_where('directory', ['id' => $file->parent_id])->row()->name;
-		$history	= $this->db->order_by('updated_at', 'ASC')->get_where('directory_log', ['directory_id' => $id])->result();
+		$file 		= $this->List->getDirectoryById($id);
+		$parent 	= $this->List->getDirectoryById($file->parent_id);
+		$dir_name 	= $parent ? $parent->name : '';
+		$history	= $this->List->getHistory($id);
 		$type 		= 'STANDARDS';
 
 		$this->template->set('type', $type);
@@ -98,11 +97,11 @@ class Documents_list extends Admin_Controller
 	public function procedures($id = null)
 	{
 		if (isset($id)) {
-			$procedure 		= $this->db->get_where('view_procedures', ['id' => $id])->result();
-			$forms 			= $this->db->order_by('name', 'ASC')->get_where('dir_forms', ['procedure_id' => $id, 'active' => 'Y', 'status !=' => 'DEL'])->result();
-			$guides 		= $this->db->order_by('name', 'ASC')->get_where('dir_guides', ['procedure_id' => $id, 'active' => 'Y', 'status !=' => 'DEL'])->result();
-			$records 		= $this->db->order_by('name', 'ASC')->get_where('dir_records', ['procedure_id' => $id, 'status' => 'PUB', 'flag_type' => 'FOLDER', 'company_id' => $this->company, 'parent_id' => null])->result();
-			$countRecords 	= $this->db->get_where('dir_records', ['procedure_id' => $id, 'status' => 'PUB', 'flag_type' => 'FILE', 'company_id' => $this->company])->num_rows();
+			$procedure 		= $this->List->getProcedureResult($id);
+			$forms 			= $this->List->getFormsByProcedure($id);
+			$guides 		= $this->List->getGuidesByProcedure($id);
+			$records 		= $this->List->getRecordsByProcedure($id, $this->company);
+			$countRecords 	= $this->List->countRecords($id, $this->company);
 
 			$this->template->set([
 				'procedure' 		=> $procedure,
@@ -114,8 +113,8 @@ class Documents_list extends Admin_Controller
 			]);
 			$this->template->render('procedures/list-docs');
 		} else {
-			$groups 		= $this->db->get_where('group_procedure', ['status' => 'ACT'])->result();
-			$procedures 	= $this->db->get_where('view_procedures', ['company_id' => $this->company, 'status' => 'PUB', 'deleted_by' => null])->result_array();
+			$groups 		= $this->List->getProcedureGroups();
+			$procedures 	= $this->List->getPublishedProcedures($this->company);
 
 			$ArrPro = [];
 			foreach ($procedures as $pro) {
@@ -133,12 +132,12 @@ class Documents_list extends Admin_Controller
 
 	public function view_procedure($id)
 	{
-		$docs 			= $this->db->get_where('view_procedures', ['id' => $id])->row();
-		$detail 		= $this->db->order_by("CAST(number AS UNSIGNED)", "ASC")->get_where('procedure_details', ['procedure_id' => $id, 'status' => '1'])->result();
-		$forms 			= $this->db->get_where('dir_forms', ['procedure_id' => $id, 'active' => 'Y'])->result();
-		$guides 		= $this->db->get_where('dir_guides', ['procedure_id' => $id, 'active' => 'Y'])->result();
-		$users 			= $this->db->get_where('view_users', ['status' => 'ACT', 'id_user !=' => '1', 'company_id' => $this->company])->result();
-		$jabatan 		= $this->db->get('positions')->result();
+		$docs 			= $this->List->getProcedureById($id);
+		$detail 		= $this->List->getProcedureDetails($id);
+		$forms 			= $this->List->getFormsByProcedure($id);
+		$guides 		= $this->List->getGuidesByProcedure($id);
+		$users 			= $this->List->getActiveUsers($this->company);
+		$jabatan 		= $this->List->getPositions();
 		$ArrUsr 		= $ArrJab = $ArrForms = $ArrGuides = [];
 
 		foreach ($users as $usr) {
@@ -172,9 +171,10 @@ class Documents_list extends Admin_Controller
 
 	public function view_record($id)
 	{
-		$record 			= $this->db->get_where('dir_records', ['id' => $id])->row();
-		$history			= $this->db->order_by('updated_at', 'ASC')->get_where('directory_log', ['directory_id' => $id])->result();
-		$users = $this->db->get_where('users', ['status' => 'ACT'])->result();
+		$record 			= $this->List->getRecordById($id);
+		$history			= $this->List->getHistory($id);
+		$users 				= $this->List->getUsers();
+		$ArrUsr 			= [];
 		foreach ($users as $user) {
 			$ArrUsr[$user->id_user] = $user;
 		}
@@ -190,9 +190,10 @@ class Documents_list extends Admin_Controller
 
 	public function view_form($id)
 	{
-		$form 			= $this->db->get_where('dir_forms', ['id' => $id])->row();
-		$history			= $this->db->order_by('updated_at', 'ASC')->get_where('directory_log', ['directory_id' => $id])->result();
-		$users = $this->db->get_where('users', ['status' => 'ACT'])->result();
+		$form 				= $this->List->getFormById($id);
+		$history			= $this->List->getHistory($id);
+		$users 				= $this->List->getUsers();
+		$ArrUsr 			= [];
 		foreach ($users as $user) {
 			$ArrUsr[$user->id_user] = $user;
 		}
@@ -208,9 +209,10 @@ class Documents_list extends Admin_Controller
 
 	public function view_guide($id)
 	{
-		$guide 			= $this->db->get_where('dir_guides', ['id' => $id])->row();
-		$history			= $this->db->order_by('updated_at', 'ASC')->get_where('directory_log', ['directory_id' => $id])->result();
-		$users = $this->db->get_where('users', ['status' => 'ACT'])->result();
+		$guide 				= $this->List->getGuideById($id);
+		$history			= $this->List->getHistory($id);
+		$users 				= $this->List->getUsers();
+		$ArrUsr 			= [];
 		foreach ($users as $user) {
 			$ArrUsr[$user->id_user] = $user;
 		}
@@ -221,7 +223,6 @@ class Documents_list extends Admin_Controller
 			'ArrUsr'		=> $ArrUsr
 		]);
 
-		// redirect("directory/GUIDES/$guide->company_id/" . $guide->file_name);
 		$this->template->render('procedures/view-guide');
 	}
 
@@ -230,30 +231,34 @@ class Documents_list extends Admin_Controller
 
 	public function getRecords($methode = null,  $procedure_id = null, $id = null)
 	{
+		$records = [];
+		$EOF = true;
+
 		if ($methode == 'home') {
-			$records = $this->db->get_where('dir_records', ['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER'])->result();
+			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
 			$EOF = true;
 		} elseif ($methode == 'back') {
-			$parent_id = $this->db->get_where('dir_records', ['id' => $id])->row()->parent_id;
+			$dir = $this->List->getRecordById($id);
+			$parent_id = $dir ? $dir->parent_id : null;
 			if ($parent_id > 0) {
-				$records = $this->db->get_where('dir_records', ['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $parent_id, 'status' => 'PUB', 'flag_type' => 'FOLDER'])->result();
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $parent_id, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
 				$EOF = false;
 				$id = $parent_id;
 			} else {
-				$records = $this->db->get_where('dir_records', ['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER'])->result();
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
 				$EOF = true;
 				$id = '';
 			}
 		} elseif ($methode == 'refresh') {
 			if ($id) {
-				$records = $this->db->get_where('dir_records', ['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id, 'status' => 'PUB'])->result();
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id, 'status' => 'PUB']);
 				$EOF = false;
 			} else {
-				$records = $this->db->get_where('dir_records', ['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER'])->result();
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
 				$EOF = true;
 			}
 		} elseif ($methode == 'find') {
-			$records = $this->db->get_where('dir_records', ['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id])->result();
+			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id]);
 			$EOF = false;
 		}
 
@@ -273,27 +278,24 @@ class Documents_list extends Admin_Controller
 
 	public function compliances()
 	{
-		$reference = $this->db->get_where('view_references')->result();
+		$reference = $this->List->getAllReferences();
 		$ArrUsers = [];
-		$users       = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
+		$users       = $this->List->getActiveUsers($this->company);
 
 		foreach ($users as $usr) {
 			$ArrUsers[$usr->id_user] = $usr->full_name;
 		}
 
 		$this->template->set([
-			// 'regulations'   => $regulations,
 			'reference'     => $reference,
 			'ArrUsers'       => $ArrUsers,
-			// 'reviews'       => $reviews,
-			// 'summary'       => $summary,
 		]);
 		$this->template->render('compliances/index');
 	}
 
 	public function view_compliance($id = null)
 	{
-		$review = $this->db->order_by('last_review', 'DESC')->get_where('compilation_reviews', ['reference_id' => $id])->row();
+		$review = $this->List->getComplianceReview($id);
 		$this->template->set([
 			'review' 	=> $review,
 		]);
@@ -309,9 +311,8 @@ class Documents_list extends Admin_Controller
 		if ($this->input->get('f') && $this->input->get('sub')) {
 			$f 				= $this->input->get('f');
 			$sub 			= $this->input->get('sub');
-			$materi 		= $this->db->get_where('materi_details', ['id' => $f])->result();
-
-			$dtlData 	= $this->db->get_where('materi_detail_data', ['materi_detail_id' => $sub, 'status' => '1'])->result();
+			$materi 		= $this->List->getMateriById($f);
+			$dtlData 		= $this->List->getMateriData($sub);
 
 			$category 		= [
 				'MAT' => 'Materi Training',
@@ -337,8 +338,8 @@ class Documents_list extends Admin_Controller
 		};
 
 
-		$materi 		= $this->db->get_where('materi', ['status' => '1', 'company_id' => $this->company])->result();
-		$detail 		= $this->db->get_where('materi_details', ['status' => '1', 'company_id' => $this->company])->result();
+		$materi 		= $this->List->getMateri($this->company);
+		$detail 		= $this->List->getMateriDetails($this->company);
 		$ArrDetail 		= [];
 
 		foreach ($detail as $dtl) {
@@ -355,17 +356,16 @@ class Documents_list extends Admin_Controller
 
 	public function show_materi($id = null)
 	{
+		$file 			= $this->List->getMateriFile($id);
+		if (!$file) return;
 
-
-		$file 			= $this->db->get_where('materi_detail_data', ['id' => $id])->row();
 		$array 			= explode('.', $file->document);
 		$extension 		= end($array);
 
 		$this->template->set([
 			'file' 		=> $file,
 			'ext' 		=> $extension,
-			// 'dir' 		=> $parent,
-			'company' 		=> $this->company,
+			'company' 	=> $this->company,
 		]);
 		$this->template->render('materi/show');
 	}
@@ -376,11 +376,10 @@ class Documents_list extends Admin_Controller
 	public function guides()
 	{
 		if ($this->input->get('f')) {
-			$f 				= $this->input->get('f');
-			// $sub 			= $this->input->get('sub');
-			$guide_details 		= $this->db->get_where('guide_details', ['id' => $f, 'company_id' => $this->company])->result();
-			$methode 		= ['INS' => 'Insitu', 'LAB' => 'Inlab'];
-			$dtlData 	= $this->db->get_where('view_guides_detail_data', ['guide_detail_id' => $f, 'company_id' => $this->company])->result();
+			$f 					= $this->input->get('f');
+			$guide_details 		= $this->List->getGuideDetailByIdIK($f, $this->company);
+			$methode 			= ['INS' => 'Insitu', 'LAB' => 'Inlab'];
+			$dtlData 			= $this->List->getGuideDetailDataIK($f, $this->company);
 
 			$ArrDtlData = [];
 			foreach ($dtlData as $dtl) {
@@ -390,7 +389,7 @@ class Documents_list extends Admin_Controller
 			$this->template->set([
 				'guide_details' => $guide_details,
 				'ArrDtlData' 	=> $ArrDtlData,
-				'methode' 	=> $methode,
+				'methode' 		=> $methode,
 			]);
 
 			$this->template->render('guides/list');
@@ -398,8 +397,8 @@ class Documents_list extends Admin_Controller
 		};
 
 
-		$guides 		= $this->db->get_where('guides', ['status' => '1', 'company_id' => $this->company])->result();
-		$details 		= $this->db->get_where('guide_details', ['status' => '1', 'company_id' => $this->company])->result();
+		$guides 		= $this->List->getGuidesIK($this->company);
+		$details 		= $this->List->getGuideDetailsIK($this->company);
 		$ArrDetail 		= [];
 
 		foreach ($details as $dtl) {
@@ -415,7 +414,7 @@ class Documents_list extends Admin_Controller
 
 	public function view_guides($id = null)
 	{
-		$data 			= $this->db->get_where('guide_documents', ['guide_detail_data_id' => $id,'status'=>'1'])->result();
+		$data 			= $this->List->getGuideDocuments($id);
 		$ArrDoc = [];
 		foreach ($data as $d) {
 			$ArrDoc[$d->file_type][] = $d;
@@ -434,7 +433,7 @@ class Documents_list extends Admin_Controller
 
 	public function view_video($id = null)
 	{
-		$data 			= $this->db->get_where('view_guides_detail_data', ['id' => $id])->row();
+		$data 			= $this->List->getGuideVideoData($id);
 		$video 			= 'directory/MASTER_GUIDES/video/' . $data->company_id . '/' . $data->video;
 
 		$this->template->set([
@@ -446,7 +445,9 @@ class Documents_list extends Admin_Controller
 
 	public function show_file_guides($id = null)
 	{
-		$file 			= $this->db->get_where('guide_detail_data', ['id' => $id])->row();
+		$file 			= $this->List->getGuideDetailDataByIdIK($id);
+		if (!$file) return;
+
 		$array 			= explode('.', $file->document);
 		$extension 		= end($array);
 
@@ -460,7 +461,9 @@ class Documents_list extends Admin_Controller
 
 	public function view_file_guides($id = null)
 	{
-		$file 			= $this->db->get_where('guide_documents', ['id' => $id])->row();
+		$file 			= $this->List->getGuideDocumentById($id);
+		if (!$file) return;
+
 		$array 			= explode('.', $file->document);
 		$extension 		= end($array);
 
@@ -477,13 +480,17 @@ class Documents_list extends Admin_Controller
 
 	public function manual()
 	{
-		$thisData 		= $this->db->get_where('directory', ['description' => 'MANUAL', 'status !=' => 'DEL', 'company_id' => $this->company])->row();
-		$Data 			= $this->db->get_where('directory', ['parent_id' => $thisData->id, 'flag_type' => 'FOLDER', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$DataFile 			= $this->db->get_where('directory', ['parent_id' => $thisData->id, 'flag_type' => 'FILE', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
+		$thisData 		= $this->List->getRecordsFiltered(['description' => 'MANUAL', 'status !=' => 'DEL', 'company_id' => $this->company])[0] ?? null;
+		if (!$thisData) {
+			redirect('dashboard');
+		}
 
-		$listDataFolder = $this->db->get_where('directory', ['flag_type' => 'FOLDER', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataFile 	= $this->db->get_where('directory', ['flag_type' => 'FILE', 'status' => 'PUB', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataLink 	= $this->db->get_where('directory', ['flag_type' => 'LINK', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
+		$Data 			= $this->List->getSubFolders($thisData->id, $this->company);
+		$DataFile 		= $this->List->getSubFiles($thisData->id, $this->company);
+
+		$listDataFolder = $this->List->getAllFolders($this->company);
+		$listDataFile 	= $this->List->getAllPublishedFiles($this->company);
+		$listDataLink 	= $this->List->getAllLinks($this->company);
 
 		$ArrDataFolder = [];
 		foreach ($listDataFolder as $listFolder) {
@@ -498,7 +505,7 @@ class Documents_list extends Admin_Controller
 			$ArrDataLink[$listLink->parent_id][] = $listLink;
 		}
 
-		$dt 		= $this->db->get_where('directory', ['id' => '00062c7fd13bd121'])->row_array();
+		$dt 			= $this->List->getDirectoryByIdArray('00062c7fd13bd121');
 		$buildBreadcumb = $this->buildBreadcumb($dt);
 
 		$this->template->set('MainData', $this->MainData);
@@ -516,10 +523,10 @@ class Documents_list extends Admin_Controller
 
 	public function show_manual($id = null)
 	{
-		$file 		= $this->db->get_where('directory', ['id' => $id])->row();
-		// pre
-		$dir_name 	= $this->db->get_where('directory', ['id' => $file->parent_id])->row()->name;
-		$history	= $this->db->order_by('updated_at', 'ASC')->get_where('directory_log', ['directory_id' => $id])->result();
+		$file 		= $this->List->getDirectoryById($id);
+		$parent 	= $this->List->getDirectoryById($file->parent_id);
+		$dir_name 	= $parent ? $parent->name : '';
+		$history	= $this->List->getHistory($id);
 		$type 		= 'MANUAL';
 
 		$this->template->set('type', $type);
@@ -533,12 +540,12 @@ class Documents_list extends Admin_Controller
 
 	public function find_manual($id)
 	{
-		$thisData 		= $this->db->get_where('directory', ['id' => $id])->row();
-		$Data 			= $this->db->get_where('directory', ['parent_id' => $id, 'flag_type' => 'FOLDER', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$DataFile 			= $this->db->get_where('directory', ['parent_id' => $id, 'flag_type' => 'FILE', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataFolder = $this->db->get_where('directory', ['flag_type' => 'FOLDER', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataFile 	= $this->db->get_where('directory', ['flag_type' => 'FILE', 'status' => 'PUB', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
-		$listDataLink 	= $this->db->get_where('directory', ['flag_type' => 'LINK', 'status !=' => 'DEL', 'company_id' => $this->company])->result();
+		$thisData 		= $this->List->getDirectoryById($id);
+		$Data 			= $this->List->getSubFolders($id, $this->company);
+		$DataFile 		= $this->List->getSubFiles($id, $this->company);
+		$listDataFolder = $this->List->getAllFolders($this->company);
+		$listDataFile 	= $this->List->getAllPublishedFiles($this->company);
+		$listDataLink 	= $this->List->getAllLinks($this->company);
 
 		$ArrDataFolder = [];
 		foreach ($listDataFolder as $listFolder) {
@@ -553,7 +560,7 @@ class Documents_list extends Admin_Controller
 			$ArrDataLink[$listLink->parent_id][] = $listLink;
 		}
 
-		$dt 		= $this->db->get_where('directory', ['id' => $id])->row_array();
+		$dt 			= $this->List->getDirectoryByIdArray($id);
 		$buildBreadcumb = $this->buildBreadcumb($dt);
 
 		$this->template->set('MainData', $this->MainData);
@@ -574,7 +581,7 @@ class Documents_list extends Admin_Controller
 
 	public function cross()
 	{
-		$data		= $this->db->get_where('view_cross_references', ['company_id' => $this->company])->result();
+		$data		= $this->List->getCrossReferences($this->company);
 		$this->template->set('data', $data);
 		$this->template->set('company_id', $this->company);
 		$this->template->render('cross/index');
@@ -582,13 +589,13 @@ class Documents_list extends Admin_Controller
 
 	public function cross_pasal_proses($id = '')
 	{
-		$Data 			= $this->db->get_where('view_cross_references', ['company_id' => $this->company, 'id' => $id])->row();
-		$Detail 		= $this->db->get_where('requirement_details', ['requirement_id' => $Data->standard_id])->result();
-		$DetailCross	= $this->db->get_where('view_cross_reference_details', ['reference_id' => $id])->result_array();
+		$Data 			= $this->List->getCrossReferenceById($id, $this->company);
+		$Detail 		= $this->List->getRequirementDetails($Data->standard_id);
+		$DetailCross	= $this->List->getCrossReferenceDetails($id);
 		$Procedure		= array_combine(array_column($DetailCross, 'chapter_id'), array_column($DetailCross, 'procedure_id'));
 		$other_docs 	= array_combine(array_column($DetailCross, 'chapter_id'), array_column($DetailCross, 'other_docs'));
 
-		$procedures 	= $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL'])->result();
+		$procedures 	= $this->List->getRecordsFiltered(['company_id' => $this->company, 'status !=' => 'DEL']);
 		$list_procedure = [];
 		foreach ($procedures as $pro) {
 			$list_procedure[$pro->id] = $pro->name;
@@ -608,34 +615,17 @@ class Documents_list extends Admin_Controller
 
 	public function cross_process_pasal($id = '')
 	{
-		$requirement = $this->db->get_where('requirements', ['company_id' => $this->company, 'id' => $id])->row();
-		$procedures 		= $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL'])->result();
+		$requirement = $this->List->getRequirementById($id, $this->company);
+		$procedures  = $this->List->getRecordsFiltered(['company_id' => $this->company, 'status !=' => 'DEL']);
 
 		$Data = [];
 		foreach ($procedures as $pr) {
-			$this->db->select('chapter,procedure_id,requirement_id')->from('view_cross_reference_details');
-			$this->db->where("find_in_set($pr->id, procedure_id)");
-			$this->db->where("company_id", $this->company);
-			$this->db->where("requirement_id", $id);
-			$Data[$pr->id] = $this->db->get()->result();
+			$Data[$pr->id] = $this->List->getCrossReferenceByProcedureAndRequirement($pr->id, $id, $this->company);
 		}
-
-
-		// $ArrData = [];
-		// foreach ($Data as $dt) {
-		// 	$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
-		// 	$ArrData['standards'][$dt->requirement_id][] = $dt;
-		// }
-
-		// $ArrStd = [];
-		// foreach ($Data as $dtstd) {
-		// 	$ArrStd[$dtstd->requirement_id] = $dtstd;
-		// }
 
 		$this->template->set([
 			'Data' 			=> $Data,
 			'requirement' 	=> $requirement,
-			// 'ArrStd' 		=> $ArrStd,
 			'procedures' 	=> $procedures,
 		]);
 
@@ -645,26 +635,15 @@ class Documents_list extends Admin_Controller
 
 	public function all_cross()
 	{
-		$requirement  = $this->db->get_where('view_cross_references', ['company_id' => $this->company])->result();
-		$procedures   = $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL'])->result();
+		$requirement  = $this->List->getCrossReferences($this->company);
+		$procedures   = $this->List->getRecordsFiltered(['company_id' => $this->company, 'status !=' => 'DEL']);
 
 		$Data = [];
 		foreach ($requirement as $req) {
 			foreach ($procedures as $pr) {
-				$this->db->select('chapter,procedure_id,requirement_id')->from('view_cross_reference_details');
-				$this->db->where("find_in_set($pr->id, procedure_id)");
-				$this->db->where("company_id", $this->company);
-				$this->db->where("requirement_id", $req->standard_id);
-				$Data[$req->standard_id][$pr->id] = $this->db->get()->result();
+				$Data[$req->standard_id][$pr->id] = $this->List->getCrossReferenceByProcedureAndRequirement($pr->id, $req->standard_id, $this->company);
 			}
 		}
-
-
-		// $ArrData = [];
-		// foreach ($Data as $dt) {
-		// 	$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
-		// 	$ArrData['standards'][$dt->requirement_id][] = $dt;
-		// }
 
 		$ArrPro = [];
 		foreach ($procedures as $p) {

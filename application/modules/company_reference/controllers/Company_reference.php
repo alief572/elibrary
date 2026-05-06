@@ -167,8 +167,15 @@ class Company_reference extends Admin_Controller
 	}
 
 	/* New Compliance */
-	public function select_subjects($branch = null, $reference_id)
+	public function select_subjects($branch = null, $reference_id = null)
 	{
+		if (!$reference_id) {
+			// Handle the case where branch might actually be the reference_id if only 1 param passed
+			if ($branch) {
+				$reference_id = $branch;
+				$branch = null;
+			}
+		}
 		$this->template->render('select_subjects', [
 			'subjects' => $this->ComplianceModel->getAllSubjects(),
 			'exist_subjects' => $this->ComplianceModel->getExistingSubjects($this->company, $reference_id),
@@ -198,5 +205,17 @@ class Company_reference extends Admin_Controller
 		}
 
 		echo json_encode($Return);
+	}
+
+	public function delete_subject()
+	{
+		$id = $this->input->post('id');
+
+		if (!$id) {
+			echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
+			return;
+		}
+
+		echo json_encode($this->ComplianceModel->deleteSubject($id));
 	}
 }
