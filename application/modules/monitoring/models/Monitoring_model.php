@@ -100,7 +100,7 @@ class Monitoring_model extends BF_Model
                 'new_status'   => $data['status'],
                 'old_status'   => $thisData->status,
                 'doc_type'     => 'Procedure',
-                'note'         => $data['note'] ?? ''
+                'note'         => isset($data['note']) ? $data['note'] : ''
             ];
             $this->_update_history($log);
             return true;
@@ -126,7 +126,7 @@ class Monitoring_model extends BF_Model
                 'new_status'   => $data['status'],
                 'old_status'   => $thisData->status,
                 'doc_type'     => 'Procedure',
-                'note'         => $data['note'] ?? ''
+                'note'         => isset($data['note']) ? $data['note'] : ''
             ];
             $this->_update_history($log);
             return true;
@@ -152,7 +152,7 @@ class Monitoring_model extends BF_Model
                 'new_status'   => $data['status'],
                 'old_status'   => $thisData->status,
                 'doc_type'     => 'Procedure',
-                'note'         => $data['note'] ?? ''
+                'note'         => isset($data['note']) ? $data['note'] : ''
             ];
             $this->_update_history($log);
             return true;
@@ -177,7 +177,7 @@ class Monitoring_model extends BF_Model
                 'new_status'   => $data['status'],
                 'old_status'   => $thisData->status,
                 'doc_type'     => 'Procedure',
-                'note'         => $data['note'] ?? ''
+                'note'         => isset($data['note']) ? $data['note'] : ''
             ];
             $this->_update_history($log);
             return true;
@@ -200,10 +200,10 @@ class Monitoring_model extends BF_Model
 
             $log = [
                 'directory_id' => $data['id'],
-                'new_status'   => $data['status'] ?? $thisData->status,
+                'new_status'   => isset($data['status']) ? $data['status'] : $thisData->status,
                 'old_status'   => $thisData->status,
                 'doc_type'     => 'Procedure',
-                'note'         => $data['note'] ?? ''
+                'note'         => isset($data['note']) ? $data['note'] : ''
             ];
             $this->_update_history($log);
             return true;
