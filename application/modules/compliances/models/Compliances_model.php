@@ -84,22 +84,42 @@ class Compliances_model extends BF_Model
 
     public function getComplianceDetailsByReference($referenceId)
     {
-        return $this->db->get_where('view_compliance_details', ['reference_id' => $referenceId])->result();
+        $query = $this->db->get_where('view_compliance_details', ['reference_id' => $referenceId]);
+        return $query ? $query->result() : [];
     }
 
     public function getComplianceDetailsBySubject($subject)
     {
-        return $this->db->get_where('view_compliance_details', ['subject' => $subject])->result();
+        $query = $this->db->get_where('view_compliance_details', ['subject' => $subject]);
+        return $query ? $query->result() : [];
     }
 
     public function getComplianceDetailsFiltered($where)
     {
-        return $this->db->get_where('view_compliance_details', $where)->result();
+        if (isset($where['subject'])) {
+            $this->db->select('vcd.*, rr.subject');
+            $this->db->from('view_compliance_details vcd');
+            $this->db->join('ref_regulations rr', 'vcd.regulation_id = rr.regulation_id AND vcd.reference_id = rr.reference_id', 'left');
+            $this->db->where('rr.subject', $where['subject']);
+            unset($where['subject']);
+
+            if (!empty($where)) {
+                foreach ($where as $k => $v) {
+                    $this->db->where("vcd.$k", $v);
+                }
+            }
+            $query = $this->db->get();
+            return $query ? $query->result() : [];
+        }
+
+        $query = $this->db->get_where('view_compliance_details', $where);
+        return $query ? $query->result() : [];
     }
 
     public function getCompOpports($referenceId)
     {
-        return $this->db->get_where('view_comp_opports', ['reference_id' => $referenceId])->result();
+        $query = $this->db->get_where('view_comp_opports', ['reference_id' => $referenceId]);
+        return $query ? $query->result() : [];
     }
 
     public function getActiveUsers($companyId)
