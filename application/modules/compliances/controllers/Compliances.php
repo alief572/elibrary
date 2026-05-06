@@ -640,8 +640,9 @@ class Compliances extends Admin_Controller
             $this->Compliances_model->updateReferenceReview($id, $count, $Review['last_review'], $this->auth->user_id());
 
             if ($this->db->trans_status() === FALSE) {
+                $error = $this->db->error();
                 $this->db->trans_rollback();
-                echo json_encode(['status' => 0, 'msg' => 'Compliance Failed save. Please Try Again!']);
+                echo json_encode(['status' => 0, 'msg' => 'Compliance Failed save. Please Try Again! Error: ' . (isset($error['message']) ? $error['message'] : 'Unknown error')]);
             } else {
                 $this->db->trans_commit();
                 $mpdf->WriteHTML($page);
