@@ -205,7 +205,7 @@ class Records extends Admin_Controller
 			}
 			unset($data['old_file'], $data['type']);
 			$success = $this->RecModel->saveFile('dir_forms', $data, $this->auth->user_id());
-			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => ($data['status'] ?? 'OPN'), 'doc_type' => 'Form', 'note' => 'Upload file']);
+			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Form', 'note' => 'Upload file']);
 			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File Form successfully saved.' : 'File Form failed to save.')]);
 		}
 	}
@@ -273,7 +273,7 @@ class Records extends Admin_Controller
 		$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company;
 		unset($data['old_file'], $data['type']);
 		$success = $this->RecModel->saveFile('dir_guides', $data, $this->auth->user_id());
-		if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => ($data['status'] ?? 'OPN'), 'doc_type' => 'IK', 'note' => 'Upload file']);
+		if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'IK', 'note' => 'Upload file']);
 		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File IK successfully saved.' : 'File IK failed to save.')]);
 	}
 
@@ -385,7 +385,7 @@ class Records extends Admin_Controller
 		$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
 		unset($data['old_file'], $data['type']);
 		$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
-		if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => ($data['status'] ?? 'OPN'), 'doc_type' => 'Record', 'note' => 'Upload file']);
+		if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Record', 'note' => 'Upload file']);
 		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File Record successfully saved.' : 'File Record failed to save.')]);
 	}
 
@@ -448,7 +448,7 @@ class Records extends Admin_Controller
 		foreach ($Cross as $dtstd) { $ArrStd[$dtstd->requirement_id] = $dtstd; }
 		$allProcedure = $this->RecModel->getActiveProcedures($this->company);
 		$company = $this->RecModel->getCompany($this->company);
-		$this->template->set(['procedure' => $procedure, 'detail' => $flowDetail, 'ArrUsr' => $ArrUsr, 'ArrJab' => $ArrJab, 'ArrForms' => $ArrForms, 'ArrGuides' => $ArrGuides, 'Data' => $Cross, 'ArrData' => $ArrData, 'ArrStd' => $ArrStd, 'allProcedure' => $allProcedure, 'company_name' => ($company->nm_perusahaan ?? '')]);
+		$this->template->set(['procedure' => $procedure, 'detail' => $flowDetail, 'ArrUsr' => $ArrUsr, 'ArrJab' => $ArrJab, 'ArrForms' => $ArrForms, 'ArrGuides' => $ArrGuides, 'Data' => $Cross, 'ArrData' => $ArrData, 'ArrStd' => $ArrStd, 'allProcedure' => $allProcedure, 'company_name' => (isset($company->nm_perusahaan) ? $company->nm_perusahaan : '')]);
 		$data = $this->template->load_view('printout'); $mpdf->WriteHTML($data); $mpdf->Output();
 	}
 
@@ -479,6 +479,6 @@ class Records extends Admin_Controller
 			$this->upload->initialize($config); if (!$this->upload->do_upload('flow_file')) return ['error' => 1, 'error_msg' => $this->upload->display_errors()];
 			$fileInfo = $this->upload->data();
 		}
-		return ['image1' => $dataInfo[0]['file_name'] ?? '', 'image2' => $dataInfo[1]['file_name'] ?? '', 'image3' => $dataInfo[2]['file_name'] ?? '', 'flow_file' => $fileInfo['file_name']];
+		return ['image1' => isset($dataInfo[0]['file_name']) ? $dataInfo[0]['file_name'] : '', 'image2' => isset($dataInfo[1]['file_name']) ? $dataInfo[1]['file_name'] : '', 'image3' => isset($dataInfo[2]['file_name']) ? $dataInfo[2]['file_name'] : '', 'flow_file' => $fileInfo['file_name']];
 	}
 }

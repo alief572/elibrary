@@ -480,7 +480,8 @@ class Documents_list extends Admin_Controller
 
 	public function manual()
 	{
-		$thisData 		= $this->List->getRecordsFiltered(['description' => 'MANUAL', 'status !=' => 'DEL', 'company_id' => $this->company])[0] ?? null;
+		$res = $this->List->getRecordsFiltered(['description' => 'MANUAL', 'status !=' => 'DEL', 'company_id' => $this->company]);
+		$thisData = isset($res[0]) ? $res[0] : null;
 		if (!$thisData) {
 			redirect('dashboard');
 		}
