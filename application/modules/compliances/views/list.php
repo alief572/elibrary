@@ -142,7 +142,7 @@
 														<tfoot>
 															<tr>
 																<th>% Compliance</th>
-																<th class="text-center"><?= (isset($C) && isset($NC)) ? round(($C / ($C + $NC)) * 100) : '0'; ?>%</th>
+																<th class="text-center"><?= (isset($C) && isset($NC) && ($C + $NC) > 0) ? round(($C / ($C + $NC)) * 100) : '0'; ?>%</th>
 															</tr>
 														</tfoot>
 													</table>
