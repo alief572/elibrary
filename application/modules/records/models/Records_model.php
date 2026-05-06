@@ -106,6 +106,15 @@ class Records_model extends BF_Model
         return $this->db->order_by('updated_at', 'ASC')->get_where('view_directory_log', ['directory_id' => $id])->result();
     }
 
+    public function getSubRecords($procedureId, $parentId)
+    {
+        return $this->db->get_where('dir_records', [
+            'procedure_id' => $procedureId,
+            'parent_id'    => $parentId,
+            'status !='    => 'DEL'
+        ])->result();
+    }
+
     /* SAVE / UPDATE METHODS */
 
     public function saveProcedure($data, $dataFlow, $userId)
@@ -250,5 +259,26 @@ class Records_model extends BF_Model
         $this->db->where("find_in_set($procedureId, procedure_id)");
         $this->db->where("company_id", $companyId);
         return $this->db->get()->result();
+    }
+
+    public function getFileById($table, $id)
+    {
+        return $this->db->get_where($table, ['id' => $id])->row();
+    }
+
+    public function saveFolder($data, $userId, $companyId)
+    {
+        $data['company_id'] = $companyId;
+        $data['flag_type']  = 'FOLDER';
+
+        if (isset($data['id']) && $data['id']) {
+            $data['modified_by'] = $userId;
+            $data['modified_at'] = date('Y-m-d H:i:s');
+            return $this->db->update('dir_records', $data, ['id' => $data['id']]);
+        } else {
+            $data['created_by'] = $userId;
+            $data['created_at'] = date('Y-m-d H:i:s');
+            return $this->db->insert('dir_records', $data);
+        }
     }
 }
