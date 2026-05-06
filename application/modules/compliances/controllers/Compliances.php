@@ -629,20 +629,26 @@ class Compliances extends Admin_Controller
             $page = $this->load->view('export-pdf', compact('reference', 'regulations', 'ArrReg', 'ArrOpports', 'cat', 'ArrUsers', 'summary', 'status'), TRUE);
 
             $Review = [
-                'reference_id' => $id, 'company_id' => $reference->company_id, 'last_review' => date('Y-m-d H:i:s'),
-                'subject' => $subject, 'total_compliance' => $TC, 'total_not_compliance' => $TNC, 'total_not_applicable' => $TNA,
+                'reference_id' => $id, 
+                'company_id' => $reference->company_id, 
+                'last_review' => date('Y-m-d'),
+                'subject' => $subject, 
+                'total_compliance' => $TC, 
+                'total_not_compliance' => $TNC, 
+                'total_not_applicable' => $TNA,
                 'document' => $rand_text . '.pdf',
+                'review_by' => $this->auth->user_id(),
             ];
 
             $this->db->trans_begin();
             $this->Compliances_model->insertReview($Review);
             $count = count($this->Compliances_model->getCompilationReviews($id));
-            $this->Compliances_model->updateReferenceReview($id, $count, $Review['last_review'], $this->auth->user_id());
+            // $this->Compliances_model->updateReferenceReview($id, $count, $Review['last_review'], $this->auth->user_id());
 
             if ($this->db->trans_status() === FALSE) {
                 $error = $this->db->error();
                 $this->db->trans_rollback();
-                echo json_encode(['status' => 0, 'msg' => 'Compliance Failed save. Please Try Again! Error: ' . (isset($error['message']) ? $error['message'] : 'Unknown error')]);
+                echo json_encode(['status' => 0, 'msg' => 'Compliance Failed save. Please Try Again! Error: ' . json_encode($error)]);
             } else {
                 $this->db->trans_commit();
                 $mpdf->WriteHTML($page);
