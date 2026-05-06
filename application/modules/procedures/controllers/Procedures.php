@@ -357,7 +357,7 @@ class Procedures extends Admin_Controller
 
 		$success = $this->ProModel->saveFile($table, $data, $this->auth->user_id());
 		if ($success) {
-			$this->ProModel->updateHistory(['directory_id' => $data['id'], 'new_status' => ($data['status'] ?? 'OPN'), 'doc_type' => ucfirst($type), 'note' => 'Upload file']);
+			$this->ProModel->updateHistory(['directory_id' => $data['id'], 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => ucfirst($type), 'note' => 'Upload file']);
 			echo json_encode(['status' => 1, 'msg' => "File $type successfully uploaded."]);
 		} else {
 			echo json_encode(['status' => 0, 'msg' => "File $type failed to upload."]);
@@ -398,7 +398,7 @@ class Procedures extends Admin_Controller
 		$Data = [
 			'procedure' => $procedure, 'detail' => $flowDetail, 'ArrUsr' => $ArrUsr, 'ArrJab' => $ArrJab,
 			'ArrForms' => $ArrForms, 'ArrGuides' => $ArrGuides, 'Data' => $Cross, 'ArrData' => $ArrData,
-			'ArrStd' => $ArrStd, 'allProcedure' => $allProcedure, 'company_name' => ($company->nm_perusahaan ?? ''),
+			'ArrStd' => $ArrStd, 'allProcedure' => $allProcedure, 'company_name' => (isset($company->nm_perusahaan) ? $company->nm_perusahaan : ''),
 		];
 
 		$this->template->set($Data);
@@ -437,6 +437,6 @@ class Procedures extends Admin_Controller
 			$fileInfo = $this->upload->data();
 		}
 
-		return ['image1' => $dataInfo[0]['file_name'] ?? '', 'image2' => $dataInfo[1]['file_name'] ?? '', 'image3' => $dataInfo[2]['file_name'] ?? '', 'flow_file' => $fileInfo['file_name']];
+		return ['image1' => isset($dataInfo[0]['file_name']) ? $dataInfo[0]['file_name'] : '', 'image2' => isset($dataInfo[1]['file_name']) ? $dataInfo[1]['file_name'] : '', 'image3' => isset($dataInfo[2]['file_name']) ? $dataInfo[2]['file_name'] : '', 'flow_file' => $fileInfo['file_name']];
 	}
 }
