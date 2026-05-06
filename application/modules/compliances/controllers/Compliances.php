@@ -20,7 +20,8 @@ class Compliances extends Admin_Controller
         $this->load->helper('download');
         $this->load->library(array('upload', 'Image_lib'));
         $this->load->model(array(
-            'Aktifitas/aktifitas_model'
+            'Aktifitas/aktifitas_model',
+            'compliances/Compliances_model',
         ));
 
         $this->template->set([
@@ -84,13 +85,13 @@ class Compliances extends Admin_Controller
             $reviews = '';
             $summary = '';
 
-            $reference = $this->db->get_where('view_references', ['id' => $_GET['b']])->row();
+            $reference = $this->Compliances_model->getReferenceById($_GET['b']);
             if ($reference) {
-                $regulations    = $this->db->get_where('view_ref_regulations', ['reference_id' => $reference->id])->result();
-                $reviews        = $this->db->get_where('compilation_reviews', ['reference_id' => $reference->id])->result();
-                $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-                $summary        = $this->db->order_by('last_review', 'DESC')->get_where('compilation_reviews', ['reference_id' => $reference->id])->row();
-                $subjects       = $this->db->get_where('view_compliance_subjects', ['reference_id' => $reference->id])->result();
+                $regulations    = $this->Compliances_model->getRefRegulations($reference->id);
+                $reviews        = $this->Compliances_model->getCompilationReviews($reference->id);
+                $users          = $this->Compliances_model->getActiveUsers($this->company);
+                $summary        = $this->Compliances_model->getLatestReview($reference->id);
+                $subjects       = $this->Compliances_model->getComplianceSubjects($reference->id);
 
                 foreach ($users as $usr) {
                     $ArrUsers[$usr->id_user] = $usr->full_name;
@@ -113,12 +114,8 @@ class Compliances extends Admin_Controller
             ]);
             $this->template->render('list');
         } else {
-            $listCompliance = $this->db->get_where('view_references', ['company_id' => $this->company])->result();
-            $ArrList = [];
-            if ($listCompliance) foreach ($listCompliance as $k => $v) {
-                $ArrList[] = $v;
-            }
-            $this->template->render('index', ['list' => $ArrList]);
+            $listCompliance = $this->Compliances_model->getReferences($this->company);
+            $this->template->render('index', ['list' => $listCompliance]);
         }
     }
 
@@ -126,8 +123,8 @@ class Compliances extends Admin_Controller
     {
         $data = [];
         if ($id) {
-            $reference = $this->db->get_where('view_references', ['id' => $id])->row();
-            $data = $this->db->get_where('view_compliances', ['reference_id' => $id, 'company_id' => $reference->company_id])->result();
+            $reference = $this->Compliances_model->getReferenceById($id);
+            $data = $this->Compliances_model->getCompliances($id, $reference->company_id);
         }
 
         $this->template->set([
@@ -146,12 +143,12 @@ class Compliances extends Admin_Controller
         $ArrPasal = [];
 
         if ($id) {
-            $compliance          = $this->db->get_where('view_compliances', ['id' => $id])->row();
+            $compliance          = $this->Compliances_model->getComplianceById($id);
 
             if ($compliance) {
-                $data            = $this->db->get_where('view_regulation_paragraphs', ['regulation_id' => $compliance->regulation_id])->result();
+                $data            = $this->Compliances_model->getRegulationParagraphs($compliance->regulation_id);
                 /* data phoaragraph */
-                $complianceDtl       = $this->db->get_where('compliance_details', ['regulation_id' => $compliance->regulation_id, 'reference_id' => $compliance->reference_id])->result();
+                $complianceDtl       = $this->Compliances_model->getComplianceDetails($compliance->regulation_id, $compliance->reference_id);
                 foreach ($complianceDtl as $dtl) {
                     $ArrCompl[$dtl->prgh_id] = $dtl;
                 }
@@ -160,13 +157,13 @@ class Compliances extends Admin_Controller
                     $ArrPasal[$dt->pasal_id][] = $dt;
                 }
 
-                $compOpports = $this->db->get_where('compliance_opports', ['regulation_id' => $compliance->regulation_id])->result();
+                $compOpports = $this->Compliances_model->getComplianceOpports($compliance->regulation_id);
                 foreach ($compOpports as $opp) {
                     $ArrOpports[$opp->prgh_id][] = $opp;
                 }
             }
 
-            $users               = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
+            $users               = $this->Compliances_model->getActiveUsers($this->company);
         }
 
         $this->template->set([
@@ -279,10 +276,11 @@ class Compliances extends Admin_Controller
     //         $this->template->render('list-desc');
     //     }
     // }
-
     public function save()
     {
         $data       = $this->input->post();
+        $detailComp = [];
+        $detailOpport = [];
 
         if (isset($data['detail'])) {
             foreach ($data['detail'] as $key => $dtl) {
@@ -300,8 +298,6 @@ class Compliances extends Admin_Controller
                 ];
             }
         }
-
-
 
         if (isset($data['opport'])) {
             foreach ($data['opport'] as $key => $dtlOpp) {
@@ -324,70 +320,14 @@ class Compliances extends Admin_Controller
         }
 
         if ($data) {
-            $this->db->trans_begin();
-            if (isset($detailComp) && $detailComp) {
-                foreach ($detailComp as $dtlComp) {
-                    if ($dtlComp['id']) {
-                        $dtlComp['modified_at']        = date('Y-m-d H:i:s');
-                        $dtlComp['modified_by']        = $this->auth->user_id();
-                        $this->db->update('compliance_details', $dtlComp, ['id' => $dtlComp['id']]);
-                    } else {
-                        $dtlComp['created_at']        = date('Y-m-d H:i:s');
-                        $dtlComp['created_by']        = $this->auth->user_id();
-                        $this->db->insert('compliance_details', $dtlComp);
-                    }
-                }
-                // $this->db->insert_batch('compliance_details', $detailComp);
-            }
-
-            if (isset($detailOpport) && $detailOpport) {
-                foreach ($detailOpport as $k => $op) {
-                    if ($op['id']) {
-                        $op['modified_at']        = date('Y-m-d H:i:s');
-                        $op['modified_by']        = $this->auth->user_id();
-                        $this->db->update('compliance_opports', $op, ['id' => $op['id']]);
-                    } else {
-                        $op['created_at']        = date('Y-m-d H:i:s');
-                        $op['created_by']        = $this->auth->user_id();
-                        $this->db->insert('compliance_opports', $op);
-                    }
-                }
-            }
-
-            foreach ($data['detail'] as $dtl) {
-                $ArrStatus[$dtl['status']][] = $dtl;
-            }
-
-            $CMP = (isset($ArrStatus['CMP'])) ? count($ArrStatus['CMP']) : 0;
-            $NCM = (isset($ArrStatus['NCM'])) ? count($ArrStatus['NCM']) : 0;
-            $NAP = (isset($ArrStatus['NAP'])) ? count($ArrStatus['NAP']) : 0;
-
-            $this->db->update('ref_regulations', [
-                'last_update' => date('Y-m-d H:i:s'),
-                'total_compliance' => $CMP,
-                'total_not_compliance' => $NCM,
-                'total_not_applicable' => $NAP
-            ], ['id' => $data['compliance_id']]);
-
-            if ($this->db->trans_status() === FALSE) {
-                $this->db->trans_rollback();
-                $return        = array(
-                    'status'        => 0,
-                    'msg'            => 'Data Detail Compliance Failed save. Please Try Again!'
-                );
+            $success = $this->Compliances_model->saveComplianceData($data, $detailComp, $detailOpport, $this->auth->user_id());
+            if ($success) {
+                $return = ['status' => 1, 'msg' => 'Data Detail Compliance successfully saved. Thank you.'];
             } else {
-                $this->db->trans_commit();
-                $return        = array(
-                    'status'        => 1,
-                    'msg'            => 'Data Detail Compliance successfull saved. Thanks you.'
-                );
+                $return = ['status' => 0, 'msg' => 'Data Detail Compliance Failed to save. Please Try Again!'];
             }
         } else {
-            $this->db->trans_commit();
-            $return        = array(
-                'status'        => 0,
-                'msg'            => 'Data not valid. Please Try Again!'
-            );
+            $return = ['status' => 0, 'msg' => 'Data not valid. Please Try Again!'];
         }
         echo json_encode($return);
     }
@@ -395,66 +335,29 @@ class Compliances extends Admin_Controller
     public function saveFile()
     {
         $data = $this->input->post();
-
-        $data['company_id']        = $this->company;
         $DIR_COMP = $this->company;
-
-        // echo '<pre>';
-        // print_r($data);
-        // print_r($_FILES);
-        // echo '</pre>';
-        // exit;
-        $current_data = $this->db->get_where('compliance_details', ['id' => $data['id']])->row();
+        $current_data = $this->Compliances_model->getFileDataById($data['id']);
 
         if (($_FILES) && $_FILES['file']['name']) {
-            if (!is_dir('./directory/COMPLIANCE/' . $DIR_COMP)) {
-                mkdir('./directory/COMPLIANCE/' . $DIR_COMP, 0755, TRUE);
-                chmod("./directory/COMPLIANCE/" . $DIR_COMP, 0755);  // octal; correct value of mode
-                chown("./directory/COMPLIANCE/" . $DIR_COMP, 'www-data');
-            }
-            // $new_name 					= $this->fixForUri($data['description']);
-            $config['upload_path']          = "./directory/COMPLIANCE/$DIR_COMP"; //path folder
-            $config['allowed_types']        = 'pdf|xlsx|docx'; //type yang dapat diakses bisa anda sesuaikan
-            $config['encrypt_name']         = true; //Enkripsi nama yang terupload
-            // $config['file_name'] 		= $new_name;
+            $upload_path = "./directory/COMPLIANCE/$DIR_COMP";
+            if (!is_dir($upload_path)) mkdir($upload_path, 0755, TRUE);
 
+            $config = ['upload_path' => $upload_path, 'allowed_types' => 'pdf|xlsx|docx', 'encrypt_name' => true];
             $this->upload->initialize($config);
+
             if ($this->upload->do_upload('file')) {
                 $file = $this->upload->data();
-                $data['file']        = $file['file_name'];
-                $this->db->trans_begin();
-                $this->db->update('compliance_details', $data, ['id' => $data['id']]);
+                $success = $this->Compliances_model->updateComplianceFile($data['id'], $file['file_name']);
 
-                if ($this->db->trans_status() === FALSE) {
-                    $this->db->trans_rollback();
-                    $Return = [
-                        'status' => 0,
-                        'msg'     => "FAILED!! Can't save file. Please try again."
-                    ];
-                    echo json_encode($Return);
+                if ($success) {
+                    if ($current_data->file && file_exists($upload_path . '/' . $current_data->file)) unlink($upload_path . '/' . $current_data->file);
+                    echo json_encode(['status' => 1, 'msg' => "Save file successful."]);
                 } else {
-                    $this->db->trans_commit();
-                    if ($current_data->file) {
-                        if (file_exists("./directory/COMPLIANCE/$DIR_COMP/$current_data->file")) {
-                            unlink("./directory/COMPLIANCE/$DIR_COMP/$current_data->file");
-                        }
-                    }
-
-                    $Return = [
-                        'status' => 1,
-                        'msg'     => "Save file succesfull."
-                    ];
-                    echo json_encode($Return);
+                    echo json_encode(['status' => 0, 'msg' => "FAILED!! Can't save file. Please try again."]);
                 }
             } else {
-                $error_msg = $this->upload->display_errors();
-                $Return = [
-                    'status' => 0,
-                    'msg'     => $error_msg
-                ];
-                echo json_encode($Return);
-                return false;
-            };
+                echo json_encode(['status' => 0, 'msg' => $this->upload->display_errors()]);
+            }
         }
     }
 
@@ -524,172 +427,91 @@ class Compliances extends Admin_Controller
     public function view_compliance($id = null)
     {
         if ($id) {
-            $reference      = $this->db->get_where('view_references', ['id' => $id])->row();
-            $regulations    = $this->db->get_where('view_compliance_details', ['reference_id' => $reference->id])->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            $summary        = $this->db->order_by('last_review', 'DESC')->get_where('compilation_reviews', ['reference_id' => $reference->id])->row();
-            $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
+            $reference      = $this->Compliances_model->getReferenceById($id);
+            $regulations    = $this->Compliances_model->getComplianceDetailsByReference($reference->id);
+            $opports        = $this->Compliances_model->getCompOpports($reference->id);
+            $summary        = $this->Compliances_model->getLatestReview($reference->id);
+            $users          = $this->Compliances_model->getActiveUsers($this->company);
 
-            $cat            = [
-                'OPP' => 'Peluang',
-                'RSK' => 'Resiko'
-            ];
-
-            $status            = [
+            $cat            = ['OPP' => 'Peluang', 'RSK' => 'Resiko'];
+            $status         = [
                 'CMP' => '<span class="badge badge-success">Compliance</span>',
                 'NCM' => '<span class="badge badge-danger">Not Compliance</span>',
                 'NAP' => '<span class="badge badge-secondary">Not Applicable</span>'
             ];
 
-            $ArrReg         = [];
-            $ArrOpports     = [];
-            $ArrUsers       = [];
+            $ArrReg = $ArrOpports = $ArrUsers = [];
+            foreach ($regulations as $reg) { $ArrReg[$reg->regulation_id][] = $reg; }
+            foreach ($opports as $opr) { $ArrOpports[$opr->prgh_id][] = $opr; }
+            foreach ($users as $usr) { $ArrUsers[$usr->id_user] = $usr->full_name; }
 
-            foreach ($regulations as $reg) {
-                $ArrReg[$reg->regulation_id][] = $reg;
-            }
-
-            foreach ($opports as $opr) {
-                $ArrOpports[$opr->prgh_id][] = $opr;
-            }
-
-            foreach ($users as $usr) {
-                $ArrUsers[$usr->id_user] = $usr->full_name;
-            }
-
-            $Data = [
-                'reference'     => $reference,
-                'regulations'   => $regulations,
-                'ArrReg'        => $ArrReg,
-                'ArrOpports'    => $ArrOpports,
-                'cat'           => $cat,
-                'summary'       => $summary,
-                'ArrUsers'      => $ArrUsers,
-                'status'        => $status,
-            ];
-
-            $this->template->set($Data);
+            $this->template->set([
+                'reference' => $reference, 'regulations' => $regulations, 'ArrReg' => $ArrReg, 'ArrOpports' => $ArrOpports,
+                'cat' => $cat, 'summary' => $summary, 'ArrUsers' => $ArrUsers, 'status' => $status,
+            ]);
             $this->template->render('view_compilation');
         }
     }
 
     public function view_compliance_regulation($id = null)
     {
-        $data = [];
-        $complianceDtl = [];
-        $ArrOpports = [];
-        $ArrCompl = [];
-        $ArrPasal = [];
-        $ArrUsers = [];
+        $data = $complianceDtl = $ArrOpports = $ArrCompl = $ArrPasal = $ArrUsers = [];
 
         if ($id) {
-            $compliance          = $this->db->get_where('view_compliances', ['id' => $id])->row();
-
+            $compliance = $this->Compliances_model->getComplianceById($id);
             if ($compliance) {
-                $data            = $this->db->get_where('view_regulation_paragraphs', ['regulation_id' => $compliance->regulation_id])->result();
-                /* data phoaragraph */
-                $complianceDtl       = $this->db->get_where('compliance_details', ['regulation_id' => $compliance->regulation_id])->result();
-                foreach ($complianceDtl as $dtl) {
-                    $ArrCompl[$dtl->prgh_id] = $dtl;
-                }
-
-                foreach ($data as $dt) {
-                    $ArrPasal[$dt->pasal_id][] = $dt;
-                }
-
-                $compOpports = $this->db->get_where('compliance_opports', ['regulation_id' => $compliance->regulation_id])->result();
-                foreach ($compOpports as $opp) {
-                    $ArrOpports[$opp->prgh_id][] = $opp;
-                }
+                $data = $this->Compliances_model->getRegulationParagraphs($compliance->regulation_id);
+                $complianceDtl = $this->Compliances_model->getComplianceDetails($compliance->regulation_id, $compliance->reference_id);
+                foreach ($complianceDtl as $dtl) { $ArrCompl[$dtl->prgh_id] = $dtl; }
+                foreach ($data as $dt) { $ArrPasal[$dt->pasal_id][] = $dt; }
+                $compOpports = $this->Compliances_model->getComplianceOpports($compliance->regulation_id);
+                foreach ($compOpports as $opp) { $ArrOpports[$opp->prgh_id][] = $opp; }
             }
 
-            $users               = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-            foreach ($users as $usr) {
-                $ArrUsers[$usr->id_user] = $usr->full_name;
-            }
+            $users = $this->Compliances_model->getActiveUsers($this->company);
+            foreach ($users as $usr) { $ArrUsers[$usr->id_user] = $usr->full_name; }
         }
 
-        $status            = [
+        $status = [
             'CMP' => '<span class="badge badge-success">Compliance</span>',
             'NCM' => '<span class="badge badge-danger">Not Compliance</span>',
             'NAP' => '<span class="badge badge-secondary">Not Applicable</span>'
         ];
 
         $this->template->set([
-            'data'          => $data,
-            'ArrPasal'      => $ArrPasal,
-            'ArrUsers'      => $ArrUsers,
-            'compliance'    => $compliance,
-            'ArrCompl'      => $ArrCompl,
-            'ArrOpports'    => $ArrOpports,
-            'status'        => $status,
-
+            'data' => $data, 'ArrPasal' => $ArrPasal, 'ArrUsers' => $ArrUsers, 'compliance' => $compliance,
+            'ArrCompl' => $ArrCompl, 'ArrOpports' => $ArrOpports, 'status' => $status,
         ]);
-
         $this->template->render('view_comp_regulation');
     }
 
     public function show_compilation($id = null, $status = null)
     {
-
         if ($id) {
-            $reference      = $this->db->get_where('view_references', ['id' => $id])->row();
-            $where = [
-                'reference_id' => $reference->id,
-            ];
+            $reference = $this->Compliances_model->getReferenceById($id);
+            $where = ['reference_id' => $reference->id];
+            if ($status) { $where['status'] = $status; }
 
-            if ($status) {
-                $where = [
-                    'reference_id' => $reference->id,
-                    'status'    => $status
-                ];
-            }
+            $regulations    = $this->Compliances_model->getComplianceDetailsFiltered($where);
+            $opports        = $this->Compliances_model->getCompOpports($reference->id);
+            $users          = $this->Compliances_model->getActiveUsers($this->company);
 
-            $regulations    = $this->db->get_where('view_compliance_details', $where)->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            // $summary        = $this->db->order_by('last_review', 'DESC')->get_where('compilation_reviews', ['reference_id' => $reference->id])->row();
-            $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-
-            $cat            = [
-                'OPP' => 'Peluang',
-                'RSK' => 'Resiko'
-            ];
-
-            $status            = [
+            $cat            = ['OPP' => 'Peluang', 'RSK' => 'Resiko'];
+            $statusBadge    = [
                 'CMP' => '<span class="badge badge-success">Compliance</span>',
                 'NCM' => '<span class="badge badge-danger">Not Compliance</span>',
                 'NAP' => '<span class="badge badge-secondary">Not Applicable</span>'
             ];
 
-            $ArrReg         = [];
-            $ArrOpports     = [];
-            $ArrUsers       = [];
+            $ArrReg = $ArrOpports = $ArrUsers = [];
+            foreach ($regulations as $reg) { $ArrReg[$reg->regulation_id][] = $reg; }
+            foreach ($opports as $opr) { $ArrOpports[$opr->prgh_id][] = $opr; }
+            foreach ($users as $usr) { $ArrUsers[$usr->id_user] = $usr->full_name; }
 
-            foreach ($regulations as $reg) {
-                $ArrReg[$reg->regulation_id][] = $reg;
-            }
-
-            foreach ($opports as $opr) {
-                $ArrOpports[$opr->prgh_id][] = $opr;
-            }
-
-            foreach ($users as $usr) {
-                $ArrUsers[$usr->id_user] = $usr->full_name;
-            }
-
-            $Data = [
-                'reference'     => $reference,
-                'regulations'   => $regulations,
-                'ArrReg'        => $ArrReg,
-                'ArrOpports'    => $ArrOpports,
-                'cat'           => $cat,
-                // 'summary'       => $summary,
-                'ArrUsers'      => $ArrUsers,
-                'status'        => $status,
-            ];
-
-            $this->template->set($Data);
-            // $this->template->render('view_compilation');
+            $this->template->set([
+                'reference' => $reference, 'regulations' => $regulations, 'ArrReg' => $ArrReg, 'ArrOpports' => $ArrOpports,
+                'cat' => $cat, 'ArrUsers' => $ArrUsers, 'status' => $statusBadge,
+            ]);
             $this->template->render('show-compilation');
         }
     }
@@ -697,51 +519,27 @@ class Compliances extends Admin_Controller
     public function compilation($id = null)
     {
         if ($id) {
-            $reference      = $this->db->get_where('view_references', ['id' => $id])->row();
-            $regulations    = $this->db->get_where('view_compliance_details', ['reference_id' => $reference->id])->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
+            $reference = $this->Compliances_model->getReferenceById($id);
+            $regulations = $this->Compliances_model->getComplianceDetailsByReference($reference->id);
+            $opports = $this->Compliances_model->getCompOpports($reference->id);
+            $users = $this->Compliances_model->getActiveUsers($this->company);
 
-            $cat            = [
-                'OPP' => 'Peluang',
-                'RSK' => 'Resiko'
-            ];
-
-            $status            = [
+            $cat = ['OPP' => 'Peluang', 'RSK' => 'Resiko'];
+            $status = [
                 'CMP' => '<span class="badge badge-success">Compliance</span>',
                 'NCM' => '<span class="badge badge-danger">Not Compliance</span>',
                 'NAP' => '<span class="badge badge-secondary">Not Applicable</span>'
             ];
 
-            $ArrReg         = [];
-            $ArrOpports     = [];
-            $ArrUsers       = [];
+            $ArrReg = $ArrOpports = $ArrUsers = [];
+            foreach ($regulations as $reg) { $ArrReg[$reg->regulation_id][] = $reg; }
+            foreach ($opports as $opr) { $ArrOpports[$opr->prgh_id][] = $opr; }
+            foreach ($users as $usr) { $ArrUsers[$usr->id_user] = $usr->full_name; }
 
-            foreach ($regulations as $reg) {
-                $ArrReg[$reg->regulation_id][] = $reg;
-            }
-
-            foreach ($opports as $opr) {
-                $ArrOpports[$opr->prgh_id][] = $opr;
-            }
-
-            foreach ($users as $usr) {
-                $ArrUsers[$usr->id_user] = $usr->full_name;
-            }
-
-            $Data = [
-                'reference'     => $reference,
-                'regulations'   => $regulations,
-                'ArrReg'        => $ArrReg,
-                'ArrOpports'    => $ArrOpports,
-                'cat'           => $cat,
-                'ArrUsers'      => $ArrUsers,
-                'status'        => $status,
-            ];
-
-            $this->template->set($Data);
+            $this->template->set([
+                'reference' => $reference, 'regulations' => $regulations, 'ArrReg' => $ArrReg, 'ArrOpports' => $ArrOpports,
+                'cat' => $cat, 'ArrUsers' => $ArrUsers, 'status' => $status,
+            ]);
             $this->template->render('compilation');
         }
     }
@@ -793,275 +591,113 @@ class Compliances extends Admin_Controller
     public function history($subject = null)
     {
         if ($subject) {
-            $review    = $this->db->get_where('compilation_reviews', ['subject' => $subject])->result();
-            $Data = [
-                'review'   => $review,
-            ];
-
-            $this->template->set($Data);
+            $review = $this->Compliances_model->getCompilationReviewsBySubject($subject);
+            $this->template->set(['review' => $review]);
             $this->template->render('history-review');
         }
     }
 
     public function save_review()
     {
-        $mpdf           = new Mpdf();
-        $id             = $this->input->post('id');
-        $subject        = $this->input->post('subject');
-        $rand_text      = uniqid(date('YmdHis-'));
+        $mpdf = new Mpdf();
+        $id = $this->input->post('id');
+        $subject = $this->input->post('subject');
+        $rand_text = uniqid(date('YmdHis-'));
 
-        // create pdf
-        $mpdf->AddPage(
-            'L',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            0,
-            0,
-            0,
-            0,
-            '',
-            'Legal-L'
-        );
+        $mpdf->AddPage('L', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, 0, 0, '', 'Legal-L');
 
         if ($id) {
-            $reference      = $this->db->get_where('view_references', ['id' => $id])->row();
-            $regulations    = $this->db->get_where('view_compliance_details', ['reference_id' => $reference->id, 'subject' => $subject])->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-            $summary        = $this->db->order_by('last_review', 'DESC')->get_where('compilation_reviews', ['reference_id' => $reference->id])->row();
+            $reference = $this->Compliances_model->getReferenceById($id);
+            $regulations = $this->Compliances_model->getComplianceDetailsFiltered(['reference_id' => $reference->id, 'subject' => $subject]);
+            $opports = $this->Compliances_model->getCompOpports($reference->id);
+            $users = $this->Compliances_model->getActiveUsers($this->company);
 
-            $cat            = [
-                'OPP' => 'Peluang',
-                'RSK' => 'Resiko'
-            ];
+            $cat = ['OPP' => 'Peluang', 'RSK' => 'Resiko'];
+            $status = ['CMP' => 'Memenuhi', 'NCM' => 'Belum Memenuhi', 'NAP' => 'Tidak Teraplikasi'];
 
-            $status            = [
-                'CMP' => 'Memenuhi',
-                'NCM' => 'Belum Memenuhi',
-                'NAP' => 'Tidak Teraplikasi'
-            ];
-
-            $ArrReg         = [];
-            $ArrOpports     = [];
-            $ArrUsers       = [];
-            $TC             = $TNC = $TNA = 0;
+            $ArrReg = $ArrOpports = $ArrUsers = [];
+            $refRegs = $this->Compliances_model->getRefRegulations($id);
+            foreach ($refRegs as $rr) {
+                if ($rr->subject == $subject) {
+                    $TC += $rr->total_compliance;
+                    $TNC += $rr->total_not_compliance;
+                    $TNA += $rr->total_not_applicable;
+                }
+            }
 
             foreach ($regulations as $reg) {
                 $ArrReg[$reg->regulation_id][] = $reg;
-                if ($reg->status == 'CMP') {
-                    $TC++;
-                }
-                if ($reg->status == 'NCM') {
-                    $TNC++;
-                }
-                if ($reg->status == 'NAP') {
-                    $TNA++;
-                }
             }
 
-            $summary = [
-                'TC' => $TC,
-                'TNC' => $TNC,
-                'TNA' => $TNA,
-            ];
+            $summary = ['TC' => $TC, 'TNC' => $TNC, 'TNA' => $TNA];
+            foreach ($opports as $opr) { $ArrOpports[$opr->prgh_id][] = $opr; }
+            foreach ($users as $usr) { $ArrUsers[$usr->id_user] = $usr->full_name; }
 
-            foreach ($opports as $opr) {
-                $ArrOpports[$opr->prgh_id][] = $opr;
-            }
+            $page = $this->load->view('export-pdf', compact('reference', 'regulations', 'ArrReg', 'ArrOpports', 'cat', 'ArrUsers', 'summary', 'status'), TRUE);
 
-            foreach ($users as $usr) {
-                $ArrUsers[$usr->id_user] = $usr->full_name;
-            }
-
-            $Data = [
-                'reference'     => $reference,
-                'regulations'   => $regulations,
-                'ArrReg'        => $ArrReg,
-                'ArrOpports'    => $ArrOpports,
-                'cat'           => $cat,
-                'ArrUsers'      => $ArrUsers,
-                'summary'       => $summary,
-                'status'        => $status,
-            ];
-
-            $page           = $this->load->view('export-pdf', $Data, TRUE);
-            // $mpdf->Output();
-            $this->db->trans_begin();
-            // update review
             $Review = [
-                'reference_id'           => $id,
-                'company_id'             => $reference->company_id,
-                'last_review'            => date('Y-m-d H:i:s'),
-                'reference_id'           => $id,
-                'subject'                => $subject,
-                'total_compliance'       => $TC,
-                'total_not_compliance'   => $TNC,
-                'total_not_applicable'   => $TNA,
-                'document'               => $rand_text . '.pdf',
+                'reference_id' => $id, 'company_id' => $reference->company_id, 'last_review' => date('Y-m-d H:i:s'),
+                'subject' => $subject, 'total_compliance' => $TC, 'total_not_compliance' => $TNC, 'total_not_applicable' => $TNA,
+                'document' => $rand_text . '.pdf',
             ];
 
-            $this->db->insert('compilation_reviews', $Review);
-            $count = $this->db->get_where('compilation_reviews')->num_rows();
-            $this->db->update('references', [
-                'counter_review' => $count,
-                'last_review'    => $Review['last_review'],
-                'review_by'      => $this->auth->user_id(),
-            ], ['id' => $id]);
+            $this->db->trans_begin();
+            $this->Compliances_model->insertReview($Review);
+            $count = count($this->Compliances_model->getCompilationReviews($id));
+            $this->Compliances_model->updateReferenceReview($id, $count, $Review['last_review'], $this->auth->user_id());
 
             if ($this->db->trans_status() === FALSE) {
                 $this->db->trans_rollback();
-                $return        = array(
-                    'status'   => 0,
-                    'msg'      => 'Compliance Failed save. Please Try Again!'
-                );
+                echo json_encode(['status' => 0, 'msg' => 'Compliance Failed save. Please Try Again!']);
             } else {
                 $this->db->trans_commit();
                 $mpdf->WriteHTML($page);
-                if (!is_dir("./directory/COMPILATIONS")) {
-                    mkdir("./directory/COMPILATIONS", 0755, TRUE);
-                    chmod("./directory/COMPILATIONS", 0755);  // octal; correct value of mode
-                    chown("./directory/COMPILATIONS", 'www-data');
-                }
-
-                $mpdf->Output("./directory/COMPILATIONS/" . $rand_text . ".pdf", 'F');
-                $return        = array(
-                    'status'   => 1,
-                    'msg'      => 'Compliance successfull saved. Thanks you.'
-                );
+                $dir = "./directory/COMPILATIONS";
+                if (!is_dir($dir)) mkdir($dir, 0755, TRUE);
+                $mpdf->Output($dir . "/" . $rand_text . ".pdf", 'F');
+                echo json_encode(['status' => 1, 'msg' => 'Compliance successfully saved. Thank you.']);
             }
         } else {
-            $return        = array(
-                'status'   => 0,
-                'msg'      => 'Data Not Valid. Please Try Again!'
-            );
+            echo json_encode(['status' => 0, 'msg' => 'Data Not Valid. Please Try Again!']);
         }
-
-        echo json_encode($return);
     }
 
-    /* PRINTOUT */
     public function export_pdf($id = null, $status = null)
     {
-        $mpdf               = new Mpdf();
-        $mpdf->AddPage(
-            'L',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            0,
-            0,
-            0,
-            0,
-            '',
-            'Legal-L'
-        );
+        $mpdf = new Mpdf();
+        $mpdf->AddPage('L', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, 0, 0, '', 'Legal-L');
 
-        $where = [
-            'reference_id' => $id
-        ];
-
-        if ($status) {
-            $where = [
-                'reference_id' => $id,
-                'status' => $status
-            ];
-        }
+        $where = ['reference_id' => $id];
+        if ($status) $where['status'] = $status;
 
         if ($id) {
-            $reference      = $this->db->get_where('view_references', ['id' => $id])->row();
-            $regulations    = $this->db->get_where('view_compliance_details', $where)->result();
-            $opports        = $this->db->get_where('view_comp_opports', ['reference_id' => $reference->id])->result();
-            $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
-            $subject        = $this->db->get_where('view_compliance_subjects', ['company_id' => $this->company])->result();
+            $reference = $this->Compliances_model->getReferenceById($id);
+            $regulations = $this->Compliances_model->getComplianceDetailsFiltered($where);
+            $opports = $this->Compliances_model->getCompOpports($reference->id);
+            $users = $this->Compliances_model->getActiveUsers($this->company);
+            $subject = $this->Compliances_model->getAllComplianceSubjects($this->company);
 
-            $TC             = $TNC = $TNA = 0;
-            foreach ($regulations as $reg) {
-                // $ArrReg[$reg->regulation_category][] = $reg;
-                if ($reg->status == 'CMP') {
-                    $TC++;
-                }
-                if ($reg->status == 'NCM') {
-                    $TNC++;
-                }
-                if ($reg->status == 'NAP') {
-                    $TNA++;
-                }
+            $refRegs = $this->Compliances_model->getRefRegulations($id);
+            foreach ($refRegs as $rr) {
+                $TC += $rr->total_compliance;
+                $TNC += $rr->total_not_compliance;
+                $TNA += $rr->total_not_applicable;
             }
 
-            $summary = [
-                'TC' => $TC,
-                'TNC' => $TNC,
-                'TNA' => $TNA,
-            ];
+            $summary = ['TC' => $TC, 'TNC' => $TNC, 'TNA' => $TNA];
+            $cat = ['OPP' => 'Peluang', 'RSK' => 'Resiko'];
+            $statusText = ['CMP' => 'Memenuhi', 'NCM' => 'Belum Memenuhi', 'NAP' => 'Tidak Teraplikasi'];
 
-            $cat            = [
-                'OPP' => 'Peluang',
-                'RSK' => 'Resiko'
-            ];
+            $ArrReg = $ArrOpports = $ArrUsers = [];
+            foreach ($regulations as $reg) { $ArrReg[$reg->subject][] = $reg; }
+            foreach ($opports as $opr) { $ArrOpports[$opr->prgh_id][] = $opr; }
+            foreach ($users as $usr) { $ArrUsers[$usr->id_user] = $usr->full_name; }
 
-            $status            = [
-                'CMP' => 'Memenuhi',
-                'NCM' => 'Belum Memenuhi',
-                'NAP' => 'Tidak Teraplikasi'
-            ];
-
-            $ArrReg         = [];
-            $ArrOpports     = [];
-            $ArrUsers       = [];
-
-            foreach ($regulations as $reg) {
-                $ArrReg[$reg->subject][] = $reg;
-            }
-
-            foreach ($opports as $opr) {
-                $ArrOpports[$opr->prgh_id][] = $opr;
-            }
-
-            foreach ($users as $usr) {
-                $ArrUsers[$usr->id_user] = $usr->full_name;
-            }
-
-            $Data = [
-                'reference'     => $reference,
-                'regulations'   => $regulations,
-                'ArrReg'        => $ArrReg,
-                'ArrOpports'    => $ArrOpports,
-                'cat'           => $cat,
-                'ArrUsers'      => $ArrUsers,
-                'summary'       => $summary,
-                'status'        => $status,
-                'subject'        => $subject,
-            ];
-
-            $page           = $this->load->view('export-pdf', $Data, TRUE);
+            $page = $this->load->view('export-pdf', compact('reference', 'regulations', 'ArrReg', 'ArrOpports', 'cat', 'ArrUsers', 'summary', 'statusText', 'subject'), TRUE);
             $mpdf->WriteHTML($page);
         } else {
             $mpdf->WriteHTML("Data not valid");
         }
         $mpdf->Output();
-        // $mpdf->Output('filename.pdf', 'F');
     }
 }

@@ -101,7 +101,7 @@
 										<th class="p-2 text-left">Nama</th>
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="120">Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
@@ -139,7 +139,7 @@
 										<th class="p-2 text-left">Nama</th>
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="120">Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
@@ -179,7 +179,7 @@
 										<th class="p-2 text-left">Nama</th>
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="120">Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
@@ -221,7 +221,7 @@
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
 										<th class="p-2 text-left">Reason</th>
-										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="120">Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
@@ -263,7 +263,7 @@
 										<th class="p-2 text-left">Nama</th>
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="120">Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
@@ -301,7 +301,7 @@
 										<th class="p-2 text-left">Nama</th>
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="100">Status</th>
+										<th class="p-2" width="120>Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>

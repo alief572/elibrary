@@ -195,12 +195,11 @@ class Company_reference_model extends BF_Model
   /**
    * Ambil subjects milik sebuah perusahaan dan branch yang aktif.
    */
-  public function getSubjects($companyId, $branchId)
+  public function getSubjects($referenceId)
   {
     return $this->db->get_where('view_compliance_subjects', [
-      'company_id' => $companyId,
-      'status'     => '1',
-      'branch_id'  => $branchId,
+      'reference_id' => $referenceId,
+      'status'       => '1',
     ])->result();
   }
 

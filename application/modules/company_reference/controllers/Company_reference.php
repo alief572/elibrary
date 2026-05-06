@@ -74,10 +74,14 @@ class Company_reference extends Admin_Controller
 				'dataReg' => $dataReg,
 				'Companies' => $this->ReferenceModel->getAllCompanies(),
 				'standards' => $this->ReferenceModel->getActiveRequirements(),
-				'subjects' => $this->ReferenceModel->getSubjects($this->company, $branch),
+				'subjects' => $this->ReferenceModel->getSubjects($id, $branch),
 				'ArrReg' => $ArrReg,
 				'ArrRegulation' => json_encode($this->ReferenceModel->getRegulationsForDropdown()),
 			]);
+			echo '<pre>';
+			print_r($this->ReferenceModel->getSubjects($id, $branch));
+			echo '</pre>';
+			exit;
 			$this->template->render('edit');
 		} else {
 			$this->template->render('../views/errors/html/error_404_custome', [
