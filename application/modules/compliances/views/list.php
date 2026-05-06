@@ -274,7 +274,7 @@
 			const subject = $(this).data('id')
 			$('#modalView .modal-dialog').addClass('modal-xl')
 			$('#modalView').modal('show')
-			$('#modalView .modal-body').load(siteurl + active_controller + 'review/' + subject)
+			$('#modalView .modal-body').load(siteurl + active_controller + 'review/' + subject + '/<?= $reference->id; ?>')
 		})
 
 		$(document).on('click', '.history', function(e) {

@@ -544,46 +544,38 @@ class Compliances extends Admin_Controller
         }
     }
 
-    public function review($subject = null)
+    public function review($subject = null, $referenceId = null)
     {
         if ($subject) {
-            // $reference      = $this->db->get_where('view_references', ['id' => $id])->row();
-            $regulations    = $this->db->get_where('view_compliance_details', ['subject' => $subject])->result();
-            $users          = $this->db->get_where('view_users', ['company_id' => $this->company, 'status' => 'ACT'])->result();
+            $reference = $this->Compliances_model->getReferenceById($referenceId);
+            $regulations = $this->Compliances_model->getComplianceDetailsFiltered(['reference_id' => $referenceId, 'subject' => $subject]);
+            $users = $this->Compliances_model->getActiveUsers($this->company);
 
-            $cat            = [
-                'OPP' => 'Peluang',
-                'RSK' => 'Resiko'
-            ];
-
-            $status            = [
+            $cat = ['OPP' => 'Peluang', 'RSK' => 'Resiko'];
+            $status = [
                 'CMP' => '<span class="badge badge-success">Compliance</span>',
                 'NCM' => '<span class="badge badge-danger">Not Compliance</span>',
                 'NAP' => '<span class="badge badge-secondary">Not Applicable</span>'
             ];
 
-            $ArrReg         = [];
-            $ArrOpports     = [];
-            $ArrUsers       = [];
-
+            $ArrReg = $ArrOpports = $ArrUsers = [];
             foreach ($regulations as $reg) {
                 $ArrReg[$reg->regulation_id][] = $reg;
             }
-
             foreach ($users as $usr) {
                 $ArrUsers[$usr->id_user] = $usr->full_name;
             }
 
-            $Data = [
-                'regulations'   => $regulations,
-                'ArrReg'        => $ArrReg,
-                'ArrOpports'    => $ArrOpports,
-                'cat'           => $cat,
-                'ArrUsers'      => $ArrUsers,
-                'status'        => $status,
-            ];
-
-            $this->template->set($Data);
+            $this->template->set([
+                'reference' => $reference,
+                'regulations' => $regulations,
+                'ArrReg' => $ArrReg,
+                'ArrOpports' => $ArrOpports,
+                'cat' => $cat,
+                'ArrUsers' => $ArrUsers,
+                'status' => $status,
+                'subject' => $subject
+            ]);
             $this->template->render('compilation');
         }
     }
@@ -616,6 +608,7 @@ class Compliances extends Admin_Controller
             $status = ['CMP' => 'Memenuhi', 'NCM' => 'Belum Memenuhi', 'NAP' => 'Tidak Teraplikasi'];
 
             $ArrReg = $ArrOpports = $ArrUsers = [];
+            $TC = $TNC = $TNA = 0;
             $refRegs = $this->Compliances_model->getRefRegulations($id);
             foreach ($refRegs as $rr) {
                 if ($rr->subject == $subject) {
