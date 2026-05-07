@@ -271,14 +271,16 @@ class Records_model extends BF_Model
         $data['company_id'] = $companyId;
         $data['flag_type']  = 'FOLDER';
 
-        if (isset($data['id']) && $data['id']) {
-            $data['modified_by'] = $userId;
-            $data['modified_at'] = date('Y-m-d H:i:s');
-            return $this->db->update('dir_records', $data, ['id' => $data['id']]);
-        } else {
+        $check = $this->db->get_where('dir_records', ['id' => $data['id']])->num_rows();
+        if (intval($check) == 0) {
             $data['created_by'] = $userId;
             $data['created_at'] = date('Y-m-d H:i:s');
-            return $this->db->insert('dir_records', $data);
+            $res = $this->db->insert('dir_records', $data);
+        } else {
+            $data['modified_by'] = $userId;
+            $data['modified_at'] = date('Y-m-d H:i:s');
+            $res = $this->db->update('dir_records', $data, ['id' => $data['id']]);
         }
+        return $res;
     }
 }

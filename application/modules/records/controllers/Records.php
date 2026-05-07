@@ -324,7 +324,8 @@ class Records extends Admin_Controller
 	public function saveFolder()
 	{
 		$Data = $this->input->post();
-		$Data['id'] = $Data['folder_id']; $Data['name'] = $Data['folder_name']; $Data['parent_id'] = $Data['parent_id'] ?: null;
+		$id = $Data['folder_id'] ?: uniqid(date('m'));
+		$Data['id'] = $id; $Data['name'] = $Data['folder_name']; $Data['parent_id'] = $Data['parent_id'] ?: null;
 		unset($Data['folder_id'], $Data['folder_name']);
 		$success = $this->RecModel->saveFolder($Data, $this->auth->user_id(), $this->company);
 		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Folder successfully saved.' : 'Folder failed to save.'), 'id' => $Data['procedure_id']]);
