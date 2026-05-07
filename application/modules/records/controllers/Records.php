@@ -429,6 +429,40 @@ class Records extends Admin_Controller
 		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Successfully deleted image..' : 'Failed to delete image..')]);
 	}
 
+	public function move_record($id = null)
+	{
+		if ($id) {
+			$record = $this->RecModel->getFileById('dir_records', $id);
+			$folders = $this->RecModel->getFolderHierarchy($record->procedure_id);
+			$descendants = [];
+			if ($record->flag_type == 'FOLDER') {
+				$descendants = $this->RecModel->getDescendants($id);
+			}
+			$this->template->set(['record' => $record, 'folders' => $folders, 'descendants' => $descendants]);
+			$this->template->render('move_record');
+		}
+	}
+
+	public function save_move()
+	{
+		$record_id = $this->input->post('record_id');
+		$target_folder_id = $this->input->post('target_folder_id');
+
+		if ($record_id && $target_folder_id) {
+			$success = $this->RecModel->moveRecord($record_id, $target_folder_id, $this->auth->user_id());
+			if ($success) {
+				$record = $this->RecModel->getFileById('dir_records', $record_id);
+				$this->RecModel->updateHistory([
+					'directory_id' => $record_id,
+					'new_status'   => $record->status,
+					'doc_type'     => ($record->flag_type == 'FOLDER' ? 'Folder' : 'Record'),
+					'note'         => 'Move ' . ($record->flag_type == 'FOLDER' ? 'Folder' : 'File') . ' to ' . ($target_folder_id == 'root' ? 'Root' : 'another folder')
+				]);
+			}
+			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Move successfully.' : 'Move failed.')]);
+		}
+	}
+
 	public function printOut($id = null)
 	{
 		$mpdf = new Mpdf(); $mpdf->showImageErrors = true; $mpdf->curlAllowUnsafeSslRequests = true;

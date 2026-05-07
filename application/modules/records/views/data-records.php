@@ -10,7 +10,7 @@
     <tr>
       <th class="py-0">File or Folder Name</th>
       <th class="py-0 text-right">Last Update</th>
-      <th class="py-0 text-center">Opsi</th>
+      <th class="py-0 text-center" width="50">Opsi</th>
     </tr>
   </thead>
   <tbody>
@@ -47,15 +47,24 @@
               <h6 class="mt-4 ml-4"><?= $form->created_at; ?></h6>
             </div>
           </td>
-          <td class="py-1 text-right" width="135">
+          <td class="py-1 text-center">
             <div class="btn-opsi mt-1">
-              <?php if ($form->flag_type == 'FILE') : ?>
-                <button type="button" class="btn btn-sm btn-icon btn-default view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary"></i></button>
-                <button type="button" class="btn btn-sm btn-icon btn-white edit-record" title="Edit Document" data-id="<?= $form->id; ?>"><i class="fa fa-edit text-warning"></i></button>
-              <?php else : ?>
-                <button type="button" class="btn btn-sm btn-icon btn-white edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>"><i class="fa fa-edit text-warning"></i></button>
-              <?php endif; ?>
-              <button type="button" class="btn btn-sm btn-icon btn-white delete-record" title="Delete" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger"></i></button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-icon btn-primary" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="fa fa-cog"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <?php if ($form->flag_type == 'FILE') : ?>
+                    <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View Document</a>
+                    <a class="dropdown-item edit-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Document</a>
+                  <?php else : ?>
+                    <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
+                  <?php endif; ?>
+                  <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item delete-record text-danger" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i> Delete</a>
+                </div>
+              </div>
             </div>
           </td>
         </tr>

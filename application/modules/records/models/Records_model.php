@@ -283,4 +283,61 @@ class Records_model extends BF_Model
         }
         return $res;
     }
+
+    public function getAllFolders($procedureId)
+    {
+        return $this->db->get_where('dir_records', [
+            'procedure_id' => $procedureId,
+            'flag_type'    => 'FOLDER',
+            'status !='    => 'DEL'
+        ])->result();
+    }
+
+    public function getFolderHierarchy($procedureId, $parentId = null, $level = 0)
+    {
+        $this->db->where('procedure_id', $procedureId);
+        $this->db->where('flag_type', 'FOLDER');
+        $this->db->where('status !=', 'DEL');
+        if ($parentId === null) {
+            $this->db->where('parent_id IS NULL', null, false);
+        } else {
+            $this->db->where('parent_id', $parentId);
+        }
+        $folders = $this->db->get('dir_records')->result();
+
+        $hierarchy = [];
+        foreach ($folders as $folder) {
+            $folder->level = $level;
+            $hierarchy[] = $folder;
+            $children = $this->getFolderHierarchy($procedureId, $folder->id, $level + 1);
+            $hierarchy = array_merge($hierarchy, $children);
+        }
+        return $hierarchy;
+    }
+
+    public function moveRecord($recordId, $targetFolderId, $userId)
+    {
+        $data = [
+            'parent_id'   => ($targetFolderId == 'root') ? null : $targetFolderId,
+            'modified_by' => $userId,
+            'modified_at' => date('Y-m-d H:i:s')
+        ];
+        return $this->db->update('dir_records', $data, ['id' => $recordId]);
+    }
+
+    public function getDescendants($folderId)
+    {
+        $descendants = [];
+        $children = $this->db->get_where('dir_records', [
+            'parent_id' => $folderId,
+            'flag_type' => 'FOLDER',
+            'status !=' => 'DEL'
+        ])->result();
+
+        foreach ($children as $child) {
+            $descendants[] = $child->id;
+            $descendants = array_merge($descendants, $this->getDescendants($child->id));
+        }
+        return $descendants;
+    }
 }

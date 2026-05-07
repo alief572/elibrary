@@ -652,7 +652,7 @@ class Compliances extends Admin_Controller
             } else {
                 $this->db->trans_commit();
                 $mpdf->WriteHTML($page);
-                $dir = "./directory/COMPILATIONS";
+                $dir = "./directory/COMPLIANCES";
                 if (!is_dir($dir)) mkdir($dir, 0755, TRUE);
                 $mpdf->Output($dir . "/" . $rand_text . ".pdf", 'F');
                 echo json_encode(['status' => 1, 'msg' => 'Compliance successfully saved. Thank you.']);

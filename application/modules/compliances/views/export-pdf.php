@@ -112,7 +112,7 @@
       <th class="text-left">Count Review</th>
       <td>: <?= ($reference->counter_review) ? $reference->counter_review + 1 : 1; ?></td>
       <th class="text-left">Review By</th>
-      <td>: <?= $ArrUsers[$this->auth->user_id()]; ?></td>
+      <td>: <?= $ArrUsers[$this->auth->user_id()] ? $ArrUsers[$this->auth->user_id()] : '-'; ?></td>
     </tr>
   </table>
   <hr>
@@ -207,7 +207,7 @@
                 if (isset($ArrOpports[$dt->prgh_id])) :
                   foreach ($ArrOpports[$dt->prgh_id] as $opr) : $no++;
                 ?>
-                    <p><?= $no . ". " . $ArrUsers[$opr->pic]; ?></p>
+                    <p><?= $no . ". " . ($ArrUsers[$opr->pic] ? $ArrUsers[$opr->pic] : '-'); ?></p>
                   <?php endforeach; ?>
                 <?php endif; ?>
               </td>

@@ -35,7 +35,7 @@
 									<tr>
 										<th class="py-0">File or Folder Name</th>
 										<th class="py-0 text-right">Last Update</th>
-										<th class="py-0 text-center">Opsi</th>
+										<th class="py-0 text-center" width="50">Opsi</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -55,15 +55,22 @@
 														<h6 class="mt-4 ml-4"><?= $form->created_at; ?></h6>
 													</div>
 												</td>
-												<td class="py-1 text-right" width="135">
-													<div class="btn-opsi mt-1">
-														<?php if ($form->flag_type == 'FILE') : ?>
-															<button type="button" class="btn btn-sm btn-icon btn-default view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf  text-primary"></i></button>
-															<button type="button" class="btn btn-sm btn-icon btn-white edit-record" title="Edit Document" data-id="<?= $form->id; ?>"><i class="fa fa-edit text-warning"></i></button>
-														<?php else : ?>
-															<button type="button" class="btn btn-sm btn-icon btn-white edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>"><i class="fa fa-edit text-warning"></i></button>
-														<?php endif; ?>
-														<button type="button" class="btn btn-sm btn-icon btn-white delete-record" title="Delete" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger"></i></button>
+												<td class="py-1 text-center">
+													<div class="btn-opsi">
+														<div class="dropdown">
+															<button class="btn btn-sm btn-icon btn-primary" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i></button>
+															<div class="dropdown-menu dropdown-menu-right">
+																<?php if ($form->flag_type == 'FILE'): ?>
+																	<a href="javascript:void(0)" class="dropdown-item view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf  text-primary mr-2"></i> View</a>
+																	<a href="javascript:void(0)" class="dropdown-item edit-record" title="Edit Document" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
+																<?php else: ?>
+																	<a href="javascript:void(0)" class="dropdown-item edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
+																<?php endif; ?>
+																<a href="javascript:void(0)" class="dropdown-item move-record" title="Move" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
+																<div class="dropdown-divider"></div>
+																<a href="javascript:void(0)" class="dropdown-item delete-record" title="Delete" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
+															</div>
+														</div>
 													</div>
 												</td>
 											</tr>
@@ -87,7 +94,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modelId" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">Modal title</h5>
@@ -104,7 +111,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modalRecord" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered" style="max-width:90%" role="document">
+	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">Upload Record</h5>
@@ -465,6 +472,7 @@
 			const id = $(this).data('id')
 			if (id) {
 				$('.modal-title').html('View Form')
+				$('#modelId .modal-dialog').removeClass('modal-md modal-lg').addClass('modal-xl');
 				$('#content_modal').load(siteurl + active_controller + 'view_form/' + id)
 				$('#modelId').modal('show')
 			} else {
@@ -785,6 +793,7 @@
 			const id = $(this).data('id')
 			if (id) {
 				$('.modal-title').html('View IK')
+				$('#modelId .modal-dialog').removeClass('modal-md modal-lg').addClass('modal-xl');
 				$('#content_modal').load(siteurl + active_controller + 'view_guide/' + id)
 				$('#modelId').modal('show')
 			} else {
@@ -1033,6 +1042,7 @@
 			const id = $(this).data('id')
 			if (id) {
 				$('.modal-title').html('View Records')
+				$('#modelId .modal-dialog').removeClass('modal-md modal-lg').addClass('modal-xl');
 				$('#content_modal').load(siteurl + active_controller + 'view_record/' + id)
 				$('#modelId').modal('show')
 			} else {
@@ -1170,9 +1180,9 @@
 		/* FOLDER RECORDS */
 
 		$(document).on('click', '#add_folder', function() {
+			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
 			$('#modelId').modal('show')
 			$('.modal-title').text('Add Folder')
-			$('.modal-dialog').css('max-width', '50%')
 			$('#content_modal').html(`
 			<div class="modal-body row">
 				<div class="col-12">
@@ -1191,10 +1201,10 @@
 
 		$(document).on('click', '.edit-folder', function() {
 			const id = $(this).data('id')
-			const name = $(this).parents('tr').find('.text-name').text()
+			const name = $(this).data('name')
+			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
 			$('#modelId').modal('show')
 			$('.modal-title').text('Add Folder')
-			$('.modal-dialog').css('max-width', '50%')
 			$('#content_modal').html(`
 			<div class="modal-body row">
 				<div class="col-12">
@@ -1303,6 +1313,67 @@
 			} else {
 				$('#data-records').load(siteurl + active_controller + 'refresh/' + refresh_id + "/" + procedure_id)
 			}
+		})
+		$(document).on('click', '.move-record', function() {
+			const id = $(this).data('id')
+			if (id) {
+				$('.modal-title').html('Move File/Folder')
+				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
+				$('#content_modal').load(siteurl + active_controller + 'move_record/' + id)
+				$('#modelId').modal('show')
+			}
+		})
+
+		$(document).on('click', '#save-move', function() {
+			const btn = $(this)
+			const record_id = $('input[name="record_id"]').val()
+			const target_folder_id = $('#target_folder_id').val()
+
+			$.ajax({
+				url: siteurl + active_controller + 'save_move',
+				data: {
+					record_id,
+					target_folder_id
+				},
+				type: 'POST',
+				dataType: 'JSON',
+				beforeSend: function() {
+					btn.attr('disabled', true)
+					btn.html('<i class="spinner spinner-border-sm mr-3"></i> Loading...')
+				},
+				complete: function() {
+					btn.attr('disabled', false)
+					btn.html('<i class="fa fa-save"></i> Move')
+				},
+				success: function(result) {
+					if (result.status == 1) {
+						Swal.fire({
+							title: 'Success!',
+							icon: 'success',
+							text: result.msg,
+							timer: 2000
+						}).then(function() {
+							$('#modelId').modal('hide')
+							$('#refresh').click()
+						})
+					} else {
+						Swal.fire({
+							title: 'Warning!',
+							icon: 'warning',
+							text: result.msg,
+							timer: 2000
+						})
+					}
+				},
+				error: function() {
+					Swal.fire({
+						title: 'Error!',
+						icon: 'error',
+						text: 'Server timeout!',
+						timer: 4000
+					})
+				}
+			})
 		})
 
 	})
