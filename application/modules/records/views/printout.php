@@ -20,7 +20,7 @@
     table.table-data td,
     table.table-data th {
       padding: 2px;
-      border: 1px solid #444;
+      border: 0.1mm solid #444;
     }
 
     table td {
@@ -79,7 +79,7 @@
 
 <body>
 
-  <table style="border: 1px solid #000;">
+  <table class="table-data">
     <tr>
       <td rowspan="3" width="50%" class="text-center">
         <h2><?= $company_name; ?></h2>
@@ -205,7 +205,7 @@
     <h3>PROSES TERKAIT</h3>
     <table class="table-data" style="font-size: 11px;">
       <thead>
-        <tr class="table-secondary">
+        <tr style="background: #eaeaea;">
           <th class="py-1 text-center">No.</th>
           <th class="py-1 text-center">PIC/TANGGUNG JAWAB</th>
           <th class="py-1 text-center">DESKRIPSI</th>
