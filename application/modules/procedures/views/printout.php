@@ -14,6 +14,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      border-spacing: 0;
     }
 
     table.table-data td,
@@ -78,12 +79,12 @@
 
 <body>
 
-  <table border="1" width="100%">
+  <table style="border: 1px solid #000;">
     <tr>
       <td rowspan="3" width="50%" class="text-center">
         <h2><?= $company_name; ?></h2>
       </td>
-      <td width="120px">Nomor Dokumen</td>
+      <td width="120">Nomor Dokumen</td>
       <td><?= $procedure->nomor; ?></td>
     </tr>
     <tr>
@@ -96,7 +97,7 @@
       </td>
     </tr>
     <tr>
-      <td class="text-center" style="background-color: #000; color: #fff;">
+      <td class="text-center" style="background: #000; color: #fff;">
         <h4><?= strtoupper($procedure->name); ?></h4>
       </td>
       <td>Halaman</td>
@@ -143,7 +144,7 @@
     <br>
 
     <h4>SIPOCOR</h4>
-    <table width="100%">
+    <table>
       <tr>
         <td width="50%">
           <h5 style="padding-bottom: 10px;">1. Supplier</h5>

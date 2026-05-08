@@ -14,6 +14,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      border-spacing: 0;
     }
 
     table.table-data td,
@@ -78,12 +79,12 @@
 
 <body>
 
-  <table border="1" width="100%">
+  <table style="border: 1px solid #000;">
     <tr>
       <td rowspan="3" width="50%" class="text-center">
         <h2><?= $company_name; ?></h2>
       </td>
-      <td width="120px">Nomor Dokumen</td>
+      <td width="120">Nomor Dokumen</td>
       <td><?= $procedure->nomor; ?></td>
     </tr>
     <tr>
@@ -95,7 +96,7 @@
       <td><?= ($procedure->revision_date) ? date_format(date_create($procedure->revision_date), 'd F Y') : '~'; ?></td>
     </tr>
     <tr>
-      <td class="text-center" style="background-color: #000;color:#fff">
+      <td class="text-center" style="background: #000; color: #fff;">
         <h4><?= strtoupper($procedure->name); ?></h4>
       </td>
       <td>Halaman</td>
@@ -103,14 +104,14 @@
     </tr>
   </table>
 
-  <div class="">
+  <div>
     <!-- HEADER -->
 
     <h3><strong>TUJUAN</strong></h3>
     <table>
       <tr>
         <td>
-          <div class="">
+          <div>
             <?= ($procedure->object); ?>
           </div>
         </td>
@@ -119,10 +120,10 @@
     <br>
 
     <h3><strong>RUANG LINGKUP</strong></h3>
-    <table class="">
+    <table>
       <tr>
         <td>
-          <div class="">
+          <div>
             <?= $procedure->scope; ?>
           </div>
         </td>
@@ -134,7 +135,7 @@
     <table>
       <tr>
         <td>
-          <div class="">
+          <div>
             <?= $procedure->define; ?>
           </div>
         </td>
@@ -146,7 +147,7 @@
     <table>
       <tr>
         <td>
-          <div class="">
+          <div>
             <?= $procedure->performance; ?>
           </div>
         </td>
@@ -184,13 +185,13 @@
     <h3>FLOW PROCEDURE</h3>
     <?php if ($procedure->image_flow_1 || $procedure->image_flow_2 || $procedure->image_flow_3) : ?>
       <?php if ($procedure->image_flow_1) : ?>
-        <img height="600px" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"); ?>" alt="image_flow_1" class="img-fluid">
+        <img height="600" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"); ?>" alt="image_flow_1" class="img-fluid">
       <?php endif; ?>
       <?php if ($procedure->image_flow_2) : ?>
-        <img height="600px" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"); ?>" alt="image_flow_2" class="img-fluid">
+        <img height="600" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"); ?>" alt="image_flow_2" class="img-fluid">
       <?php endif; ?>
       <?php if ($procedure->image_flow_3) : ?>
-        <img height="600px" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"); ?>" alt="image_flow_3" class="img-fluid">
+        <img height="600" src="<?= base_url("directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"); ?>" alt="image_flow_3" class="img-fluid">
       <?php endif; ?>
     <?php else : ?>
       <p>~ Not available data ~</p>
