@@ -364,6 +364,46 @@ class Procedures extends Admin_Controller
 		}
 	}
 
+	public function view_form($id)
+	{
+		$this->load->model('documents_list/Documents_list_model', 'List');
+		$form 				= $this->List->getFormById($id);
+		$history			= $this->List->getHistory($id);
+		$users 				= $this->List->getUsers();
+		$ArrUsr 			= [];
+		foreach ($users as $user) {
+			$ArrUsr[$user->id_user] = $user;
+		}
+		$this->template->set([
+			'form' 			=> $form,
+			'history' 			=> $history,
+			'sts'				=> $this->sts,
+			'ArrUsr'			=> $ArrUsr
+		]);
+
+		$this->template->render('procedures/view-form');
+	}
+
+	public function view_guide($id)
+	{
+		$this->load->model('documents_list/Documents_list_model', 'List');
+		$guide 				= $this->List->getGuideById($id);
+		$history			= $this->List->getHistory($id);
+		$users 				= $this->List->getUsers();
+		$ArrUsr 			= [];
+		foreach ($users as $user) {
+			$ArrUsr[$user->id_user] = $user;
+		}
+		$this->template->set([
+			'guide' 		=> $guide,
+			'history' 		=> $history,
+			'sts'			=> $this->sts,
+			'ArrUsr'		=> $ArrUsr
+		]);
+
+		$this->template->render('procedures/view-guide');
+	}
+
 	/* Printout */
 	public function printOut($id = null)
 	{

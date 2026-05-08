@@ -15,7 +15,7 @@
 	<div class="d-flex flex-column-fluid">
 		<div class="container">
 			<form id="form-procedure" enctype="multipart/form-data">
-				<div class="card card-stretch shadow card-custom">
+				<div class="card shadow card-custom">
 					<div class="card-header justify-content-between d-flex align-items-center">
 						<h2 class="m-0"><i class="fa fa-plus mr-2"></i><?= $title; ?></h2>
 						<a href="<?= base_url($this->uri->segment(1)); ?>" class="btn btn-danger"><i class="fa fa-reply"></i>Back</a>
@@ -679,7 +679,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modelId" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+	<div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">Modal title</h5>
@@ -688,7 +688,7 @@
 				</button>
 			</div>
 			<form id="form-flow-detail">
-				<div id="content_modal">
+				<div class="modal-body overflow-auto" id="content_modal">
 				</div>
 			</form>
 		</div>
@@ -697,7 +697,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modalRecord" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered" style="max-width:90%" role="document">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width:90%" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">Upload Record</h5>
@@ -706,7 +706,7 @@
 				</button>
 			</div>
 			<form id="form-records">
-				<div id="record-content">
+				<div class="modal-body overflow-auto" id="record-content">
 				</div>
 			</form>
 		</div>

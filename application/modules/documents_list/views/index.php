@@ -242,7 +242,7 @@
 
 	<!-- Modal -->
 	<div class="modal fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="height:100%;max-width:97%">
+		<div class="modal-dialog modal-xl modal-dialog-scrollable" role="document" style="max-width:97%">
 			<div class="modal-content" data-scroll="true" data-height="100" style="min-height:100%">
 				<div class=" modal-header">
 					<h5 class="modal-title">View Document</h5>

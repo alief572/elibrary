@@ -20,7 +20,7 @@
 </div>
 <div class="tab-content mt-5">
     <div class="tab-pane fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
-        <div style="width:92%;background-color: red;position: absolute;opacity: 0.2;"></div>
+        <!-- <div style="width:92%;background-color: red;position: absolute;opacity: 0.2;"></div> -->
         <?php if (isset($file->link_form)) : ?>
             <iframe src="<?= $file->link_form; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%"></iframe>
         <?php endif; ?>

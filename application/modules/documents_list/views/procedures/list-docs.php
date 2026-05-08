@@ -247,8 +247,8 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document" style="height:100%;max-width: 97%;">
-		<div class="modal-content" data-scroll="true" data-height="">
+	<div class="modal-dialog modal-xl modal-dialog-scrollable" role="document" style="height:100%;max-width: 97%;">
+		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">View Document</h5>
 				<button type="button" class="btn btn-xs btn-icon btn-light" data-dismiss="modal" aria-label="Close">

@@ -42,7 +42,7 @@
 
 						<!-- Draft -->
 						<div class="tab-pane fade active show" id="draft" role="tabpanel" aria-labelledby="draft-tab">
-							<table id="example2" class="table datatable table-bordered table-sm table-hover datatable">
+							<table id="example2" class="table datatable table-bordered table-sm table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -93,7 +93,7 @@
 
 						<!-- Review -->
 						<div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
-							<table id="tblReview" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
+							<table id="tblReview" class="table datatable table-bordered table-sm table-condensed table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -131,7 +131,7 @@
 
 						<!-- Correction -->
 						<div class="tab-pane fade" id="Correction" role="tabpanel" aria-labelledby="Correction-tab">
-							<table id="tblCorrection" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
+							<table id="tblCorrection" class="table datatable table-bordered table-sm table-condensed table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -171,7 +171,7 @@
 
 						<!-- Approval -->
 						<div class="tab-pane fade" id="Approval" role="tabpanel" aria-labelledby="Approval-tab">
-							<table id="tblApproval" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
+							<table id="tblApproval" class="table datatable table-bordered table-sm table-condensed table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -212,7 +212,7 @@
 
 						<!-- Revision -->
 						<div class="tab-pane fade" id="Revision" role="tabpanel" aria-labelledby="Revision-tab">
-							<table id="tblRevision" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
+							<table id="tblRevision" class="table datatable table-bordered table-sm table-condensed table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -255,7 +255,7 @@
 
 						<!-- Published -->
 						<div class="tab-pane fade" id="published" role="tabpanel" aria-labelledby="published-tab">
-							<table id="example1" class="table datatable table-bordered table-sm table-condensed table-hover datatable">
+							<table id="example1" class="table datatable table-bordered table-sm table-condensed table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -293,7 +293,7 @@
 
 						<!-- Deletion -->
 						<div class="tab-pane fade" id="deletion" role="tabpanel" aria-labelledby="deletion-tab">
-							<table class="table datatable table-bordered table-sm table-condensed table-hover datatable">
+							<table class="table datatable table-bordered table-sm table-condensed table-hover">
 								<thead class="text-center table-light">
 									<tr class="text-center">
 										<th class="p-2" width="30">No.</th>
@@ -301,7 +301,7 @@
 										<th class="p-2 text-left">Nama</th>
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="120>Status</th>
+										<th class="p-2" width="120">Status</th>
 										<th class="p-2" width="60">Action</th>
 									</tr>
 								</thead>
@@ -531,12 +531,9 @@
 		});
 
 		$('.datatable').DataTable({
-			orderCellsTop: false,
-			// fixedHeader: true,
-			// scrollX: true,
-			// ordering: false,
-			// info: false
+			responsive: true,
 		});
+		
 
 		$(document).on('click', '#add_new', function() {
 			$('#modalForm').modal('show')
