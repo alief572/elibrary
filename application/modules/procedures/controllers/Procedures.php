@@ -407,8 +407,13 @@ class Procedures extends Admin_Controller
 	/* Printout */
 	public function printOut($id = null)
 	{
-		$mpdf = new Mpdf();
-		$mpdf->showImageErrors = true;
+		$mpdf = new Mpdf([
+			'mode' => 'utf-8',
+			'format' => 'A4',
+			'autoScriptToLang' => true,
+			'autoLangToFont' => true,
+		]);
+		$mpdf->showImageErrors = false;
 		$mpdf->curlAllowUnsafeSslRequests = true;
 
 		$procedure 	= $this->ProModel->getProcedureById($id, $this->company);

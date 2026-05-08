@@ -465,7 +465,14 @@ class Records extends Admin_Controller
 
 	public function printOut($id = null)
 	{
-		$mpdf = new Mpdf(); $mpdf->showImageErrors = true; $mpdf->curlAllowUnsafeSslRequests = true;
+		$mpdf = new Mpdf([
+			'mode' => 'utf-8',
+			'format' => 'A4',
+			'autoScriptToLang' => true,
+			'autoLangToFont' => true,
+		]);
+		$mpdf->showImageErrors = false;
+		$mpdf->curlAllowUnsafeSslRequests = true;
 		$procedure = $this->RecModel->getProcedureById($id, $this->company);
 		$flowDetail = $this->RecModel->getProcedureDetails($id);
 		$getForms = $this->RecModel->getFormsByProcedure($id);

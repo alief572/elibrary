@@ -7,25 +7,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Procedure</title>
   <style>
-    *,
-    body {
+    body, table, td, th, h1, h2, h3, h4, h5, h6, p, ul, li {
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    table.table-data {
+    table {
       width: 100%;
+      border-collapse: collapse;
     }
 
     table.table-data td,
     table.table-data th {
       padding: 2px;
-      word-wrap: break-word;
-      border: 1px solid #444
-    }
-
-    table,
-    table.table-data {
-      border-collapse: collapse;
+      border: 1px solid #444;
     }
 
     table td {

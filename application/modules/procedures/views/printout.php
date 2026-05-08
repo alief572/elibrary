@@ -7,25 +7,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Procedure</title>
   <style>
-    *,
-    body {
+    body, table, td, th, h1, h2, h3, h4, h5, h6, p, ul, li {
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    table.table-data {
+    table {
       width: 100%;
+      border-collapse: collapse;
     }
 
     table.table-data td,
     table.table-data th {
       padding: 2px;
-      word-wrap: break-word;
-      border: 1px solid #444
-    }
-
-    table,
-    table.table-data {
-      border-collapse: collapse;
+      border: 1px solid #444;
     }
 
     table td {
@@ -102,7 +96,7 @@
       </td>
     </tr>
     <tr>
-      <td class="text-center" style="background-color: #000;color:#fff">
+      <td class="text-center" style="background-color: #000; color: #fff;">
         <h4><?= strtoupper($procedure->name); ?></h4>
       </td>
       <td>Halaman</td>
@@ -110,7 +104,7 @@
     </tr>
   </table>
 
-  <div class="">
+  <div>
     <!-- HEADER -->
 
     <h4><strong>TUJUAN</strong></h4>
@@ -152,30 +146,30 @@
     <table width="100%">
       <tr>
         <td width="50%">
-          <h5 style="padding-bottom:10px;">1. Supplier</h5>
+          <h5 style="padding-bottom: 10px;">1. Supplier</h5>
           <p><?= $procedure->supplier; ?></p>
           <br><br>
-          <h5 style="padding-bottom:10px;">3. Process</h5>
+          <h5 style="padding-bottom: 10px;">3. Process</h5>
           <?= $procedure->process; ?>
           <br><br>
-          <h5 style="padding-bottom:10px;">5. Customer</h5>
+          <h5 style="padding-bottom: 10px;">5. Customer</h5>
           <?= $procedure->customer; ?>
           <br><br>
-          <h5 style="padding-bottom:10px;">7. Risk</h5>
+          <h5 style="padding-bottom: 10px;">7. Risk</h5>
           <?= $procedure->risk; ?>
           <br><br>
         </td>
         <td width="50%">
-          <h5 style="padding-bottom:10px;">2. Input</h5>
+          <h5 style="padding-bottom: 10px;">2. Input</h5>
           <?= $procedure->input; ?>
           <br><br>
-          <h5 style="padding-bottom:10px;">4. Output</h5>
+          <h5 style="padding-bottom: 10px;">4. Output</h5>
           <?= $procedure->output; ?>
           <br><br>
-          <h5 style="padding-bottom:10px;">6. Objective</h5>
+          <h5 style="padding-bottom: 10px;">6. Objective</h5>
           <?= $procedure->objective; ?>
           <br><br>
-          <h5 style="padding-bottom:10px;">8. Mitigation</h5>
+          <h5 style="padding-bottom: 10px;">8. Mitigation</h5>
           <?= $procedure->mitigation; ?>
           <br><br>
         </td>
@@ -186,15 +180,15 @@
     <h4>FLOW PROCEDURE</h4>
     <?php if ($procedure->image_flow_1 || $procedure->image_flow_2 || $procedure->image_flow_3) : ?>
       <?php if ($procedure->image_flow_1) : ?>
-        <img height="600px" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"; ?>"
+        <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"; ?>"
           alt="image_flow_1" class="img-fluid">
       <?php endif; ?>
       <?php if ($procedure->image_flow_2) : ?>
-        <img height="600px" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"; ?>"
+        <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"; ?>"
           alt="image_flow_2" class="img-fluid">
       <?php endif; ?>
       <?php if ($procedure->image_flow_3) : ?>
-        <img height="600px" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"; ?>"
+        <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"; ?>"
           alt="image_flow_3" class="img-fluid">
       <?php endif; ?>
     <?php else : ?>
@@ -223,7 +217,7 @@
               <td class="text-center"><?= $dtl->number; ?></td>
               <td class="text-center"><?= $dtl->pic; ?></td>
               <td><?= $dtl->description; ?></td>
-              <td class="">
+              <td>
                 <?php $relDocs = json_decode($dtl->relate_doc); ?>
                 <?php if (is_array($relDocs)) : ?>
                   <ul>
@@ -246,7 +240,7 @@
           <?php endforeach;
         else : ?>
           <tr>
-            <td colspan=" 4" class="text-center">~ Not available data ~</td>
+            <td colspan="4" class="text-center">~ Not available data ~</td>
           </tr>
         <?php endif; ?>
       </tbody>
