@@ -448,7 +448,10 @@ class Procedures extends Admin_Controller
 
 		$this->template->set($Data);
 		$data = $this->template->load_view('printout');
+
+		error_reporting(E_ALL & ~E_NOTICE);
 		$mpdf->WriteHTML($data);
+		if (ob_get_length()) ob_clean();
 		$mpdf->Output();
 	}
 
