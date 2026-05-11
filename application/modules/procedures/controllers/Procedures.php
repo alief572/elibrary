@@ -318,6 +318,64 @@ class Procedures extends Admin_Controller
 		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Successfully deleted image..' : 'Failed to delete image.. Please try again.')]);
 	}
 
+	/* Upload Form Views */
+
+	public function upload_form($procedure_id = null)
+	{
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$this->template->set([
+			'procedure_id' => $procedure_id,
+			'users'        => $users,
+			'data'         => null,
+		]);
+		$this->template->render('upload_file_form');
+	}
+
+	public function upload_guide($procedure_id = null)
+	{
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$this->template->set([
+			'procedure_id' => $procedure_id,
+			'users'        => $users,
+			'data'         => null,
+		]);
+		$this->template->render('upload_file_guide');
+	}
+
+	public function upload_record($procedure_id = null, $parent_id = null)
+	{
+		$this->template->set([
+			'procedure_id' => $procedure_id,
+			'parent_id'    => $parent_id,
+			'data'         => null,
+		]);
+		$this->template->render('upload_file_record');
+	}
+
+	public function edit_form($id = null)
+	{
+		$data = $this->ProModel->getFileById('dir_forms', $id);
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$this->template->set([
+			'procedure_id' => $data ? $data->procedure_id : null,
+			'users'        => $users,
+			'data'         => $data,
+		]);
+		$this->template->render('upload_file_form');
+	}
+
+	public function edit_guide($id = null)
+	{
+		$data = $this->ProModel->getFileById('dir_guides', $id);
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$this->template->set([
+			'procedure_id' => $data ? $data->procedure_id : null,
+			'users'        => $users,
+			'data'         => $data,
+		]);
+		$this->template->render('upload_file_guide');
+	}
+
 	/* Generic File Handlers */
 
 	public function saveFileGeneric($type)
