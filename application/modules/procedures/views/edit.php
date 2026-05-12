@@ -1342,7 +1342,7 @@
 				},
 				success: function(result) {
 					console.log(result);
-					if (result.status == 1) {
+					if (result.status === 1) {
 						Swal.fire({
 							title: 'Success!',
 							icon: 'success',
