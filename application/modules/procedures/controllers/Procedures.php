@@ -414,6 +414,86 @@ class Procedures extends Admin_Controller
 			echo json_encode($Return);
 		}
 	}
+
+
+	public function delete_form($id = null)
+	{
+		if ($id) {
+			$this->db->trans_begin();
+			$data = [
+				'status' => 'DEL',
+				'deleted_by' => $this->auth->user_id(),
+				'deleted_at' => date('Y-m-d H:i:s'),
+			];
+			$this->db->update('dir_forms', $data, ['id' => $id]);
+			$file_name = $this->db->get_where('dir_forms', ['id' => $id])->row()->file_name;
+			$this->_delete_file('FORMS', $file_name);
+			if ($this->db->trans_status() === FALSE) {
+				$this->db->trans_rollback();
+				$Return = [
+					'status' => '0',
+					'msg' => 'Data failed to delete, pelase try again.'
+				];
+			} else {
+				$this->db->trans_commit();
+				$Return = [
+					'status' => '1',
+					'msg' => 'Data successfull deleted.'
+				];
+			}
+		} else {
+			$Return = [
+				'status' => '0',
+				'msg' => 'Data not valid'
+			];
+		}
+
+		echo json_encode($Return);
+	}
+
+	private function _delete_file($dir = null, $file_name = null)
+	{
+		if ($dir && $file_name) {
+			if (file_exists("./directory/$dir/$this->company/" . $file_name)) {
+				unlink("./directory/$dir/$this->company/" . $file_name);
+			}
+		}
+	}
+
+	public function delete_guide($id = null)
+	{
+		if ($id) {
+			$this->db->trans_begin();
+			$data = [
+				'status' => 'DEL',
+				'deleted_by' => $this->auth->user_id(),
+				'deleted_at' => date('Y-m-d H:i:s'),
+			];
+			$this->db->update('dir_guides', $data, ['id' => $id]);
+			$file_name = $this->db->get_where('dir_guides', ['id' => $id])->row()->file_name;
+			$this->_delete_file('GUIDES', $file_name);
+			if ($this->db->trans_status() === FALSE) {
+				$this->db->trans_rollback();
+				$Return = [
+					'status' => '0',
+					'msg' => 'Data failed to delete, pelase try again.'
+				];
+			} else {
+				$this->db->trans_commit();
+				$Return = [
+					'status' => '1',
+					'msg' => 'Data successfull deleted.'
+				];
+			}
+		} else {
+			$Return = [
+				'status' => '0',
+				'msg' => 'Data not valid'
+			];
+		}
+
+		echo json_encode($Return);
+	}
 	
 	public function save()
 	{
