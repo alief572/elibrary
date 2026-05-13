@@ -136,7 +136,7 @@
 				<td><?= (isset($ArrDtl) && isset($ArrDtl[$v->id]->pasal) && isset($ArrPro[$ArrDtl[$v->id]->pasal])) ? $ArrPro[$ArrDtl[$v->id]->pasal] : ''; ?></td>
 				<td>
 					<?php if (isset($ArrDtl) && isset($ArrDtl[$v->id]->file_name) && $ArrDtl[$v->id]->file_name) : ?>
-						<a href="<?= base_url('directory/AUDIT/' . $this->company . '/' . $ArrDtl[$v->id]->file_name); ?>" target="_blank" class="btn btn-info btn-icon btn-sm"><i class="fa fa-file" aria-hidden="true"></i></a>
+						<a href="<?= base_url('directory/AUDIT/' . $company . '/' . $ArrDtl[$v->id]->file_name); ?>" target="_blank" class="btn btn-info btn-icon btn-sm"><i class="fa fa-file" aria-hidden="true"></i></a>
 					<?php endif; ?>
 				</td>
 			</tr>

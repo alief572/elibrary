@@ -392,6 +392,7 @@ class Audit_checklist extends Admin_Controller
                 'checklist' => $checklist,
                 'category'  => $category,
                 'AdtAudit'  => $AdtAudit,
+                'company'  => $this->company,
             ]);
 
             $this->template->render('view');
