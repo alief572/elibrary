@@ -370,24 +370,42 @@ class Records extends Admin_Controller
 	public function saveFileRecord()
 	{
 		$data = $this->input->post('forms');
-		if (isset($_FILES['forms_image'])) {
-			$upload_path = "./directory/RECORDS/$this->company/";
-			if (!is_dir($upload_path)) mkdir($upload_path, 0755, TRUE);
-			$config = ['upload_path' => $upload_path, 'allowed_types' => 'xlsx|xls|pdf', 'encrypt_name' => true];
-			$this->upload->initialize($config);
-			if ($this->upload->do_upload('forms_image')) {
-				$file = $this->upload->data(); $data['size'] = $file['file_size']; $data['ext'] = $file['file_ext']; $data['file_name'] = $file['file_name'];
-				if (isset($data['old_file']) && $data['old_file'] && file_exists($upload_path . $data['old_file'])) unlink($upload_path . $data['old_file']);
-			} else {
-				echo json_encode(['status' => 0, 'msg' => $this->upload->display_errors()]); return false;
+		$record_type = $this->input->post('record_type');
+
+		if ($record_type === 'online_link') {
+			// Save as link (no file upload)
+			$id = $data['id'] ?: uniqid(date('m'));
+			$data['id'] = $id;
+			$data['name'] = $data['description'];
+			$data['company_id'] = $this->company;
+			$data['flag_type'] = 'FILE';
+			$data['file_name'] = null;
+			unset($data['old_file'], $data['type']);
+			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
+			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Record', 'note' => 'Save link record']);
+			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Link Record successfully saved.' : 'Link Record failed to save.')]);
+		} else {
+			// Save as file upload (original logic)
+			if (isset($_FILES['forms_image']) && $_FILES['forms_image']['name']) {
+				$upload_path = "./directory/RECORDS/$this->company/";
+				if (!is_dir($upload_path)) mkdir($upload_path, 0755, TRUE);
+				$config = ['upload_path' => $upload_path, 'allowed_types' => 'xlsx|xls|pdf', 'encrypt_name' => true];
+				$this->upload->initialize($config);
+				if ($this->upload->do_upload('forms_image')) {
+					$file = $this->upload->data(); $data['size'] = $file['file_size']; $data['ext'] = $file['file_ext']; $data['file_name'] = $file['file_name'];
+					if (isset($data['old_file']) && $data['old_file'] && file_exists($upload_path . $data['old_file'])) unlink($upload_path . $data['old_file']);
+				} else {
+					echo json_encode(['status' => 0, 'msg' => $this->upload->display_errors()]); return false;
+				}
 			}
+			$id = $data['id'] ?: uniqid(date('m'));
+			$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
+			$data['link_url'] = null;
+			unset($data['old_file'], $data['type']);
+			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
+			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Record', 'note' => 'Upload file']);
+			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File Record successfully saved.' : 'File Record failed to save.')]);
 		}
-		$id = $data['id'] ?: uniqid(date('m'));
-		$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
-		unset($data['old_file'], $data['type']);
-		$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
-		if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Record', 'note' => 'Upload file']);
-		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File Record successfully saved.' : 'File Record failed to save.')]);
 	}
 
 	public function delete_procedure($id)

@@ -30,6 +30,15 @@
                 }
             ?>
                 <iframe src="<?= $url ?>" frameborder="0" width="100%" height="500px"></iframe>
+            <?php elseif (isset($file->link_url) && $file->link_url) : ?>
+                <div class="text-center py-5">
+                    <i class="fa fa-link fa-3x text-info mb-3"></i>
+                    <h5>Document Link</h5>
+                    <a href="<?= $file->link_url; ?>" target="_blank" class="btn btn-info mt-3">
+                        <i class="fa fa-external-link-alt mr-2"></i> Open Link
+                    </a>
+                    <p class="text-muted mt-2"><?= $file->link_url; ?></p>
+                </div>
             <?php else : ?>
                 <?php if ($file->status == 'DEL') : ?>
                     <h4>404 Not Found!</h4>
