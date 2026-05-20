@@ -383,7 +383,7 @@ class Manage_documents extends Admin_Controller
 	{
 		$file 		= $this->db->get_where('view_directories', ['id' => $id])->row();
 
-		$users 		= $this->db->get_where('users', ['st_aktif' => '1', 'id_perusahaan' => $this->company, 'id_user !=' => '1'])->result();
+		$users 		= $this->db->get_where('users', ['status' => 'ACT'])->result();
 		$jabatan 	= $this->db->get('positions')->result();
 
 		$this->template->set([
@@ -441,7 +441,7 @@ class Manage_documents extends Admin_Controller
 				}
 				// $new_name 					= $this->fixForUri($data['description']);
 				$config['upload_path'] 		= "./directory/$mainFolder/$this->company/$parent_name"; //path folder
-				$config['allowed_types'] 	= 'pdf|xlsx|docx'; //type yang dapat diakses bisa anda sesuaikan
+				$config['allowed_types'] 	= 'jpg|jpeg|png|pdf|xlsx|docx'; //type yang dapat diakses bisa anda sesuaikan
 				$config['encrypt_name'] 	= true; //Enkripsi nama yang terupload
 
 
