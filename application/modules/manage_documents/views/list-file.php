@@ -25,13 +25,18 @@
 								</button>
 								<div class="dropdown-menu">
 									<?php if ($list->flag_type == 'FILE') : ?>
-										<a class="dropdown-item <?= ($list->status != 'OPN') ? 'disabled' : ''; ?>" onclick="edit_file('<?= $list->id; ?>','<?= $list->parent_id; ?>')" data-id="<?= $list->id; ?>" href="#"><i class="fa fa-file text-warning mr-2"></i>Edit File</a>
-										<a class="dropdown-item <?= ($list->status != 'OPN' || $list->flag_record == 'Y') ? 'disabled' : ''; ?>" onclick=" review_process('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fab fa-telegram text-success mr-2"></i>Process to Review</a>
+										<a class="dropdown-item <?= ($list->status != 'OPN') ? '' : ''; ?>" onclick="edit_file('<?= $list->id; ?>','<?= $list->parent_id; ?>')" data-id="<?= $list->id; ?>" href="#"><i class="fa fa-file text-warning mr-2"></i>Edit File</a>
+										<a class="dropdown-item <?= ($list->status != 'OPN' || $list->flag_record == 'Y') ? 'd-none' : ''; ?>" onclick=" review_process('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fab fa-telegram text-success mr-2"></i>Process to Review</a>
+										<a class="dropdown-item <?= ($list->flag_type == 'FILE') ? '' : ''; ?>" onclick="delete_folder('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
 										<div class="dropdown-divider"></div>
-									<?php endif; ?>
+									<?php elseif ($list->flag_type == 'LINK') : ?>
+										<a class="dropdown-item " onclick="edit_file('<?= $list->id; ?>','<?= $list->parent_id; ?>')" data-id="<?= $list->id; ?>" href="#"><i class="fa fa-file text-warning mr-2"></i>Edit File</a>
+										<a class="dropdown-item <?= ($list->flag_type == 'FILE') ? 'd-none' : ''; ?>" onclick="delete_folder('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
+										<div class="dropdown-divider"></div>
+									<?php else : ?>
 									<a class="dropdown-item" onclick="rename('<?= $list->id; ?>')" href="#"><i class="fa fa-edit text-info mr-2"></i>Rename</a>
-									<a class="dropdown-item <?= ($list->flag_type == 'FOLDER') ? 'd-none' : ''; ?>" onclick="delete_file('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
-									<a class="dropdown-item <?= ($list->flag_type == 'FILE') ? 'd-none' : ''; ?>" onclick="delete_folder('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
+									<a class="dropdown-item <?= ($list->flag_type == 'FOLDER') ? '' : ''; ?>" onclick="delete_file('<?= $list->id; ?>','<?= $list->parent_id; ?>')" href="#"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
+									<?php endif; ?>
 								</div>
 							</div>
 							<?php if ($list->flag_type == 'FOLDER'): ?>

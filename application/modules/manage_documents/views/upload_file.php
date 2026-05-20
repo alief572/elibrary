@@ -7,7 +7,7 @@
 	<div class="row">
 		<label class="col-12 col-form-label">Document Name :</label>
 		<div class="col-12">
-			<input type="hidden" name="folder" value="<?= $folder; ?>">
+			<input type="hidden" name="folder" value="<?= isset($folder)? $folder:''; ?>">
 			<input type="hidden" id="id" name="id" class="form-control" placeholder="" value="<?= isset($file) && is_object($file) ? $file->id : ''; ?>" />
 			<input type="hidden" id="parent_id" name="parent_id" class="form-control" placeholder="" value="<?= $parent_id; ?>" />
 			<input type="text" class="form-control" id="description" placeholder="Description" name="description" value="<?= isset($file) && is_object($file) ? $file->name : ''; ?>" autocomplete="off" />
@@ -107,8 +107,8 @@
 	<div class="form-group row mb-0 document-source document-source-upload" style="display: <?= $source === 'upload' ? 'block' : 'none'; ?>;">
 		<label class="col-12 col-form-label">Upload Document :</label>
 		<div class="col-12">
-			<input type="file" name="image" id="image" class="form-control" placeholder="Upload File">
-			<span class="form-text text-muted">File type : PDF</span>
+			<input type="file" name="image" accept=".png,.jpg,.pdf,.xlsx,.docx" id="image" class="form-control" placeholder="Upload File">
+			<span class="form-text text-muted">File type : PDF/PNG/JPG/XLSX/DOCX</span>
 			<span class="form-text text-danger invalid-feedback">Upload Document By harus di isi</span>
 		</div>
 		<?php if (isset($file) && is_object($file) && !empty($file->file_name)) : ?>
