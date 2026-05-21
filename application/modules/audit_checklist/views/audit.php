@@ -51,7 +51,7 @@
                   </div>
                 </div>
                 <div class="mb-2 row">
-                  <label for="conclusion" class="col-md-4 h6 font-weight-bold">Keterangan</label>
+                  <label for="conclusion" class="col-md-4 h6 font-weight-bold">Kesimpulan</label>
                   <div class="col h6">
                     <textarea name="conclusion" id="conclusion" class="form-control" rows="3" style="resize: none; overflow-y: hidden;" placeholder="Masukkan conclusion..."><?= isset($audit) ? htmlspecialchars($audit->conclusion) : ''; ?></textarea>
                   </div>
