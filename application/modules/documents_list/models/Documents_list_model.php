@@ -180,7 +180,10 @@ class Documents_list_model extends BF_Model
 
     public function getRecordsFiltered($where)
     {
-        return $this->db->get_where('dir_records', $where)->result();
+        // Ensure deleted records are excluded
+        $where['status !='] = 'DEL';
+        // Apply default alphabetical sorting
+        return $this->db->order_by('name', 'ASC')->get_where('dir_records', $where)->result();
     }
 
     /* MATERI TRAINING */
