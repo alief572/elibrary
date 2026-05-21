@@ -30,7 +30,7 @@
 			</div>
 		</div>
 		<div class="mb-2 row">
-			<label for="" class="col-md-4 h6 font-weight-bold">Keterangan</label>
+			<label for="" class="col-md-4 h6 font-weight-bold">Kesimpulan</label>
 			<div class="col-md-8 h6">: <?= ($audit && $audit->conclusion) ? nl2br(htmlentities($audit->conclusion)) : '-'; ?></div>
 		</div>
 	</div>

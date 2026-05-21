@@ -17,7 +17,7 @@
 								<th width="">Temuan</th>
 								<th width="80" class="text-center">Action</th>
 								<th width="110" class="text-center">Edit Limits</th>
-								<th width="" class="text-center">Keterangan</th>
+								<th width="" class="text-center">Kesimpulan</th>
 							</tr>
 						</thead>
 						<tbody>
