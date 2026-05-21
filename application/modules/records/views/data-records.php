@@ -35,6 +35,8 @@
               <div class="d-flex justify-content-start align-items-center">
                 <?php if ($form->flag_type == 'FOLDER') : ?>
                   <i class="fa fa-folder text-warning fa-3x mr-3"></i>
+                <?php elseif (isset($form->link_url) && $form->link_url) : ?>
+                  <i class="fa fa-link text-info fa-3x mr-3"></i>
                 <?php else : ?>
                   <i class="fa fa-file-alt text-success fa-3x mr-3"></i>
                 <?php endif; ?>
@@ -55,7 +57,11 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
                   <?php if ($form->flag_type == 'FILE') : ?>
-                    <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View Document</a>
+                    <?php if (isset($form->link_url) && $form->link_url) : ?>
+                      <a class="dropdown-item" href="<?= $form->link_url; ?>" target="_blank" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
+                    <?php else : ?>
+                      <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View Document</a>
+                    <?php endif; ?>
                     <a class="dropdown-item edit-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Document</a>
                   <?php else : ?>
                     <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>

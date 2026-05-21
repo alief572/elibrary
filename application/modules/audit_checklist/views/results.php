@@ -17,6 +17,7 @@
 								<th width="">Temuan</th>
 								<th width="80" class="text-center">Action</th>
 								<th width="110" class="text-center">Edit Limits</th>
+								<th width="" class="text-center">Keterangan</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -62,6 +63,7 @@
 											<?php endif; ?>
 											</span>
 									</td>
+									<td><?= nl2br(htmlentities($v->conclusion)); ?></td>
 								</tr>
 							<?php endforeach; ?>
 						</tbody>

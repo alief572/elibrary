@@ -1071,23 +1071,38 @@
 			let btn = $('.save')
 			$('#description').removeClass('is-invalid')
 			$('#image').removeClass('is-invalid')
+			$('#link-url').removeClass('is-invalid')
 			const description = $('#description').val();
-			const image = $('#image').val();
+			const record_type = $('input[name="record_type"]:checked').val();
 
 			if (description !== undefined && (description == '' || description == null)) {
 				$('#description').addClass('is-invalid')
 				return false;
 			}
 
-			if (image !== undefined && (image == '' || image == null)) {
-				$('#image').addClass('is-invalid')
-				Swal.fire({
-					title: "Error Message!",
-					text: 'Empty file, please input file first.....',
-					icon: "warning"
-				});
-
-				return false;
+			if (record_type === 'upload_file') {
+				const image = $('#image').val();
+				const oldFile = $('#old_file').val();
+				if (!oldFile && (image == undefined || image == '' || image == null)) {
+					$('#image').addClass('is-invalid')
+					Swal.fire({
+						title: "Error Message!",
+						text: 'Empty file, please input file first.....',
+						icon: "warning"
+					});
+					return false;
+				}
+			} else if (record_type === 'online_link') {
+				const linkUrl = $('#link-url').val();
+				if (linkUrl == undefined || linkUrl == '' || linkUrl == null) {
+					$('#link-url').addClass('is-invalid')
+					Swal.fire({
+						title: "Error Message!",
+						text: 'Link harus di isi.',
+						icon: "warning"
+					});
+					return false;
+				}
 			}
 
 			$.ajax({
