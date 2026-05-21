@@ -50,6 +50,12 @@
                     </select>
                   </div>
                 </div>
+                <div class="mb-2 row">
+                  <label for="conclusion" class="col-md-4 h6 font-weight-bold">Keterangan</label>
+                  <div class="col h6">
+                    <textarea name="conclusion" id="conclusion" class="form-control" rows="3" style="resize: none; overflow-y: hidden;" placeholder="Masukkan conclusion..."><?= isset($audit) ? htmlspecialchars($audit->conclusion) : ''; ?></textarea>
+                  </div>
+                </div>
               </div>
             </div>
             <hr>
@@ -283,6 +289,16 @@
 
 <script>
   $(document).ready(function() {
+    function autoResizeTextarea(selector) {
+      $(selector).each(function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      }).on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      });
+    }
+    autoResizeTextarea('#conclusion');
 
     $(document).on('click', '.read', function() {
       let id = $(this).data('id')
