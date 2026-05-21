@@ -3,19 +3,19 @@
 		<div class="mb-2 row">
 			<label for="" class="d-none" id="procedure_id"><?= $cklst->procedure_id; ?></label>
 			<label for="" class="col-md-4 h6 font-weight-bold">Procedure</label>
-			<label for="" class="col h6">: <?= isset($cklst->name) ? $cklst->name : ''; ?></label>
+			<label class="col-md-8 h6">: <?= isset($cklst->name) ? $cklst->name : ''; ?></label>
 
 		</div>
 		<div class="mb-2 row">
 			<label for="" class="col-md-4 h6 font-weight-bold">Date</label>
-			<label for="" class="col h6">: <?= (isset($audit) && $audit) ? $audit->date : ''; ?>
+			<label class="col-md-8 h6">: <?= (isset($audit) && $audit) ? $audit->date : ''; ?>
 			</label>
 		</div>
 	</div>
 	<div class="col-md-6">
 		<div class="mb-2 row">
 			<label for="" class="col-md-4 h6 font-weight-bold">Auditor</label>
-			<div for="" class="col h6">:
+			<div class="col-md-8 h6">:
 				<?php if ($users) foreach ($users as $a) : ?>
 					<?= ($audit && $audit->auditor) ? (in_array($a->id_user, json_decode($audit->auditor)) ? $a->full_name . "," : '') : ''; ?>
 				<?php endforeach; ?>
@@ -23,11 +23,15 @@
 		</div>
 		<div class="mb-2 row">
 			<label for="" class="col-md-4 h6 font-weight-bold">Auditee</label>
-			<div for="" class="col h6">:
+			<div class="col-md-8 h6">:
 				<?php if ($users) foreach ($users as $a) : ?>
 					<?= ($audit && $audit->auditee) ? (in_array($a->id_user, json_decode($audit->auditee)) ? $a->full_name . "," : '') : ''; ?>
 				<?php endforeach; ?>
 			</div>
+		</div>
+		<div class="mb-2 row">
+			<label for="" class="col-md-4 h6 font-weight-bold">Keterangan</label>
+			<div class="col-md-8 h6">: <?= ($audit && $audit->conclusion) ? nl2br(htmlentities($audit->conclusion)) : '-'; ?></div>
 		</div>
 	</div>
 </div>
