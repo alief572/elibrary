@@ -116,8 +116,17 @@ class Documents_list extends Admin_Controller
 			$groups 		= $this->List->getProcedureGroups();
 			$procedures 	= $this->List->getPublishedProcedures($this->company);
 
-			$ArrPro = [];
+			// Only show procedures that have a generated PDF file
+			$filteredProcedures = [];
 			foreach ($procedures as $pro) {
+				$pdfPath = FCPATH . 'directory/PROCEDURES_PDF/' . $this->company . '/procedure_' . $pro['id'] . '.pdf';
+				if (file_exists($pdfPath)) {
+					$filteredProcedures[] = $pro;
+				}
+			}
+
+			$ArrPro = [];
+			foreach ($filteredProcedures as $pro) {
 				$ArrPro[$pro['group_procedure']][] = $pro;
 			}
 
@@ -132,38 +141,10 @@ class Documents_list extends Admin_Controller
 
 	public function view_procedure($id)
 	{
-		$docs 			= $this->List->getProcedureById($id);
-		$detail 		= $this->List->getProcedureDetails($id);
-		$forms 			= $this->List->getFormsByProcedure($id);
-		$guides 		= $this->List->getGuidesByProcedure($id);
-		$users 			= $this->List->getActiveUsers($this->company);
-		$jabatan 		= $this->List->getPositions();
-		$ArrUsr 		= $ArrJab = $ArrForms = $ArrGuides = [];
-
-		foreach ($users as $usr) {
-			$ArrUsr[$usr->id_user] = $usr;
-		}
-
-		foreach ($jabatan as $jab) {
-			$ArrJab[$jab->id] = $jab;
-		}
-		foreach ($forms as $form) {
-			$ArrForms[$form->id] = $form;
-		}
-
-		foreach ($guides as $gui) {
-			$ArrGuides[$gui->id] = $gui;
-		}
-
+		$docs = $this->List->getProcedureById($id);
 
 		$this->template->set([
-			'docs' 			=> $docs,
-			'detail' 		=> $detail,
-			'MainData' 		=> $this->MainData,
-			'ArrUsr' 		=> $ArrUsr,
-			'ArrJab' 		=> $ArrJab,
-			'ArrForms' 		=> $ArrForms,
-			'ArrGuides' 	=> $ArrGuides,
+			'docs' => $docs,
 		]);
 
 		$this->template->render('procedures/view-docs');

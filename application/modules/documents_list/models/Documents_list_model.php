@@ -98,11 +98,11 @@ class Documents_list_model extends BF_Model
 
     public function getPublishedProcedures($companyId)
     {
-        return $this->db->get_where('view_procedures', [
-            'company_id' => $companyId,
-            'status' => 'PUB',
-            'deleted_by' => null
-        ])->result_array();
+        return $this->db->where('company_id', $companyId)
+            ->where('deleted_by', null)
+            ->where_in('status', ['PUB', 'RVI', 'REV', 'COR', 'APV'])
+            ->get('view_procedures')
+            ->result_array();
     }
 
     public function getProcedureById($id)
