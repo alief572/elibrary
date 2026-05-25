@@ -161,7 +161,109 @@ class Monitoring extends Admin_Controller
 		$data = $this->input->post();
 		if ($data) {
 			$success = $this->Monitor_model->approval($data);
+
+			// Auto-generate PDF when status is set to Published
+			if ($success && isset($data['status']) && $data['status'] == 'PUB') {
+				$this->_generateProcedurePdf($data['id']);
+			}
+
 			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Success process approval document...' : 'Failed process.')]);
+		}
+	}
+
+	/**
+	 * Generate PDF file for a published procedure.
+	 * Loads the procedures module to reuse its PDF generation logic.
+	 */
+	private function _generateProcedurePdf($procedureId)
+	{
+		try {
+			$this->load->model('procedures/Procedures_model', 'ProModel');
+
+			$procedure = $this->ProModel->getProcedureById($procedureId, $this->company);
+			if (!$procedure) return false;
+
+			// Ensure directory exists
+			$pdfDir = FCPATH . 'directory/PROCEDURES_PDF/' . $this->company . '/';
+			if (!is_dir($pdfDir)) {
+				mkdir($pdfDir, 0755, true);
+			}
+
+			// Load required data
+			$flowDetail = $this->ProModel->getProcedureDetails($procedureId);
+			$getForms = $this->ProModel->getFormsByProcedure($procedureId);
+			$getGuides = $this->ProModel->getGuidesByProcedure($procedureId);
+			$users = $this->ProModel->getActiveUsers($this->company);
+			$jabatan = $this->ProModel->getPositions();
+
+			$ArrUsr = $ArrJab = $ArrForms = $ArrGuides = [];
+			foreach ($getForms as $frm) { $ArrForms[$frm->id] = $frm; }
+			foreach ($users as $usr) { $ArrUsr[$usr->id_user] = $usr; }
+			foreach ($jabatan as $jab) { $ArrJab[$jab->id] = $jab; }
+			foreach ($getGuides as $gui) { $ArrGuides[$gui->id] = $gui; }
+
+			$Cross = $this->ProModel->getCrossReferences($procedureId, $this->company);
+			$ArrData = $ArrStd = [];
+			foreach ($Cross as $dt) {
+				$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
+				$ArrData['standards'][$dt->requirement_id][] = $dt;
+			}
+			foreach ($Cross as $dtstd) {
+				$ArrStd[$dtstd->requirement_id] = $dtstd;
+			}
+
+			$company = $this->ProModel->getCompany($this->company);
+
+			$Data = [
+				'procedure' => $procedure,
+				'detail' => $flowDetail,
+				'ArrUsr' => $ArrUsr,
+				'ArrJab' => $ArrJab,
+				'ArrForms' => $ArrForms,
+				'ArrGuides' => $ArrGuides,
+				'Data' => $Cross,
+				'ArrData' => $ArrData,
+				'ArrStd' => $ArrStd,
+				'allProcedure' => [],
+				'company_name' => (isset($company->nm_perusahaan) ? $company->nm_perusahaan : ''),
+			];
+
+			// Load the printout view from procedures module directly
+			$viewPath = APPPATH . 'modules/procedures/views/printout.php';
+
+			// Use output buffering to render the view with data
+			extract($Data);
+			ob_start();
+			include($viewPath);
+			$html = ob_get_clean();
+
+			// Use mPDF to generate PDF
+			$mpdf = new \Mpdf\Mpdf([
+				'mode' => 'utf-8',
+				'format' => 'A4',
+				'autoScriptToLang' => true,
+				'autoLangToFont' => true,
+			]);
+			$mpdf->showImageErrors = false;
+			$mpdf->curlAllowUnsafeSslRequests = true;
+
+			error_reporting(E_ALL & ~E_NOTICE);
+			$mpdf->WriteHTML($html);
+
+			$pdfPath = $pdfDir . 'procedure_' . $procedureId . '.pdf';
+
+			// Delete old PDF if exists
+			if (file_exists($pdfPath)) {
+				unlink($pdfPath);
+			}
+
+			if (ob_get_length()) ob_clean();
+			$mpdf->Output($pdfPath, \Mpdf\Output\Destination::FILE);
+
+			return file_exists($pdfPath);
+		} catch (\Exception $e) {
+			log_message('error', 'Failed to generate PDF for procedure #' . $procedureId . ': ' . $e->getMessage());
+			return false;
 		}
 	}
 
