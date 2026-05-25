@@ -805,9 +805,15 @@ class Procedures extends Admin_Controller
 		$this->template->render('procedures/view-guide');
 	}
 
-	/* Printout */
+	/* Printout - always renders fresh from database (used by Monitoring) */
 	public function printOut($id = null)
 	{
+		if (!$id) return;
+
+		// Always generate on-the-fly from latest database data
+		$html = $this->_renderPrintoutHtml($id, $this->company);
+		if (!$html) return;
+
 		$mpdf = new Mpdf([
 			'mode' => 'utf-8',
 			'format' => 'A4',
@@ -817,11 +823,195 @@ class Procedures extends Admin_Controller
 		$mpdf->showImageErrors = false;
 		$mpdf->curlAllowUnsafeSslRequests = true;
 
-		$procedure = $this->ProModel->getProcedureById($id, $this->company);
+		error_reporting(E_ALL & ~E_NOTICE);
+		$mpdf->WriteHTML($html);
+		if (ob_get_length())
+			ob_clean();
+		$mpdf->Output();
+	}
+
+	/* viewPdf - serves pre-generated PDF file (used by E-Library) */
+	public function viewPdf($id = null)
+	{
+		if (!$id) return;
+
+		$pdfPath = $this->_getPdfPath($id, $this->company);
+		if (file_exists($pdfPath)) {
+			header('Content-Type: application/pdf');
+			header('Content-Disposition: inline; filename="' . basename($pdfPath) . '"');
+			header('Content-Length: ' . filesize($pdfPath));
+			if (ob_get_length()) ob_clean();
+			readfile($pdfPath);
+			return;
+		}
+
+		// Fallback: if PDF file doesn't exist, generate on-the-fly
+		$html = $this->_renderPrintoutHtml($id, $this->company);
+		if (!$html) return;
+
+		$mpdf = new Mpdf([
+			'mode' => 'utf-8',
+			'format' => 'A4',
+			'autoScriptToLang' => true,
+			'autoLangToFont' => true,
+		]);
+		$mpdf->showImageErrors = false;
+		$mpdf->curlAllowUnsafeSslRequests = true;
+
+		error_reporting(E_ALL & ~E_NOTICE);
+		$mpdf->WriteHTML($html);
+		if (ob_get_length())
+			ob_clean();
+		$mpdf->Output();
+	}
+
+	/**
+	 * Generate and save PDF file to disk for a published procedure.
+	 * Can be called internally or via URL for batch generation.
+	 *
+	 * @param int $id Procedure ID
+	 * @param int|null $companyId Company ID (uses current company if null)
+	 * @return string|false File path on success, false on failure
+	 */
+	public function generatePdfFile($id = null, $companyId = null)
+	{
+		if (!$id) {
+			if ($this->input->is_ajax_request()) {
+				echo json_encode(['status' => 0, 'msg' => 'Invalid procedure ID']);
+			}
+			return false;
+		}
+
+		$companyId = $companyId ?: $this->company;
+
+		try {
+			$html = $this->_renderPrintoutHtml($id, $companyId);
+
+			if (!$html) {
+				return false;
+			}
+
+			$mpdf = new Mpdf([
+				'mode' => 'utf-8',
+				'format' => 'A4',
+				'autoScriptToLang' => true,
+				'autoLangToFont' => true,
+			]);
+			$mpdf->showImageErrors = false;
+			$mpdf->curlAllowUnsafeSslRequests = true;
+
+			error_reporting(E_ALL & ~E_NOTICE);
+			$mpdf->WriteHTML($html);
+
+			// Ensure directory exists
+			$pdfDir = FCPATH . 'directory/PROCEDURES_PDF/' . $companyId . '/';
+			if (!is_dir($pdfDir)) {
+				mkdir($pdfDir, 0755, true);
+			}
+
+			$pdfPath = $this->_getPdfPath($id, $companyId);
+
+			if (ob_get_length()) ob_clean();
+			$mpdf->Output($pdfPath, 'F');
+
+			return file_exists($pdfPath) ? $pdfPath : false;
+		} catch (\Exception $e) {
+			log_message('error', 'generatePdfFile error for ID ' . $id . ': ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Batch generate PDFs for all published procedures.
+	 * Access via: /procedures/generate_all_published_pdf
+	 */
+	public function generate_all_published_pdf()
+	{
+		set_time_limit(300);
+		ini_set('memory_limit', '512M');
+
+		$procedures = $this->ProModel->getProceduresByStatus($this->company, 'PUB');
+
+		$total = count($procedures);
+		$results = ['success' => 0, 'failed' => 0, 'skipped' => 0, 'details' => []];
+
+		foreach ($procedures as $proc) {
+			$pdfPath = $this->_getPdfPath($proc->id, $this->company);
+
+			// Skip if PDF already exists
+			if (file_exists($pdfPath)) {
+				$results['skipped']++;
+				$results['details'][] = ['id' => $proc->id, 'name' => $proc->name, 'status' => 'skipped'];
+				continue;
+			}
+
+			try {
+				$generated = $this->generatePdfFile($proc->id, $this->company);
+				if ($generated) {
+					$results['success']++;
+					$results['details'][] = ['id' => $proc->id, 'name' => $proc->name, 'status' => 'generated'];
+				} else {
+					$results['failed']++;
+					$results['details'][] = ['id' => $proc->id, 'name' => $proc->name, 'status' => 'failed'];
+				}
+			} catch (\Exception $e) {
+				$results['failed']++;
+				$results['details'][] = ['id' => $proc->id, 'name' => $proc->name, 'status' => 'error: ' . $e->getMessage()];
+			}
+		}
+
+		$data = [
+			'title' => 'Generate Published PDFs',
+			'total' => $total,
+			'results' => $results,
+		];
+		$this->template->set($data);
+		$this->template->render('generate_pdf_result');
+	}
+
+	/**
+	 * Force regenerate PDF for a specific procedure (e.g., after revision).
+	 */
+	public function regenerate_pdf($id = null)
+	{
+		if (!$id) {
+			echo json_encode(['status' => 0, 'msg' => 'Invalid procedure ID']);
+			return;
+		}
+
+		// Delete old PDF if exists
+		$pdfPath = $this->_getPdfPath($id, $this->company);
+		if (file_exists($pdfPath)) {
+			unlink($pdfPath);
+		}
+
+		$generated = $this->generatePdfFile($id, $this->company);
+		echo json_encode([
+			'status' => $generated ? 1 : 0,
+			'msg' => $generated ? 'PDF regenerated successfully.' : 'Failed to regenerate PDF.'
+		]);
+	}
+
+	/**
+	 * Get the PDF file path for a procedure.
+	 */
+	private function _getPdfPath($id, $companyId)
+	{
+		return FCPATH . 'directory/PROCEDURES_PDF/' . $companyId . '/procedure_' . $id . '.pdf';
+	}
+
+	/**
+	 * Render the printout HTML for a procedure (shared logic for printOut and generatePdfFile).
+	 */
+	private function _renderPrintoutHtml($id, $companyId)
+	{
+		$procedure = $this->ProModel->getProcedureById($id, $companyId);
+		if (!$procedure) return false;
+
 		$flowDetail = $this->ProModel->getProcedureDetails($id);
 		$getForms = $this->ProModel->getFormsByProcedure($id);
 		$getGuides = $this->ProModel->getGuidesByProcedure($id);
-		$users = $this->ProModel->getActiveUsers($this->company);
+		$users = $this->ProModel->getActiveUsers($companyId);
 		$jabatan = $this->ProModel->getPositions();
 
 		$ArrUsr = $ArrJab = $ArrForms = $ArrGuides = [];
@@ -838,7 +1028,7 @@ class Procedures extends Admin_Controller
 			$ArrGuides[$gui->id] = $gui;
 		}
 
-		$Cross = $this->ProModel->getCrossReferences($id, $this->company);
+		$Cross = $this->ProModel->getCrossReferences($id, $companyId);
 		$ArrData = $ArrStd = [];
 		foreach ($Cross as $dt) {
 			$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
@@ -848,10 +1038,9 @@ class Procedures extends Admin_Controller
 			$ArrStd[$dtstd->requirement_id] = $dtstd;
 		}
 
-		$allProcedure = $this->ProModel->getProceduresByStatus($this->company, ''); // Show all active
-		$company = $this->ProModel->getCompany($this->company);
+		$company = $this->ProModel->getCompany($companyId);
 
-		$Data = [
+		$viewData = [
 			'procedure' => $procedure,
 			'detail' => $flowDetail,
 			'ArrUsr' => $ArrUsr,
@@ -861,18 +1050,18 @@ class Procedures extends Admin_Controller
 			'Data' => $Cross,
 			'ArrData' => $ArrData,
 			'ArrStd' => $ArrStd,
-			'allProcedure' => $allProcedure,
+			'allProcedure' => [],
 			'company_name' => (isset($company->nm_perusahaan) ? $company->nm_perusahaan : ''),
 		];
 
-		$this->template->set($Data);
-		$data = $this->template->load_view('printout');
+		// Use output buffering with direct include to avoid template state issues
+		$viewPath = APPPATH . 'modules/procedures/views/printout.php';
+		extract($viewData);
+		ob_start();
+		include($viewPath);
+		$html = ob_get_clean();
 
-		error_reporting(E_ALL & ~E_NOTICE);
-		$mpdf->WriteHTML($data);
-		if (ob_get_length())
-			ob_clean();
-		$mpdf->Output();
+		return $html;
 	}
 
 	/* Helpers */
