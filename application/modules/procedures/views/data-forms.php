@@ -26,7 +26,17 @@
 						</td>
 						<td class="p-2 text-center">
 							<?php if ($form->file_name) : ?>
-								<button type="button" class="btn p-0 btn-sm btn-link text-success btn-icon view-form" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-success"></i></button>
+								<?php
+								$ext = pathinfo($form->file_name, PATHINFO_EXTENSION);
+								if (in_array($ext, ['xls', 'xlsx'])) {
+									$iconClass = 'fas fa-file-excel';
+									$colorClass = 'text-warning';
+								} else {
+									$iconClass = 'fas fa-file-pdf';
+									$colorClass = 'text-primary';
+								}
+								?>
+								<button type="button" class="btn p-0 btn-sm btn-link btn-icon view-form" data-id="<?= $form->id; ?>"><i class="<?= $iconClass; ?> <?= $colorClass; ?>"></i></button>
 							<?php else : ?>
 								<i class="fa fa-times text-danger"></i>
 							<?php endif; ?>

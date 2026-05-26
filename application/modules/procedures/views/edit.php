@@ -556,7 +556,17 @@
 														</td>
 														<td class="p-2 text-center">
 															<?php if ($form->file_name) : ?>
-																<button type="button" class="btn p-0 btn-sm btn-link text-success btn-icon view-form" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-success"></i></button>
+																<?php
+																$ext = pathinfo($form->file_name, PATHINFO_EXTENSION);
+																if (in_array($ext, ['xls', 'xlsx'])) {
+																	$iconClass = 'fas fa-file-excel';
+																	$colorClass = 'text-warning';
+																} else {
+																	$iconClass = 'fas fa-file-pdf';
+																	$colorClass = 'text-primary';
+																}
+																?>
+																<button type="button" class="btn p-0 btn-sm btn-link btn-icon view-form" data-id="<?= $form->id; ?>"><i class="<?= $iconClass; ?> <?= $colorClass; ?>"></i></button>
 															<?php else : ?>
 																<i class="fa fa-times text-danger"></i>
 															<?php endif; ?>
@@ -595,7 +605,17 @@
 														<td class="p-2"><?= $ik->name; ?></td>
 														<td class="p-2 text-center">
 															<?php if ($ik->file_name) : ?>
-																<button type="button" class="btn p-0 btn-sm btn-link text-success btn-icon view-guide" data-id="<?= $ik->id; ?>"><i class="fas fa-file-pdf text-success"></i></button>
+																<?php
+																$ext = pathinfo($ik->file_name, PATHINFO_EXTENSION);
+																if (in_array($ext, ['xls', 'xlsx'])) {
+																	$iconClass = 'fas fa-file-excel';
+																	$colorClass = 'text-warning';
+																} else {
+																	$iconClass = 'fas fa-file-pdf';
+																	$colorClass = 'text-primary';
+																}
+																?>
+																<button type="button" class="btn p-0 btn-sm btn-link btn-icon view-guide" data-id="<?= $ik->id; ?>"><i class="<?= $iconClass; ?> <?= $colorClass; ?>"></i></button>
 															<?php else : ?>
 																<i class="fa fa-times text-danger"></i>
 															<?php endif; ?>
@@ -1095,7 +1115,7 @@
 						<label class="col-12 col-form-label"><span class="text-danger">*</span> Upload Document :</label>
 						<div class="col-12">
 							<input type="file" name="forms_image" id="image" class="form-control" placeholder="Upload File">
-							<span class="form-text text-muted">File type : PDF</span>
+							<span class="form-text text-muted">File type : PDF, Excel (xls, xlsx)</span>
 							<span class="form-text text-danger invalid-feedback">Upload Document By harus di isi</span>
 						</div>
 					</div>`
