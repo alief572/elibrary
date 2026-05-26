@@ -223,16 +223,7 @@
                   <ul>
                     <?php foreach ($relDocs as $relDoc) { ?>
                       <?php if (isset($ArrForms[$relDoc])) : ?>
-                        <?php
-                        $formItem = $ArrForms[$relDoc];
-                        $formUrl = '';
-                        if ($formItem->file_name) {
-                          $formUrl = base_url("directory/FORMS/$formItem->company_id/$formItem->file_name");
-                        } elseif ($formItem->link_form) {
-                          $formUrl = $formItem->link_form;
-                        }
-                        ?>
-                        <li><?php if ($formUrl) : ?><a href="<?= $formUrl; ?>"><?= $formItem->name; ?></a><?php else : ?><?= $formItem->name; ?><?php endif; ?></li>
+                        <li><?= $ArrForms[$relDoc]->name; ?></li>
                       <?php endif; ?>
                     <?php } ?>
                   </ul>
@@ -243,14 +234,7 @@
                   <ul>
                     <?php foreach ($relIk as $ik) { ?>
                       <?php if (isset($ArrGuides[$ik])) : ?>
-                        <?php
-                        $guideItem = $ArrGuides[$ik];
-                        $guideUrl = '';
-                        if ($guideItem->file_name) {
-                          $guideUrl = base_url("directory/GUIDES/$guideItem->company_id/$guideItem->file_name");
-                        }
-                        ?>
-                        <li><?php if ($guideUrl) : ?><a href="<?= $guideUrl; ?>"><?= $guideItem->name; ?></a><?php else : ?><?= $guideItem->name; ?><?php endif; ?></li>
+                        <li><?= $ArrGuides[$ik]->name; ?></li>
                       <?php endif; ?>
                     <?php } ?>
                   </ul>
