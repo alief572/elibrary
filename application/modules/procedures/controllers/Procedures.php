@@ -207,6 +207,7 @@ class Procedures extends Admin_Controller
 					$data['size'] = $file['file_size'];
 					$data['ext'] = $file['file_ext'];
 					$data['file_name'] = $file['file_name'];
+					$data['link_form'] = null; // Clear link when uploading file
 					// $data['flag_type']		= 'FILE';
 					// $dist 					= isset($data['distribute_id']) ? implode(",", $data['distribute_id']) : null;
 					// $data['distribute_id']	= $dist;
@@ -230,6 +231,13 @@ class Procedures extends Admin_Controller
 					echo json_encode($Return);
 					return false;
 				endif;
+			}
+
+			// Clear conflicting fields: if link_form is set, clear file fields and vice versa
+			if (isset($data['link_form']) && $data['link_form']) {
+				$data['file_name'] = null;
+				$data['size'] = null;
+				$data['ext'] = null;
 			}
 
 			if (intval($check) == '0') {
