@@ -20,7 +20,12 @@
 </div>
 <div class="tab-content mt-5">
 	<div class="tab-pane fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
-		<?php if ($form->link_form) : ?>
+		<?php if (!$form) : ?>
+			<div class="text-center py-5">
+				<i class="fa fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+				<p class="text-muted">Data tidak ditemukan</p>
+			</div>
+		<?php elseif ($form->link_form) : ?>
 			<div style="width:92%;height:400px;background-color: red;position: absolute;opacity: 0;"></div>
 			<iframe src="<?= $form->link_form; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
 			<hr>

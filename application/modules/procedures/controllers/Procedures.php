@@ -813,6 +813,70 @@ class Procedures extends Admin_Controller
 		$this->template->render('procedures/view-guide');
 	}
 
+	/* Download Form file (force download) */
+	public function download_form($id = null)
+	{
+		if (!$id) show_404();
+
+		$form = $this->db->get_where('dir_forms', ['id' => $id])->row();
+		if (!$form || !$form->file_name) {
+			show_404();
+			return;
+		}
+
+		$filePath = FCPATH . "directory/FORMS/$form->company_id/$form->file_name";
+		if (!file_exists($filePath)) {
+			show_404();
+			return;
+		}
+
+		$downloadName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $form->name) . $form->ext;
+
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="' . $downloadName . '"');
+		header('Content-Transfer-Encoding: binary');
+		header('Content-Length: ' . filesize($filePath));
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		if (ob_get_length()) ob_clean();
+		flush();
+		readfile($filePath);
+		exit;
+	}
+
+	/* Download Guide/IK file (force download) */
+	public function download_guide($id = null)
+	{
+		if (!$id) show_404();
+
+		$guide = $this->db->get_where('dir_guides', ['id' => $id])->row();
+		if (!$guide || !$guide->file_name) {
+			show_404();
+			return;
+		}
+
+		$filePath = FCPATH . "directory/GUIDES/$guide->company_id/$guide->file_name";
+		if (!file_exists($filePath)) {
+			show_404();
+			return;
+		}
+
+		$downloadName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $guide->name) . $guide->ext;
+
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="' . $downloadName . '"');
+		header('Content-Transfer-Encoding: binary');
+		header('Content-Length: ' . filesize($filePath));
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		if (ob_get_length()) ob_clean();
+		flush();
+		readfile($filePath);
+		exit;
+	}
+
 	/* Printout - always renders fresh from database (used by Monitoring) */
 	public function printOut($id = null)
 	{
@@ -946,11 +1010,9 @@ class Procedures extends Admin_Controller
 		foreach ($procedures as $proc) {
 			$pdfPath = $this->_getPdfPath($proc->id, $this->company);
 
-			// Skip if PDF already exists
+			// Delete old PDF if exists (force regenerate)
 			if (file_exists($pdfPath)) {
-				$results['skipped']++;
-				$results['details'][] = ['id' => $proc->id, 'name' => $proc->name, 'status' => 'skipped'];
-				continue;
+				unlink($pdfPath);
 			}
 
 			try {
