@@ -20,12 +20,12 @@
 </div>
 <div class="tab-content mt-5">
     <?php
-    $height = '350px';
+    $height = '500px';
     if ($view_data == true) :
-        $height = '450px';
+        $height = '550px';
     endif; ?>
     <div class="tab-pane fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
-        <iframe class="w-100 mb-5" style="min-height: <?= ($height) ?>;" src="<?= base_url("procedures/printOut/" . $file->id); ?>#toolbar=0&navpanes=0" frameborder="1"></iframe>
+        <iframe class="w-100 mb-5" style="min-height: <?= ($height) ?>;" src="<?= base_url("procedures/printOut/" . $file->id); ?>" frameborder="1" target="_blank"></iframe>
         <?php if ($view_data == false) : ?>
             <button type="button" class="btn btn-default revision" data-id="<?= $file->id; ?>" data-type="procedure"><i class="fa fa-info-circle text-"></i>Submit this document for Revision</button>
             <button type="button" class="btn btn-light-danger deletion" data-id="<?= $file->id; ?>" data-type="procedure"><i class="fa fa-info-circle text-"></i>Submit this document for Deletion</button>

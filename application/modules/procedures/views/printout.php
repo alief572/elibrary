@@ -222,18 +222,38 @@
                 <?php if (is_array($relDocs)) : ?>
                   <ul>
                     <?php foreach ($relDocs as $relDoc) { ?>
-                      <li><?= $ArrForms[$relDoc]->name; ?></li>
+                      <?php if (isset($ArrForms[$relDoc])) : ?>
+                        <?php
+                        $formItem = $ArrForms[$relDoc];
+                        $formUrl = '';
+                        if ($formItem->file_name) {
+                          $formUrl = base_url("directory/FORMS/$formItem->company_id/$formItem->file_name");
+                        } elseif ($formItem->link_form) {
+                          $formUrl = $formItem->link_form;
+                        }
+                        ?>
+                        <li><?php if ($formUrl) : ?><a href="<?= $formUrl; ?>"><?= $formItem->name; ?></a><?php else : ?><?= $formItem->name; ?><?php endif; ?></li>
+                      <?php endif; ?>
                     <?php } ?>
                   </ul>
+                <?php endif; ?>
 
-                  <?php $relIk = json_decode($dtl->relate_ik_doc); ?>
-                  <?php if (is_array($relIk)) : ?>
-                    <ul>
-                      <?php foreach ($relIk as $ik) { ?>
-                        <li><?= $ArrGuides[$ik]->name; ?></li>
-                      <?php } ?>
-                    </ul>
-                  <?php endif; ?>
+                <?php $relIk = json_decode($dtl->relate_ik_doc); ?>
+                <?php if (is_array($relIk)) : ?>
+                  <ul>
+                    <?php foreach ($relIk as $ik) { ?>
+                      <?php if (isset($ArrGuides[$ik])) : ?>
+                        <?php
+                        $guideItem = $ArrGuides[$ik];
+                        $guideUrl = '';
+                        if ($guideItem->file_name) {
+                          $guideUrl = base_url("directory/GUIDES/$guideItem->company_id/$guideItem->file_name");
+                        }
+                        ?>
+                        <li><?php if ($guideUrl) : ?><a href="<?= $guideUrl; ?>"><?= $guideItem->name; ?></a><?php else : ?><?= $guideItem->name; ?><?php endif; ?></li>
+                      <?php endif; ?>
+                    <?php } ?>
+                  </ul>
                 <?php endif; ?>
               </td>
             </tr>
