@@ -17,7 +17,17 @@
 						<td class=""><?= $guide->name; ?></td>
 						<td class="text-center">
 							<?php if ($guide->file_name) : ?>
-								<button type="button" class="btn p-0 btn-sm btn-link text-success btn-icon view-guide" data-id="<?= $guide->id; ?>"><i class="fas fa-file-pdf text-success"></i></button>
+								<?php
+								$ext = pathinfo($guide->file_name, PATHINFO_EXTENSION);
+								if (in_array($ext, ['xls', 'xlsx'])) {
+									$iconClass = 'fas fa-file-excel';
+									$colorClass = 'text-warning';
+								} else {
+									$iconClass = 'fas fa-file-pdf';
+									$colorClass = 'text-primary';
+								}
+								?>
+								<button type="button" class="btn p-0 btn-sm btn-link btn-icon view-guide" data-id="<?= $guide->id; ?>"><i class="<?= $iconClass; ?> <?= $colorClass; ?>"></i></button>
 							<?php else : ?>
 								<i class="fa fa-times text-danger"></i>
 							<?php endif; ?>
