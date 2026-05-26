@@ -20,20 +20,37 @@
 </div>
 <div class="tab-content mt-5">
 	<div class="tab-pane fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
-		<div style="width:92%;height:400px;background-color: red;position: absolute;opacity: 0;"></div>
-
 		<?php if ($form->link_form) : ?>
+			<div style="width:92%;height:400px;background-color: red;position: absolute;opacity: 0;"></div>
 			<iframe src="<?= $form->link_form; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
-		<?php else : ?>
-			<?php if ($form->ext == '.pdf' || $form->ext == '.PDF') : ?>
-				<iframe src="<?= base_url("directory/FORMS/$form->company_id/$form->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+			<hr>
+			<a href="<?= $form->link_form; ?>" target="_blank" class="btn btn-primary"><i class="fa fa-link"></i> Link to Form</a>
+		<?php elseif ($form->file_name) : ?>
+			<?php
+			$ext = strtolower($form->ext);
+			$isExcel = in_array($ext, ['.xls', '.xlsx']);
+			$fileUrl = base_url("directory/FORMS/$form->company_id/$form->file_name");
+			?>
+			<?php if ($isExcel) : ?>
+				<!-- Excel file: show download button -->
+				<div class="text-center py-5">
+					<i class="fas fa-file-excel fa-5x text-success mb-4"></i>
+					<h5 class="mb-3"><?= $form->name; ?></h5>
+					<p class="text-muted mb-4">File Excel tidak dapat ditampilkan di browser. Silakan download untuk melihat.</p>
+					<a href="<?= $fileUrl; ?>" download class="btn btn-success btn-lg">
+						<i class="fa fa-download mr-2"></i> Download Excel
+					</a>
+				</div>
 			<?php else : ?>
-				<iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/FORMS/$form->company_id/$form->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+				<!-- PDF file: show in iframe -->
+				<div style="width:92%;height:400px;background-color: red;position: absolute;opacity: 0;"></div>
+				<iframe src="<?= $fileUrl; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
 			<?php endif; ?>
-		<?php endif; ?>
-		<hr>
-		<?php if ($form->link_form) : ?>
-			<a href="<?= $form->link_form; ?>" target="_blank" class="btn btn-primary"><i class="fa fa-link"></i>Link to Form</a>
+		<?php else : ?>
+			<div class="text-center py-5">
+				<i class="fa fa-times-circle fa-3x text-danger mb-3"></i>
+				<p class="text-muted">No file available</p>
+			</div>
 		<?php endif; ?>
 	</div>
 	<div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
