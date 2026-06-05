@@ -376,13 +376,17 @@
 																		<?php $relDocs = json_decode($dtl->relate_doc); ?>
 																		<?php if (is_array($relDocs)) : ?>
 																			<?php foreach ($relDocs as $relDoc) { ?>
-																				<span class="badge bg-success btn btn-success view-form mb-1" data-id="<?= $relDoc; ?>"><?= $ArrForms[$relDoc]->name; ?></span>
+																				<?php if (isset($ArrForms[$relDoc])) : ?>
+																					<span class="badge btn <?= ($ArrForms[$relDoc]->status == 'DEL') ? 'btn-light' : 'bg-success btn-success'; ?> view-form mb-1" data-id="<?= $relDoc; ?>"><?= $ArrForms[$relDoc]->name; ?> <?= ($ArrForms[$relDoc]->status == 'DEL') ? '<i class="fa fa-exclamation-circle text-danger" title="File has been deleted!"></i>' : ''; ?></span>
+																				<?php endif; ?>
 																			<?php } ?>
 																		<?php endif; ?>
 																		<?php $relIk = json_decode($dtl->relate_ik_doc); ?>
 																		<?php if (is_array($relIk)) : ?>
 																			<?php foreach ($relIk as $ik) { ?>
-																				<span class="badge bg-danger btn btn-danger view-guide mb-1" data-id="<?= $ik; ?>"><?= $ArrGuides[$ik]->name; ?></span>
+																				<?php if (isset($ArrGuides[$ik])) : ?>
+																					<span class="badge btn <?= ($ArrGuides[$ik]->status == 'DEL') ? 'btn-light' : 'bg-danger btn-danger'; ?> view-guide mb-1" data-id="<?= $ik; ?>"><?= $ArrGuides[$ik]->name; ?> <?= ($ArrGuides[$ik]->status == 'DEL') ? '<i class="fa fa-exclamation-circle text-danger" title="File has been deleted!"></i>' : ''; ?></span>
+																				<?php endif; ?>
 																			<?php } ?>
 																		<?php endif; ?>
 																	</td>
