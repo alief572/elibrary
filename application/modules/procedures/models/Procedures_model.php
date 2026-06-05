@@ -73,7 +73,7 @@ class Procedures_model extends BF_Model
 
     public function getFormsByProcedure($procedureId, $statusNot = 'DEL')
     {
-        return $this->db->get_where('dir_forms', ['procedure_id' => $procedureId, 'status !=' => $statusNot])->result();
+        return $this->db->get_where('dir_forms', ['procedure_id' => $procedureId])->result();
     }
 
     public function getActiveFormsByProcedure($procedureId, $companyId)
@@ -88,7 +88,7 @@ class Procedures_model extends BF_Model
 
     public function getGuidesByProcedure($procedureId, $statusNot = 'DEL')
     {
-        return $this->db->get_where('dir_guides', ['procedure_id' => $procedureId, 'status !=' => $statusNot])->result();
+        return $this->db->get_where('dir_guides', ['procedure_id' => $procedureId])->result();
     }
 
     public function getActiveGuidesByProcedure($procedureId, $companyId)
