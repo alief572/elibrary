@@ -997,6 +997,48 @@ class Procedures extends Admin_Controller
 	 * Batch generate PDFs for all published procedures.
 	 * Access via: /procedures/generate_all_published_pdf
 	 */
+	public function generate_published_pdf($id = null)
+	{
+		if (!$id) {
+			show_error('ID procedure tidak boleh kosong', 400);
+			return;
+		}
+
+		set_time_limit(120);
+		ini_set('memory_limit', '256M');
+
+		$pdfPath = $this->_getPdfPath($id, $this->company);
+
+		// Delete old PDF if exists (force regenerate)
+		if (file_exists($pdfPath)) {
+			unlink($pdfPath);
+		}
+
+		try {
+			$generated = $this->generatePdfFile($id, $this->company);
+			if ($generated) {
+				$result = ['status' => 'success', 'msg' => 'PDF berhasil di-generate', 'path' => $generated];
+			} else {
+				$result = ['status' => 'failed', 'msg' => 'Gagal generate PDF untuk ID: ' . $id];
+			}
+		} catch (\Exception $e) {
+			$result = ['status' => 'error', 'msg' => 'Error: ' . $e->getMessage()];
+		}
+
+		if ($this->input->is_ajax_request()) {
+			echo json_encode($result);
+			return;
+		}
+
+		$data = [
+			'title' => 'Generate PDF',
+			'total' => 1,
+			'results' => ['success' => ($result['status'] === 'success') ? 1 : 0, 'failed' => ($result['status'] !== 'success') ? 1 : 0, 'skipped' => 0, 'details' => [['id' => $id, 'name' => '', 'status' => $result['status']]]],
+		];
+		$this->template->set($data);
+		$this->template->render('generate_pdf_result');
+	}
+
 	public function generate_all_published_pdf()
 	{
 		set_time_limit(300);
