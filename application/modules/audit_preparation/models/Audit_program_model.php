@@ -144,10 +144,13 @@ class Audit_program_model extends BF_Model
      *
      * @return array
      */
-    public function getActiveProcedures()
+    public function getActiveProcedures($company_id = null)
     {
-        return $this->db->get_where('procedures', ['status' => 'PUB'])
-            ->result();
+        $this->db->where('status', 'PUB');
+        if ($company_id) {
+            $this->db->where('company_id', $company_id);
+        }
+        return $this->db->get('procedures')->result();
     }
 
     /**
@@ -188,10 +191,12 @@ class Audit_program_model extends BF_Model
      *
      * @return array
      */
-    public function getDepartments()
+    public function getDepartments($company_id = null)
     {
-        return $this->db->select('id_perusahaan, nm_perusahaan')
-            ->get('companies')
+        return $this->db->select('id, department_name as name')
+            ->where('status', '1')
+            ->order_by('department_name', 'ASC')
+            ->get('audit_department')
             ->result();
     }
 
@@ -238,7 +243,7 @@ class Audit_program_model extends BF_Model
      */
     public function getOpportunities($program_id)
     {
-        return $this->db->select('audit_program_opportunity.*, procedures.name as procedure_name')
+        return $this->db->select('audit_program_opportunity.*, audit_program_opportunity.description as issue_text, procedures.name as procedure_name')
             ->from('audit_program_opportunity')
             ->join('procedures', 'procedures.id = audit_program_opportunity.procedure_id', 'left')
             ->where('audit_program_opportunity.program_id', $program_id)
@@ -255,9 +260,9 @@ class Audit_program_model extends BF_Model
      */
     public function getSchedules($program_id)
     {
-        return $this->db->select('audit_program_schedule.*, audit_process.process_name as process_name, audit_auditor_consultant.name as auditor_name')
+        return $this->db->select('audit_program_schedule.*, procedures.name as process_name, audit_auditor_consultant.name as auditor_name')
             ->from('audit_program_schedule')
-            ->join('audit_process', 'audit_process.id = audit_program_schedule.process_id', 'left')
+            ->join('procedures', 'procedures.id = audit_program_schedule.process_id', 'left')
             ->join('audit_auditor_consultant', 'audit_auditor_consultant.id = audit_program_schedule.auditor_id', 'left')
             ->where('audit_program_schedule.program_id', $program_id)
             ->where('audit_program_schedule.status', '1')
@@ -273,9 +278,9 @@ class Audit_program_model extends BF_Model
      */
     public function getScheduleAuditees($schedule_id)
     {
-        return $this->db->select('audit_program_schedule_auditee.*, companies.nm_perusahaan as department_name')
+        return $this->db->select('audit_program_schedule_auditee.*, audit_department.department_name as department_name')
             ->from('audit_program_schedule_auditee')
-            ->join('companies', 'companies.id_perusahaan = audit_program_schedule_auditee.department_id', 'left')
+            ->join('audit_department', 'audit_department.id = audit_program_schedule_auditee.department_id', 'left')
             ->where('audit_program_schedule_auditee.schedule_id', $schedule_id)
             ->get()
             ->result();
