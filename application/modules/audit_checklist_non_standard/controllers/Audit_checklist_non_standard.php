@@ -1,7 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
- * Audit Checklist Non Standard Controller
+ * Audit Checklist Audit Berdasarkan Kinerja Controller
  *
  * Menu baru untuk membuat checklist audit non-standard
  * Data ditarik dari Jadwal Audit (audit_program_schedule) dan
@@ -14,7 +14,7 @@ class Audit_checklist_non_standard extends Admin_Controller
         parent::__construct();
         $this->load->model('audit_checklist_non_standard/Audit_checklist_ns_model', 'model');
         $this->template->set([
-            'title' => 'Checklist Audit Non Standard',
+            'title' => 'Checklist Audit Berdasarkan Kinerja',
             'icon'  => 'fa fa-clipboard-list'
         ]);
         date_default_timezone_set("Asia/Bangkok");
