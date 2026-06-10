@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="mb-3 row">
-            <label class="col-3 col-form-label font-weight-bold">Management Input/Direction</label>
+            <label class="col-3 col-form-label font-weight-bold">Improvement</label>
             <div class="col-9">
                 <textarea id="management_input" class="form-control" rows="3" maxlength="2000" placeholder="Enter management input/direction"></textarea>
                 <small class="text-muted"><span id="mgmt_input_count">0</span>/2000 characters</small>
@@ -41,7 +41,7 @@
                     <tr>
                         <th width="50" class="text-center">No</th>
                         <th>Issue Description</th>
-                        <th>Management Input/Direction</th>
+                        <th>Improvement</th>
                         <th width="100" class="text-center">Actions</th>
                     </tr>
                 </thead>

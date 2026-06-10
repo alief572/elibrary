@@ -17,13 +17,13 @@
 								<button class="nav-link active" id="tab-header-tab" data-toggle="tab" data-target="#tab-header" type="button" role="tab" aria-controls="tab-header" aria-selected="true">Header</button>
 							</li>
 							<li class="nav-item" role="presentation">
-								<button class="nav-link" id="tab-evaluation-tab" data-toggle="tab" data-target="#tab-evaluation" type="button" role="tab" aria-controls="tab-evaluation" aria-selected="false">Evaluasi Audit Sebelumnya</button>
+								<button class="nav-link" id="tab-evaluation-tab" data-toggle="tab" data-target="#tab-evaluation" type="button" role="tab" aria-controls="tab-evaluation" aria-selected="false" style="display:none;">Evaluasi Audit Sebelumnya</button>
 							</li>
 							<li class="nav-item" role="presentation">
-								<button class="nav-link" id="tab-critical-tab" data-toggle="tab" data-target="#tab-critical" type="button" role="tab" aria-controls="tab-critical" aria-selected="false">Critical Issue</button>
+								<button class="nav-link" id="tab-critical-tab" data-toggle="tab" data-target="#tab-critical" type="button" role="tab" aria-controls="tab-critical" aria-selected="false">Improvement Program Audit</button>
 							</li>
 							<li class="nav-item" role="presentation">
-								<button class="nav-link" id="tab-opportunity-tab" data-toggle="tab" data-target="#tab-opportunity" type="button" role="tab" aria-controls="tab-opportunity" aria-selected="false">Potensi Peluang/Masalah</button>
+								<button class="nav-link" id="tab-opportunity-tab" data-toggle="tab" data-target="#tab-opportunity" type="button" role="tab" aria-controls="tab-opportunity" aria-selected="false">Isu Proses</button>
 							</li>
 							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="tab-schedule-tab" data-toggle="tab" data-target="#tab-schedule" type="button" role="tab" aria-controls="tab-schedule" aria-selected="false">Jadwal Audit</button>
@@ -73,29 +73,30 @@
 	var siteurl = '<?= site_url(); ?>';
 
 	$(document).ready(function() {
-		// Re-initialize Select2 widgets when a tab becomes visible
-		// This fixes width calculation issues for Select2 inside hidden tabs
+		// Fix Select2 width when a hidden tab becomes visible
 		$('a[data-toggle="tab"], button[data-toggle="tab"]').on('shown.bs.tab', function(e) {
 			var targetPane = $($(e.target).data('target') || $(e.target).attr('href'));
 			if (targetPane.length) {
-				targetPane.find('.select2').each(function() {
-					if ($(this).hasClass('select2-hidden-accessible')) {
-						$(this).select2({ width: '100%' });
-					}
-				});
+				// Initialize Select2 that haven't been initialized yet (for hidden tabs)
 				targetPane.find('.select2-schedule-process').each(function() {
-					if ($(this).hasClass('select2-hidden-accessible')) {
+					if (!$(this).hasClass('select2-hidden-accessible')) {
 						$(this).select2({ placeholder: "Select Process", allowClear: true, width: "100%" });
 					}
 				});
 				targetPane.find('.select2-schedule-auditor').each(function() {
-					if ($(this).hasClass('select2-hidden-accessible')) {
+					if (!$(this).hasClass('select2-hidden-accessible')) {
 						$(this).select2({ placeholder: "Select Auditor", allowClear: true, width: "100%" });
 					}
 				});
 				targetPane.find('.select2-schedule-auditee').each(function() {
-					if ($(this).hasClass('select2-hidden-accessible')) {
-						$(this).select2({ placeholder: "Select Auditee", allowClear: true, width: "100%" });
+					if (!$(this).hasClass('select2-hidden-accessible')) {
+						$(this).select2({ placeholder: "Select Department", allowClear: true, width: "100%" });
+					}
+				});
+				// Also init generic .select2 that haven't been initialized
+				targetPane.find('select.select2').each(function() {
+					if (!$(this).hasClass('select2-hidden-accessible')) {
+						$(this).select2({ width: '100%' });
 					}
 				});
 			}
@@ -141,17 +142,24 @@ function validateForm() {
 		}
 	});
 
-	// Validate schedule rows: audit_date >= today
-	var today = new Date().toISOString().split('T')[0];
-	$('.schedule-row').each(function() {
-		var dateVal = $(this).find('.audit-date').val();
-		if (dateVal && dateVal < today) {
-			$(this).find('.audit-date').addClass('is-invalid');
-			e++;
-		} else {
+	// Validate schedule rows: audit_date >= today (only for new/empty program or new rows)
+	var isEdit = ($('#program_id').val() !== '');
+	if (!isEdit) {
+		var today = new Date().toISOString().split('T')[0];
+		$('.schedule-row').each(function() {
+			var dateVal = $(this).find('.audit-date').val();
+			if (dateVal && dateVal < today) {
+				$(this).find('.audit-date').addClass('is-invalid');
+				e++;
+			} else {
+				$(this).find('.audit-date').removeClass('is-invalid');
+			}
+		});
+	} else {
+		$('.schedule-row').each(function() {
 			$(this).find('.audit-date').removeClass('is-invalid');
-		}
-	});
+		});
+	}
 
 	return e;
 }

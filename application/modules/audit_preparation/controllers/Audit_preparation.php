@@ -36,9 +36,9 @@ class Audit_preparation extends Admin_Controller
     {
         $data['auditors'] = $this->audit_program_model->getActiveAuditors();
         $data['processes'] = $this->audit_program_model->getActiveProcesses();
-        $data['procedures'] = $this->audit_program_model->getActiveProcedures();
+        $data['procedures'] = $this->audit_program_model->getActiveProcedures($this->company);
         $data['temuan'] = $this->audit_program_model->getActiveTemuan();
-        $data['departments'] = $this->audit_program_model->getDepartments();
+        $data['departments'] = $this->audit_program_model->getDepartments($this->company);
         $data['program'] = null;
         $data['evaluations'] = [];
         $data['critical_issues'] = [];
@@ -67,9 +67,9 @@ class Audit_preparation extends Admin_Controller
         // Load master data
         $data['auditors'] = $this->audit_program_model->getActiveAuditors();
         $data['processes'] = $this->audit_program_model->getActiveProcesses();
-        $data['procedures'] = $this->audit_program_model->getActiveProcedures();
+        $data['procedures'] = $this->audit_program_model->getActiveProcedures($this->company);
         $data['temuan'] = $this->audit_program_model->getActiveTemuan();
-        $data['departments'] = $this->audit_program_model->getDepartments();
+        $data['departments'] = $this->audit_program_model->getDepartments($this->company);
 
         // Load existing program and child records
         $data['program'] = $program;
@@ -190,19 +190,21 @@ class Audit_preparation extends Admin_Controller
         if (!$isNew) {
             $this->db->update('audit_program_opportunity', ['status' => '0'], ['program_id' => $program_id]);
         }
-        // Insert new opportunity entries from form
-        $procedureIds = isset($data['procedure_id']) ? $data['procedure_id'] : [];
-        $oppDescs = isset($data['opportunity_desc']) ? $data['opportunity_desc'] : [];
-        if (!empty($procedureIds)) {
-            foreach ($procedureIds as $k => $procId) {
+        // Insert new opportunity entries from form (new format: issue_text, procedure_id, investigation)
+        $oppIssues = isset($data['opp_issue_text']) ? $data['opp_issue_text'] : [];
+        $oppProcIds = isset($data['opp_procedure_id']) ? $data['opp_procedure_id'] : [];
+        $oppInvestigations = isset($data['opp_investigation']) ? $data['opp_investigation'] : [];
+        if (!empty($oppProcIds)) {
+            foreach ($oppProcIds as $k => $procId) {
                 if (empty($procId)) continue;
                 $oppData = [
-                    'program_id'   => $program_id,
-                    'procedure_id' => $procId,
-                    'description'  => isset($oppDescs[$k]) ? trim($oppDescs[$k]) : '',
-                    'status'       => '1',
-                    'created_at'   => $now,
-                    'created_by'   => $userId,
+                    'program_id'    => $program_id,
+                    'procedure_id'  => $procId,
+                    'description'   => isset($oppIssues[$k]) ? trim($oppIssues[$k]) : '',
+                    'investigation' => isset($oppInvestigations[$k]) ? trim($oppInvestigations[$k]) : '',
+                    'status'        => '1',
+                    'created_at'    => $now,
+                    'created_by'    => $userId,
                 ];
                 $this->db->insert('audit_program_opportunity', $oppData);
             }
@@ -221,6 +223,7 @@ class Audit_preparation extends Admin_Controller
         }
         // Insert new schedule entries from form
         $schedProcessIds = isset($data['schedule_process_id']) ? $data['schedule_process_id'] : [];
+        $schedProcessFree = isset($data['schedule_process_name_free']) ? $data['schedule_process_name_free'] : [];
         $schedAuditorIds = isset($data['schedule_auditor_id']) ? $data['schedule_auditor_id'] : [];
         $schedAuditeeIds = isset($data['schedule_auditee_id']) ? $data['schedule_auditee_id'] : [];
         $schedDates = isset($data['schedule_date']) ? $data['schedule_date'] : [];
@@ -229,31 +232,32 @@ class Audit_preparation extends Admin_Controller
 
         if (!empty($schedProcessIds)) {
             foreach ($schedProcessIds as $k => $processId) {
-                if (empty($processId)) continue;
+                $freeText = isset($schedProcessFree[$k]) ? trim($schedProcessFree[$k]) : '';
+                // Skip row if both process_id and free text are empty
+                if (empty($processId) && empty($freeText)) continue;
+
                 $schedData = [
-                    'program_id' => $program_id,
-                    'process_id' => $processId,
-                    'auditor_id' => isset($schedAuditorIds[$k]) ? $schedAuditorIds[$k] : null,
-                    'audit_date' => isset($schedDates[$k]) ? $schedDates[$k] : null,
-                    'start_time' => isset($schedStartTimes[$k]) ? $schedStartTimes[$k] : null,
-                    'end_time'   => isset($schedEndTimes[$k]) ? $schedEndTimes[$k] : null,
-                    'status'     => '1',
-                    'created_at' => $now,
-                    'created_by' => $userId,
+                    'program_id'        => $program_id,
+                    'process_id'        => !empty($processId) ? $processId : null,
+                    'process_name_free' => $freeText,
+                    'auditor_id'        => isset($schedAuditorIds[$k]) ? $schedAuditorIds[$k] : null,
+                    'audit_date'        => isset($schedDates[$k]) ? $schedDates[$k] : null,
+                    'start_time'        => isset($schedStartTimes[$k]) ? $schedStartTimes[$k] : null,
+                    'end_time'          => isset($schedEndTimes[$k]) ? $schedEndTimes[$k] : null,
+                    'status'            => '1',
+                    'created_at'        => $now,
+                    'created_by'        => $userId,
                 ];
                 $this->db->insert('audit_program_schedule', $schedData);
                 $scheduleId = $this->db->insert_id();
 
-                // Insert auditee junction records for this schedule row
-                if (isset($schedAuditeeIds[$k]) && is_array($schedAuditeeIds[$k])) {
-                    foreach ($schedAuditeeIds[$k] as $deptId) {
-                        if (!empty($deptId)) {
-                            $this->db->insert('audit_program_schedule_auditee', [
-                                'schedule_id'   => $scheduleId,
-                                'department_id' => $deptId,
-                            ]);
-                        }
-                    }
+                // Insert auditee record for this schedule row (single department)
+                $deptId = isset($schedAuditeeIds[$k]) ? $schedAuditeeIds[$k] : '';
+                if (!empty($deptId)) {
+                    $this->db->insert('audit_program_schedule_auditee', [
+                        'schedule_id'   => $scheduleId,
+                        'department_id' => $deptId,
+                    ]);
                 }
             }
         }
@@ -563,18 +567,22 @@ class Audit_preparation extends Admin_Controller
         // 6 & 7 & 8. Validate Schedule rows (if any)
         if (isset($data['schedule_process_id']) && is_array($data['schedule_process_id'])) {
             $today = date('Y-m-d');
+            $schedProcessFree = isset($data['schedule_process_name_free']) ? $data['schedule_process_name_free'] : [];
 
             foreach ($data['schedule_process_id'] as $index => $processId) {
                 $row_num = $index + 1;
+                $freeText = isset($schedProcessFree[$index]) ? trim($schedProcessFree[$index]) : '';
 
-                if (empty($processId)) {
-                    $errors[] = "Schedule row {$row_num}: Process must be selected.";
+                // Process: either select or free text must be filled
+                if (empty($processId) && empty($freeText)) {
+                    $errors[] = "Schedule row {$row_num}: Process must be selected or filled.";
                 }
                 if (empty($data['schedule_auditor_id'][$index])) {
                     $errors[] = "Schedule row {$row_num}: Auditor must be selected.";
                 }
-                if (!isset($data['schedule_auditee_id'][$index]) || !is_array($data['schedule_auditee_id'][$index]) || count($data['schedule_auditee_id'][$index]) === 0) {
-                    $errors[] = "Schedule row {$row_num}: At least one Auditee must be selected.";
+                // Department is now single select
+                if (empty($data['schedule_auditee_id'][$index])) {
+                    $errors[] = "Schedule row {$row_num}: Department must be selected.";
                 }
 
                 $audit_date = isset($data['schedule_date'][$index]) ? $data['schedule_date'][$index] : '';
@@ -598,8 +606,8 @@ class Audit_preparation extends Admin_Controller
                     }
                 }
 
-                // 8. Validate audit_date >= today
-                if (!empty($audit_date)) {
+                // 8. Validate audit_date >= today (only for new programs)
+                if (!empty($audit_date) && empty($data['id'])) {
                     if ($audit_date < $today) {
                         $errors[] = "Schedule row {$row_num}: Audit Date must be today or a future date.";
                     }

@@ -39,7 +39,8 @@
 						</table>
 					</div>
 
-					<!-- Section 2: Evaluasi Audit Sebelumnya -->
+					<!-- Section 2: Evaluasi Audit Sebelumnya (hidden for now) -->
+					<!--
 					<div class="mb-5">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-history text-primary mr-2"></i>Evaluasi Audit Sebelumnya</h5>
 						<?php if (!empty($evaluations)) : ?>
@@ -76,17 +77,18 @@
 							<p class="text-muted"><em>Tidak ada data evaluasi audit sebelumnya.</em></p>
 						<?php endif; ?>
 					</div>
+					-->
 
 					<!-- Section 3: Critical Issue -->
 					<div class="mb-5">
-						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-exclamation-triangle text-primary mr-2"></i>Critical Issue dari Manajemen</h5>
+						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-exclamation-triangle text-primary mr-2"></i>Improvement Program Audit</h5>
 						<?php if (!empty($critical_issues)) : ?>
 							<table class="table table-bordered table-sm table-hover">
 								<thead class="table-light">
 									<tr class="text-center">
 										<th width="40">No</th>
 										<th>Deskripsi Issue</th>
-										<th>Input/Arahan Manajemen</th>
+										<th>Improvement</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -104,30 +106,47 @@
 						<?php endif; ?>
 					</div>
 
-					<!-- Section 4: Potensi Peluang/Masalah -->
+					<!-- Section 4: Isu Proses -->
 					<div class="mb-5">
-						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-lightbulb text-primary mr-2"></i>Potensi Peluang / Masalah</h5>
+						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-lightbulb text-primary mr-2"></i>Isu Proses</h5>
 						<?php if (!empty($opportunities)) : ?>
+							<?php
+							// Group by issue text (description) same as form
+							$grouped_opp = [];
+							foreach ($opportunities as $opp) {
+								$key = $opp->description;
+								if (!isset($grouped_opp[$key])) {
+									$grouped_opp[$key] = ['issue' => $key, 'items' => []];
+								}
+								$grouped_opp[$key]['items'][] = $opp;
+							}
+							?>
 							<table class="table table-bordered table-sm table-hover">
 								<thead class="table-light">
 									<tr class="text-center">
 										<th width="40">No</th>
-										<th>Prosedur/Proses</th>
-										<th>Deskripsi</th>
+										<th>Issue</th>
+										<th>Proses / Prosedur</th>
+										<th>Investigasi</th>
 									</tr>
 								</thead>
 								<tbody>
-									<?php foreach ($opportunities as $k => $opp) : ?>
-										<tr>
-											<td class="text-center"><?= $k + 1; ?></td>
-											<td><?= isset($opp->procedure_name) ? $opp->procedure_name : $opp->procedure_id; ?></td>
-											<td><?= $opp->description; ?></td>
-										</tr>
+									<?php $rowNum = 0; foreach ($grouped_opp as $group) : $rowNum++; $items = $group['items']; $rowspan = count($items); ?>
+										<?php foreach ($items as $idx => $opp) : ?>
+											<tr>
+												<?php if ($idx === 0) : ?>
+													<td class="text-center align-top" rowspan="<?= $rowspan; ?>"><?= $rowNum; ?></td>
+													<td class="align-top" rowspan="<?= $rowspan; ?>"><?= htmlspecialchars($group['issue']); ?></td>
+												<?php endif; ?>
+												<td><?= isset($opp->procedure_name) ? strip_tags($opp->procedure_name) : $opp->procedure_id; ?></td>
+												<td><?= isset($opp->investigation) ? htmlspecialchars($opp->investigation) : ''; ?></td>
+											</tr>
+										<?php endforeach; ?>
 									<?php endforeach; ?>
 								</tbody>
 							</table>
 						<?php else : ?>
-							<p class="text-muted"><em>Tidak ada potensi peluang/masalah.</em></p>
+							<p class="text-muted"><em>Tidak ada isu proses.</em></p>
 						<?php endif; ?>
 					</div>
 
@@ -141,7 +160,7 @@
 										<th width="40">No</th>
 										<th>Proses</th>
 										<th>Auditor</th>
-										<th>Auditee</th>
+										<th>Department</th>
 										<th width="110">Tanggal</th>
 										<th width="80">Mulai</th>
 										<th width="80">Selesai</th>
@@ -151,7 +170,7 @@
 									<?php foreach ($schedules as $k => $sched) : ?>
 										<tr>
 											<td class="text-center"><?= $k + 1; ?></td>
-											<td><?= $sched->process_name; ?></td>
+											<td><?= !empty($sched->process_name) ? strip_tags($sched->process_name) : htmlspecialchars($sched->process_name_free); ?></td>
 											<td><?= $sched->auditor_name; ?></td>
 											<td>
 												<?php if (!empty($sched->auditees)) : ?>
