@@ -3,7 +3,7 @@
 		<div class="container">
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
-					<h2 class="m-0"><i class="<?= $icon; ?> text-primary mr-2"></i>Create Checklist Non Standard</h2>
+					<h2 class="m-0"><i class="<?= $icon; ?> text-primary mr-2"></i>Create Checklist Audit Berdasarkan Kinerja</h2>
 					<a href="<?= site_url('audit_checklist_non_standard'); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
 				</div>
 
