@@ -62,7 +62,7 @@ $(document).ready(function() {
     <?php if (!empty($critical_issues)) : ?>
     var existingCritical = <?= json_encode($critical_issues); ?>;
     $.each(existingCritical, function(index, item) {
-        appendCriticalRow(item.issue_description, item.management_input || '');
+        appendCriticalRow(item.issue_description, item.management_input || '', item.id || '');
     });
     <?php endif; ?>
 
@@ -102,8 +102,8 @@ $(document).ready(function() {
         if (criticalEditIndex >= 0) {
             // Update existing row
             var row = $('#table-critical tbody tr').eq(criticalEditIndex);
-            row.find('td:eq(1)').text(issueDesc);
-            row.find('td:eq(2)').text(mgmtInput);
+            row.find('td:eq(1)').contents().filter(function() { return this.nodeType === 3; }).first().replaceWith(issueDesc);
+            row.find('td:eq(2)').contents().filter(function() { return this.nodeType === 3; }).first().replaceWith(mgmtInput);
             row.find('input[name="issue_desc[]"]').val(issueDesc);
             row.find('input[name="management_input[]"]').val(mgmtInput);
             criticalEditIndex = -1;
@@ -119,7 +119,7 @@ $(document).ready(function() {
             });
         } else {
             // Add new row
-            appendCriticalRow(issueDesc, mgmtInput);
+            appendCriticalRow(issueDesc, mgmtInput, '');
 
             Swal.fire({
                 title: 'Added!',
@@ -208,14 +208,15 @@ $(document).ready(function() {
     });
 
     // Append a row to critical issues table
-    function appendCriticalRow(issueDesc, mgmtInput) {
+    function appendCriticalRow(issueDesc, mgmtInput, recordId) {
         var rowCount = $('#table-critical tbody tr').length + 1;
         var escapedIssue = $('<div>').text(issueDesc).html();
         var escapedMgmt = $('<div>').text(mgmtInput).html();
+        var idVal = recordId || '';
 
         var html = '<tr>';
         html += '<td class="text-center">' + rowCount + '</td>';
-        html += '<td>' + escapedIssue + '<input type="hidden" name="issue_desc[]" value="' + escapedIssue + '"></td>';
+        html += '<td>' + escapedIssue + '<input type="hidden" name="critical_id[]" value="' + idVal + '"><input type="hidden" name="issue_desc[]" value="' + escapedIssue + '"></td>';
         html += '<td>' + escapedMgmt + '<input type="hidden" name="management_input[]" value="' + escapedMgmt + '"></td>';
         html += '<td class="text-center">';
         html += '<button type="button" class="btn btn-xs btn-icon btn-warning btn-edit-critical" title="Edit"><i class="fa fa-edit"></i></button> ';
