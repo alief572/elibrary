@@ -60,6 +60,8 @@
 						foreach ($items as $opp) {
 							$pName = isset($opp->procedure_name) ? strip_tags($opp->procedure_name) : '';
 							$inv = isset($opp->investigation) ? $opp->investigation : '';
+							$oppId = isset($opp->id) ? $opp->id : '';
+							$hiddenInputs .= '<input type="hidden" name="opp_id[]" value="' . $oppId . '">';
 							$hiddenInputs .= '<input type="hidden" name="opp_issue_text[]" value="' . htmlspecialchars($group['issue']) . '">';
 							$hiddenInputs .= '<input type="hidden" name="opp_procedure_id[]" value="' . $opp->procedure_id . '">';
 							$hiddenInputs .= '<input type="hidden" name="opp_procedure_name[]" value="' . htmlspecialchars($pName) . '">';
@@ -160,6 +162,7 @@ $(document).ready(function() {
 		// Build rows: first row has rowspan for No, Issue, Actions; subsequent rows only have Proses & Investigasi
 		for (var i = 0; i < procItems.length; i++) {
 			var item = procItems[i];
+			hiddenInputs += '<input type="hidden" name="opp_id[]" value="">';
 			hiddenInputs += '<input type="hidden" name="opp_issue_text[]" value="' + escapeHtml(issueText) + '">';
 			hiddenInputs += '<input type="hidden" name="opp_procedure_id[]" value="' + item.procId + '">';
 			hiddenInputs += '<input type="hidden" name="opp_procedure_name[]" value="' + escapeHtml(item.procName) + '">';

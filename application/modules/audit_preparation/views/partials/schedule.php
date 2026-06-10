@@ -20,6 +20,7 @@
                         <tr class="schedule-row">
                             <td class="text-center row-number"><?= $k + 1; ?></td>
                             <td>
+                                <input type="hidden" name="schedule_record_id[]" value="<?= $schedule->id; ?>">
                                 <?php if (!empty($schedule->process_name_free)) : ?>
                                     <input type="hidden" name="schedule_process_id[]" value="">
                                     <input type="text" name="schedule_process_name_free[]" class="form-control required" value="<?= htmlspecialchars($schedule->process_name_free); ?>">
@@ -180,7 +181,7 @@ function addScheduleRow(isFreeText) {
 
     var html = '<tr class="schedule-row">' +
         '<td class="text-center row-number">' + rowNum + '</td>' +
-        '<td>' + processCell + '</td>' +
+        '<td><input type="hidden" name="schedule_record_id[]" value="">' + processCell + '</td>' +
         '<td><select name="schedule_auditor_id[]" class="form-control select2-schedule-auditor required" data-placeholder="Select Auditor">' + auditorOptions + '</select></td>' +
         '<td><select name="schedule_auditee_id[]" class="form-control select2-schedule-auditee required" data-placeholder="Select Department">' + auditeeOptions + '</select></td>' +
         '<td><input type="date" name="schedule_date[]" class="form-control audit-date required"></td>' +
