@@ -22,7 +22,7 @@ class Pelaksanaan_audit_model extends BF_Model
 
     public function getAllSchedules()
     {
-        // Hanya ambil schedule yang sudah punya Checklist Audit Non Standard
+        // Ambil schedule yang punya Checklist Non Standard ATAU punya Checklist Standard (via procedure)
         return $this->db->select('
                 audit_program_schedule.id as schedule_id,
                 audit_program_schedule.program_id,
@@ -45,7 +45,7 @@ class Pelaksanaan_audit_model extends BF_Model
             ->join('audit_department', 'audit_department.id = audit_program_schedule_auditee.department_id', 'left')
             ->where('audit_program_schedule.status', '1')
             ->where('audit_program.status', '1')
-            ->where('audit_program_schedule.id IN (SELECT DISTINCT schedule_id FROM audit_checklist_non_standard WHERE status = "1")', null, false)
+            ->where('(audit_program_schedule.id IN (SELECT DISTINCT schedule_id FROM audit_checklist_non_standard WHERE status = "1") OR audit_program_schedule.process_id IN (SELECT DISTINCT procedure_id FROM audit_checklist WHERE status = "1"))', null, false)
             ->order_by('audit_program_schedule.audit_date', 'DESC')
             ->order_by('audit_program_schedule.start_time', 'ASC')
             ->get()

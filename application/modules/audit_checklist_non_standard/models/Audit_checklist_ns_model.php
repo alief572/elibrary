@@ -1,7 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
- * Audit Checklist Non Standard Model
+ * Audit Checklist Audit Berdasarkan Kinerja Model
  *
  * Handles data retrieval from audit_program_schedule and audit_program_opportunity,
  * and CRUD operations for non-standard checklist items.
