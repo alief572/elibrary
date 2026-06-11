@@ -50,7 +50,7 @@
 								<div class="table-responsive">
 									<table class="table table-bordered table-sm table-hover">
 										<thead class="table-light text-center">
-											<tr><th width="30">No</th><th>Checklist</th><th>Catatan</th></tr>
+											<tr><th width="30">No</th><th width="45%">Checklist</th><th width="45%">Catatan</th></tr>
 										</thead>
 										<tbody>
 											<?php foreach ($ns_checklist as $k => $item) : $k++;
@@ -85,7 +85,7 @@
 								<div class="table-responsive">
 									<table class="table table-bordered table-sm table-hover">
 										<thead class="table-light text-center">
-											<tr><th width="30">No</th><th>Checklist</th><th>Catatan</th></tr>
+											<tr><th width="30">No</th><th width="45%">Checklist</th><th width="45%">Catatan</th></tr>
 										</thead>
 										<tbody>
 											<?php foreach ($std_checklist as $k => $item) : $k++;
