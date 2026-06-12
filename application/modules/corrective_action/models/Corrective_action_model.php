@@ -1,4 +1,4 @@
-<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+﻿<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * Corrective Action Model
@@ -101,7 +101,7 @@ class Corrective_action_model extends BF_Model
                 pa.id as pelaksanaan_id,
                 aps.audit_date,
                 COALESCE(p.name, aps.process_name_free) as process_name,
-                ad.department_name,
+                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name,
                 COUNT(pat.id) as temuan_count,
                 GROUP_CONCAT(DISTINCT pat.kategori SEPARATOR ", ") as kategori,
@@ -134,7 +134,7 @@ class Corrective_action_model extends BF_Model
                 ca.id as ca_id,
                 aps.audit_date,
                 COALESCE(p.name, aps.process_name_free) as process_name,
-                ad.department_name,
+                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name,
                 COUNT(pat.id) as temuan_count,
                 GROUP_CONCAT(DISTINCT pat.kategori SEPARATOR ", ") as kategori,
@@ -167,7 +167,7 @@ class Corrective_action_model extends BF_Model
                 ca.id as ca_id,
                 aps.audit_date,
                 COALESCE(p.name, aps.process_name_free) as process_name,
-                ad.department_name,
+                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name,
                 COUNT(pat.id) as temuan_count,
                 GROUP_CONCAT(DISTINCT pat.kategori SEPARATOR ", ") as kategori,
@@ -200,7 +200,7 @@ class Corrective_action_model extends BF_Model
         return $this->db->select('
                 COALESCE(p.name, aps.process_name_free) as process_name,
                 aps.audit_date,
-                ad.department_name,
+                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name
             ')
             ->from('pelaksanaan_audit pa')
@@ -403,7 +403,7 @@ class Corrective_action_model extends BF_Model
     }
 
     /**
-     * Submit corrective action (Draft → Waiting Approval)
+     * Submit corrective action (Draft â†’ Waiting Approval)
      *
      * Validates current status is Draft, validates all required fields
      * are filled for every temuan, then updates status.
@@ -456,7 +456,7 @@ class Corrective_action_model extends BF_Model
     }
 
     /**
-     * Approve corrective action (Waiting Approval → Approved)
+     * Approve corrective action (Waiting Approval â†’ Approved)
      *
      * Validates current status is Waiting Approval, then updates status to Approved.
      *
@@ -492,7 +492,7 @@ class Corrective_action_model extends BF_Model
     }
 
     /**
-     * Reject corrective action (Waiting Approval → Draft)
+     * Reject corrective action (Waiting Approval â†’ Draft)
      *
      * Validates current status is Waiting Approval, updates status back to Draft,
      * and stores the rejection reason in the rejection history table.
