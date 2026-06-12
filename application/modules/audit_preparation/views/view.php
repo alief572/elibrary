@@ -181,6 +181,8 @@
 														}
 														echo implode(', ', $auditee_names);
 													?>
+												<?php elseif (!empty($sched->auditee_name_free)) : ?>
+													<?= htmlspecialchars($sched->auditee_name_free); ?>
 												<?php else : ?>
 													-
 												<?php endif; ?>
