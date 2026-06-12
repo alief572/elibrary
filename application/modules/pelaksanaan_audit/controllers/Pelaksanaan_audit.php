@@ -72,27 +72,30 @@ class Pelaksanaan_audit extends Admin_Controller
         $audit_data = $this->model->getAuditByScheduleId($schedule_id);
         $audit_ns_details = [];
         $audit_std_details = [];
+        $audit_free_checklist = [];
         $audit_conformity = [];
         $audit_temuan = [];
 
         if ($audit_data) {
             $audit_ns_details = $this->model->getAuditNsDetails($audit_data->id);
             $audit_std_details = $this->model->getAuditStdDetails($audit_data->id);
+            $audit_free_checklist = $this->model->getAuditFreeChecklist($audit_data->id);
             $audit_conformity = $this->model->getAuditConformity($audit_data->id);
             $audit_temuan = $this->model->getAuditTemuan($audit_data->id);
         }
 
         $this->template->set([
-            'schedule'          => $schedule,
-            'issues'            => $issues,
-            'ns_checklist'      => $ns_checklist,
-            'std_checklist'     => $std_checklist,
-            'standards'         => $standards,
-            'audit_data'        => $audit_data,
-            'audit_ns_details'  => $audit_ns_details,
-            'audit_std_details' => $audit_std_details,
-            'audit_conformity'  => $audit_conformity,
-            'audit_temuan'      => $audit_temuan,
+            'schedule'              => $schedule,
+            'issues'                => $issues,
+            'ns_checklist'          => $ns_checklist,
+            'std_checklist'         => $std_checklist,
+            'standards'             => $standards,
+            'audit_data'            => $audit_data,
+            'audit_ns_details'      => $audit_ns_details,
+            'audit_std_details'     => $audit_std_details,
+            'audit_free_checklist'  => $audit_free_checklist,
+            'audit_conformity'      => $audit_conformity,
+            'audit_temuan'          => $audit_temuan,
         ]);
         $this->template->render('audit');
     }
@@ -332,27 +335,30 @@ class Pelaksanaan_audit extends Admin_Controller
         $audit_data = $this->model->getAuditByScheduleId($schedule_id);
         $audit_ns_details = [];
         $audit_std_details = [];
+        $audit_free_checklist = [];
         $audit_conformity = [];
         $audit_temuan = [];
 
         if ($audit_data) {
             $audit_ns_details = $this->model->getAuditNsDetails($audit_data->id);
             $audit_std_details = $this->model->getAuditStdDetails($audit_data->id);
+            $audit_free_checklist = $this->model->getAuditFreeChecklist($audit_data->id);
             $audit_conformity = $this->model->getAuditConformity($audit_data->id);
             $audit_temuan = $this->model->getAuditTemuan($audit_data->id);
         }
 
         $this->template->set([
-            'schedule'          => $schedule,
-            'issues'            => $issues,
-            'ns_checklist'      => $ns_checklist,
-            'std_checklist'     => $std_checklist,
-            'standards'         => $standards,
-            'audit_data'        => $audit_data,
-            'audit_ns_details'  => $audit_ns_details,
-            'audit_std_details' => $audit_std_details,
-            'audit_conformity'  => $audit_conformity,
-            'audit_temuan'      => $audit_temuan,
+            'schedule'              => $schedule,
+            'issues'                => $issues,
+            'ns_checklist'          => $ns_checklist,
+            'std_checklist'         => $std_checklist,
+            'standards'             => $standards,
+            'audit_data'            => $audit_data,
+            'audit_ns_details'      => $audit_ns_details,
+            'audit_std_details'     => $audit_std_details,
+            'audit_free_checklist'  => $audit_free_checklist,
+            'audit_conformity'      => $audit_conformity,
+            'audit_temuan'          => $audit_temuan,
         ]);
         $this->template->render('view');
     }

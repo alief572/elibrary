@@ -203,6 +203,14 @@ class Pelaksanaan_audit_model extends BF_Model
         ])->result();
     }
 
+    public function getAuditFreeChecklist($audit_id)
+    {
+        return $this->db->get_where('pelaksanaan_audit_free_checklist', [
+            'audit_id' => $audit_id,
+            'status'   => '1'
+        ])->result();
+    }
+
     // =========================================================================
     // SAVE AUDIT
     // =========================================================================
@@ -215,6 +223,7 @@ class Pelaksanaan_audit_model extends BF_Model
         $schedule_id = $data['schedule_id'];
         $ns_details = isset($data['ns_detail']) ? $data['ns_detail'] : [];
         $std_details = isset($data['std_detail']) ? $data['std_detail'] : [];
+        $free_checklist = isset($data['free_checklist']) ? $data['free_checklist'] : [];
         $conformity = isset($data['conformity']) ? $data['conformity'] : [];
         $temuan = isset($data['temuan']) ? $data['temuan'] : [];
 
@@ -243,6 +252,9 @@ class Pelaksanaan_audit_model extends BF_Model
 
         // Save Standard Details
         $this->saveStdDetails($audit_id, $std_details, $userId, $now);
+
+        // Save Free Checklist
+        $this->saveFreeChecklist($audit_id, $free_checklist, $userId, $now);
 
         // Save Conformity/Strong Point
         $this->saveConformity($audit_id, $conformity, $userId, $now);
@@ -345,6 +357,35 @@ class Pelaksanaan_audit_model extends BF_Model
                     $this->db->update('pelaksanaan_audit_std_details', $insertData, ['id' => $item['id']]);
                 } else {
                     $this->db->insert('pelaksanaan_audit_std_details', $insertData);
+                }
+            }
+        }
+    }
+
+    private function saveFreeChecklist($audit_id, $items, $userId, $now)
+    {
+        // Soft delete existing
+        $this->db->update('pelaksanaan_audit_free_checklist', ['status' => '0'], ['audit_id' => $audit_id]);
+
+        if (!empty($items)) {
+            foreach ($items as $item) {
+                $checklist_text = isset($item['checklist_text']) ? trim($item['checklist_text']) : '';
+                if ($checklist_text === '') continue;
+
+                $insertData = [
+                    'audit_id'       => $audit_id,
+                    'checklist_text' => $checklist_text,
+                    'catatan'        => isset($item['catatan']) ? $item['catatan'] : '',
+                    'status'         => '1',
+                    'created_at'     => $now,
+                    'created_by'     => $userId,
+                ];
+
+                if (isset($item['id']) && $item['id']) {
+                    $insertData['id'] = $item['id'];
+                    $this->db->update('pelaksanaan_audit_free_checklist', $insertData, ['id' => $item['id']]);
+                } else {
+                    $this->db->insert('pelaksanaan_audit_free_checklist', $insertData);
                 }
             }
         }
