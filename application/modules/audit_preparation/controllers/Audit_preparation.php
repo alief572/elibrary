@@ -258,6 +258,7 @@ class Audit_preparation extends Admin_Controller
         $schedProcessFree = isset($data['schedule_process_name_free']) ? $data['schedule_process_name_free'] : [];
         $schedAuditorIds = isset($data['schedule_auditor_id']) ? $data['schedule_auditor_id'] : [];
         $schedAuditeeIds = isset($data['schedule_auditee_id']) ? $data['schedule_auditee_id'] : [];
+        $schedAuditeeFree = isset($data['schedule_auditee_name_free']) ? $data['schedule_auditee_name_free'] : [];
         $schedDates = isset($data['schedule_date']) ? $data['schedule_date'] : [];
         $schedStartTimes = isset($data['schedule_start_time']) ? $data['schedule_start_time'] : [];
         $schedEndTimes = isset($data['schedule_end_time']) ? $data['schedule_end_time'] : [];
@@ -293,6 +294,7 @@ class Audit_preparation extends Admin_Controller
                 if (empty($processId) && empty($freeText)) continue;
 
                 $recordId = isset($schedRecordIds[$k]) ? $schedRecordIds[$k] : '';
+                $auditeeFreeText = isset($schedAuditeeFree[$k]) ? trim($schedAuditeeFree[$k]) : '';
                 $schedData = [
                     'program_id'        => $program_id,
                     'process_id'        => !empty($processId) ? $processId : null,
@@ -301,6 +303,7 @@ class Audit_preparation extends Admin_Controller
                     'audit_date'        => isset($schedDates[$k]) ? $schedDates[$k] : null,
                     'start_time'        => isset($schedStartTimes[$k]) ? $schedStartTimes[$k] : null,
                     'end_time'          => isset($schedEndTimes[$k]) ? $schedEndTimes[$k] : null,
+                    'auditee_name_free' => $auditeeFreeText,
                     'status'            => '1',
                 ];
 
@@ -650,9 +653,10 @@ class Audit_preparation extends Admin_Controller
                 if (empty($data['schedule_auditor_id'][$index])) {
                     $errors[] = "Schedule row {$row_num}: Auditor must be selected.";
                 }
-                // Department is now single select
-                if (empty($data['schedule_auditee_id'][$index])) {
-                    $errors[] = "Schedule row {$row_num}: Department must be selected.";
+                // Department is now single select or free text
+                $auditeeFreeText = isset($data['schedule_auditee_name_free'][$index]) ? trim($data['schedule_auditee_name_free'][$index]) : '';
+                if (empty($data['schedule_auditee_id'][$index]) && empty($auditeeFreeText)) {
+                    $errors[] = "Schedule row {$row_num}: Department must be selected or filled.";
                 }
 
                 $audit_date = isset($data['schedule_date'][$index]) ? $data['schedule_date'][$index] : '';

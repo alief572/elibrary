@@ -109,6 +109,39 @@
 							<?php endif; ?>
 						</div>
 
+						<!-- ================ LIST NON CHECKLIST (free text, tidak wajib) ================ -->
+						<div class="mb-4">
+							<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-list-alt text-purple mr-2"></i><span style="color:#6f42c1;">List Non Checklist</span> <small class="text-muted">(tidak wajib diisi semua)</small></h5>
+							<div class="table-responsive">
+								<table class="table table-bordered table-sm table-hover" id="tblFreeChecklist">
+									<thead class="table-light text-center">
+										<tr><th width="30">No</th><th width="45%">Checklist</th><th width="45%">Catatan</th><th width="60">Action</th></tr>
+									</thead>
+									<tbody>
+										<?php if (!empty($audit_free_checklist)) : foreach ($audit_free_checklist as $k => $fc) : $k++; ?>
+											<tr class="free-checklist-row">
+												<td class="text-center row-num"><?= $k; ?></td>
+												<td>
+													<input type="hidden" name="free_checklist[<?= $k; ?>][id]" value="<?= $fc->id; ?>">
+													<textarea name="free_checklist[<?= $k; ?>][checklist_text]" class="form-control form-control-sm" rows="2" placeholder="Checklist..."><?= htmlspecialchars($fc->checklist_text); ?></textarea>
+												</td>
+												<td><textarea name="free_checklist[<?= $k; ?>][catatan]" class="form-control form-control-sm" rows="2" placeholder="Catatan..."><?= htmlspecialchars($fc->catatan); ?></textarea></td>
+												<td class="text-center"><button type="button" class="btn btn-xs btn-icon btn-danger btn-delete-free-checklist" data-id="<?= $fc->id; ?>"><i class="fa fa-trash"></i></button></td>
+											</tr>
+										<?php endforeach; else : ?>
+											<tr class="free-checklist-row">
+												<td class="text-center row-num">1</td>
+												<td><textarea name="free_checklist[1][checklist_text]" class="form-control form-control-sm" rows="2" placeholder="Checklist..."></textarea></td>
+												<td><textarea name="free_checklist[1][catatan]" class="form-control form-control-sm" rows="2" placeholder="Catatan..."></textarea></td>
+												<td class="text-center"><button type="button" class="btn btn-xs btn-icon btn-danger btn-delete-free-checklist"><i class="fa fa-trash"></i></button></td>
+											</tr>
+										<?php endif; ?>
+									</tbody>
+								</table>
+							</div>
+							<button type="button" class="btn btn-sm btn-outline-primary mb-2" id="btn-add-free-checklist"><i class="fa fa-plus mr-1"></i> Add Item</button>
+						</div>
+
 						<!-- ================ KESIMPULAN AUDIT ================ -->
 						<div class="mb-4">
 							<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-star text-success mr-2"></i><span class="text-success">Kesimpulan Audit</span></h5>
@@ -265,6 +298,30 @@ $(document).ready(function() {
 			$.get('<?= site_url("pelaksanaan_audit/get_pasal/"); ?>' + iso_id, function(html) { $pasal.html(html).trigger('change.select2'); });
 		}
 	});
+
+	// ADD FREE CHECKLIST
+	$('#btn-add-free-checklist').on('click', function() {
+		var n = $('#tblFreeChecklist tbody tr.free-checklist-row').length + 1;
+		$('#tblFreeChecklist tbody').append(`<tr class="free-checklist-row">
+			<td class="text-center row-num">${n}</td>
+			<td><textarea name="free_checklist[${n}][checklist_text]" class="form-control form-control-sm" rows="2" placeholder="Checklist..."></textarea></td>
+			<td><textarea name="free_checklist[${n}][catatan]" class="form-control form-control-sm" rows="2" placeholder="Catatan..."></textarea></td>
+			<td class="text-center"><button type="button" class="btn btn-xs btn-icon btn-danger btn-delete-free-checklist"><i class="fa fa-trash"></i></button></td>
+		</tr>`);
+	});
+
+	// DELETE FREE CHECKLIST
+	$(document).on('click', '.btn-delete-free-checklist', function() {
+		var $row = $(this).closest('tr');
+		if ($('#tblFreeChecklist tbody tr.free-checklist-row').length <= 1) {
+			Swal.fire({ title: 'Info', icon: 'info', text: 'Minimal harus ada 1 baris.', timer: 2000 });
+			return;
+		}
+		$row.remove();
+		renumberFreeChecklist();
+	});
+
+	function renumberFreeChecklist() { var n = 0; $('#tblFreeChecklist tbody tr.free-checklist-row').each(function() { n++; $(this).find('.row-num').text(n); }); }
 
 	// ADD CONFORMITY
 	$('#btn-add-conformity').on('click', function() {
