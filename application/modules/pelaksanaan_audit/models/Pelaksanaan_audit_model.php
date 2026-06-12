@@ -33,7 +33,7 @@ class Pelaksanaan_audit_model extends BF_Model
                 audit_program_schedule.process_name_free,
                 procedures.name as process_name,
                 audit_auditor_consultant.name as auditor_name,
-                audit_department.department_name,
+                COALESCE(audit_department.department_name, audit_program_schedule.auditee_name_free) as department_name,
                 audit_program.company,
                 audit_program.id as program_code
             ')
@@ -64,7 +64,7 @@ class Pelaksanaan_audit_model extends BF_Model
                 audit_program_schedule.process_name_free,
                 procedures.name as process_name,
                 audit_auditor_consultant.name as auditor_name,
-                audit_department.department_name,
+                COALESCE(audit_department.department_name, audit_program_schedule.auditee_name_free) as department_name,
                 audit_program.company,
                 audit_program.id as program_code
             ')
