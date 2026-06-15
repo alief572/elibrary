@@ -160,7 +160,7 @@
 										<th width="40">No</th>
 										<th>Proses</th>
 										<th>Auditor</th>
-										<th>Department</th>
+										<th>Department - Company</th>
 										<th width="110">Tanggal</th>
 										<th width="80">Mulai</th>
 										<th width="80">Selesai</th>

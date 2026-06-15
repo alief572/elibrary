@@ -1,4 +1,4 @@
-<div class="mb-3">
+﻿<div class="mb-3">
     <h5 class="font-weight-bold mb-3"><i class="fa fa-calendar-alt text-primary mr-2"></i>Jadwal Audit</h5>
     <div class="table-responsive">
         <table id="table-schedule" class="table table-sm table-bordered table-condensed table-hover">
@@ -7,7 +7,7 @@
                     <th width="40">No</th>
                     <th width="200">Process</th>
                     <th width="180">Auditor</th>
-                    <th width="180">Department</th>
+                    <th width="180">Department - Company</th>
                     <th width="130">Date</th>
                     <th width="100">Start Time</th>
                     <th width="100">End Time</th>
@@ -54,7 +54,7 @@
                                             $selectedDeptId = $schedule->auditees[0]->department_id;
                                         }
                                     ?>
-                                    <select name="schedule_auditee_id[]" class="form-control select2-schedule-auditee required" data-placeholder="Select Department">
+                                    <select name="schedule_auditee_id[]" class="form-control select2-schedule-auditee required" data-placeholder="Select Department - Company">
                                         <option value=""></option>
                                         <?php if (!empty($departments)) foreach ($departments as $d) : ?>
                                             <option value="<?= $d->id; ?>" <?= ($d->id == $selectedDeptId) ? 'selected' : ''; ?>><?= $d->name; ?></option>
@@ -181,7 +181,7 @@ function addScheduleRow(isFreeText) {
     var auditeeCell = '';
     if (isFreeText) {
         auditeeCell = '<input type="hidden" name="schedule_auditee_id[]" value="">' +
-            '<input type="text" name="schedule_auditee_name_free[]" class="form-control required" placeholder="Input Department">';
+            '<input type="text" name="schedule_auditee_name_free[]" class="form-control required" placeholder="Input Department - Company">';
     } else {
         var auditeeOptions = '<option value=""></option>';
         <?php if (!empty($departments)) : ?>
@@ -190,7 +190,7 @@ function addScheduleRow(isFreeText) {
             <?php endforeach; ?>
         <?php endif; ?>
         auditeeCell = '<input type="hidden" name="schedule_auditee_name_free[]" value="">' +
-            '<select name="schedule_auditee_id[]" class="form-control select2-schedule-auditee required" data-placeholder="Select Department">' + auditeeOptions + '</select>';
+            '<select name="schedule_auditee_id[]" class="form-control select2-schedule-auditee required" data-placeholder="Select Department - Company">' + auditeeOptions + '</select>';
     }
 
     var html = '<tr class="schedule-row">' +
@@ -215,7 +215,7 @@ function addScheduleRow(isFreeText) {
             width: "100%"
         });
         $newRow.find('.select2-schedule-auditee').select2({
-            placeholder: "Select Department",
+            placeholder: "Select Department - Company",
             allowClear: true,
             width: "100%"
         });
@@ -241,7 +241,7 @@ function initScheduleSelect2() {
         width: "100%"
     });
     $('.select2-schedule-auditee').select2({
-        placeholder: "Select Department",
+        placeholder: "Select Department - Company",
         allowClear: true,
         width: "100%"
     });
