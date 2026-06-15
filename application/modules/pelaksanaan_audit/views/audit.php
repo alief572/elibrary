@@ -192,7 +192,10 @@
 							<button type="button" class="btn btn-sm btn-outline-success mb-4" id="btn-add-conformity"><i class="fa fa-plus mr-1"></i> Add Item</button>
 
 							<!-- Temuan (full: Kategori, ISO, Pasal, Evidence, Action) -->
-							<h6 class="font-weight-bold mt-3 mb-2">Temuan</h6>
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<h6 class="font-weight-bold mt-3 mb-0">Temuan</h6>
+								<small class="text-muted"><em>Format: PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX (Max: 10MB)</em></small>
+							</div>
 							<div class="table-responsive">
 								<table class="table table-bordered table-sm" id="tblTemuan">
 									<thead class="text-center table-light">
