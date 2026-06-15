@@ -232,17 +232,19 @@ class Pelaksanaan_audit_model extends BF_Model
         if ($existing) {
             $audit_id = $existing->id;
             $this->db->update('pelaksanaan_audit', [
+                'auditee_text' => isset($data['auditee_text']) ? $data['auditee_text'] : null,
                 'modified_at' => $now,
                 'modified_by' => $userId,
             ], ['id' => $audit_id]);
         } else {
             $audit_id = $this->generateAuditId();
             $this->db->insert('pelaksanaan_audit', [
-                'id'          => $audit_id,
-                'schedule_id' => $schedule_id,
-                'status'      => '1',
-                'created_at'  => $now,
-                'created_by'  => $userId,
+                'id'           => $audit_id,
+                'schedule_id'  => $schedule_id,
+                'auditee_text' => isset($data['auditee_text']) ? $data['auditee_text'] : null,
+                'status'       => '1',
+                'created_at'   => $now,
+                'created_by'   => $userId,
             ]);
         }
 
@@ -437,12 +439,23 @@ class Pelaksanaan_audit_model extends BF_Model
                 $description = isset($item['description']) ? trim($item['description']) : '';
                 if ($description === '') continue;
 
+                // Handle pasal_id as array (multiselect) -> store as JSON
+                $pasal_id = null;
+                if (isset($item['pasal_id'])) {
+                    if (is_array($item['pasal_id'])) {
+                        $filtered = array_filter($item['pasal_id']);
+                        $pasal_id = !empty($filtered) ? json_encode(array_values($filtered)) : null;
+                    } else {
+                        $pasal_id = $item['pasal_id'];
+                    }
+                }
+
                 $insertData = [
                     'audit_id'    => $audit_id,
                     'description' => $description,
                     'kategori'    => isset($item['kategori']) ? $item['kategori'] : '',
                     'iso_id'      => isset($item['iso_id']) ? $item['iso_id'] : null,
-                    'pasal_id'    => isset($item['pasal_id']) ? $item['pasal_id'] : null,
+                    'pasal_id'    => $pasal_id,
                     'status'      => '1',
                     'created_at'  => $now,
                     'created_by'  => $userId,

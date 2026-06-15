@@ -377,6 +377,12 @@
                 </div>
               </div> -->
 
+              <div class="topbar-item mr-2">
+                <a href="<?= base_url('assets/files/Manual Book Rumah ISO.pdf'); ?>" target="_blank" class="btn btn-sm btn-light-primary font-weight-bold" title="Manual Book">
+                  <i class="fa fa-book mr-1"></i> Manual Book
+                </a>
+              </div>
+
               <div class="topbar-item mr-3">
                 <span class="bg-white rounded py-2 h6 my-0 pl-3 pr-10" style="margin-right:-30px"><?= $userData->full_name; ?></span>
                 <div class="btn btn-icon w-auto d-flex align-items-center btn-lg px-2" onclick="$('#kt_quick_user_toggle').click()">

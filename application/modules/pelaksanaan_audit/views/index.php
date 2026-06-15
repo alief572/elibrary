@@ -11,7 +11,7 @@
 							<tr>
 								<th width="40">No</th>
 								<th>Process</th>
-								<th>Department</th>
+								<th>Department - Company</th>
 								<th>Auditor</th>
 								<th width="120">Tanggal</th>
 								<th width="120">Jam</th>
@@ -34,6 +34,9 @@
 											</a>
 											<a href="<?= site_url('pelaksanaan_audit/audit/' . $v->schedule_id); ?>" class="btn btn-xs btn-icon btn-warning" title="Edit Audit">
 												<i class="fa fa-edit"></i>
+											</a>
+											<a href="<?= site_url('pelaksanaan_audit/print_pdf/' . $v->schedule_id); ?>" class="btn btn-xs btn-icon btn-danger" title="Print PDF" target="_blank">
+												<i class="fa fa-file-pdf"></i>
 											</a>
 										<?php else : ?>
 											<a href="<?= site_url('pelaksanaan_audit/audit/' . $v->schedule_id); ?>" class="btn btn-xs btn-icon btn-primary" title="Audit">
