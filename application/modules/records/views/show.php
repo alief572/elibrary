@@ -45,35 +45,38 @@
                     <p>File hes been deleted!</p>
                 <?php else : ?>
                     <?php if ($file->file_name) : ?>
-                        <?php if ($file->ext == '.pdf' || $file->ext == '.PDF') :
-                            if ($type == 'form') {
-                                $dir = 'FORMS';
-                            } else if ($type == 'guide') {
-                                $dir = 'GUIDES';
-                            } else if ($type == 'record') {
-                                $dir = 'RECORDS';
-                            }
-                            
-                            $file_url = base_url("directory/$dir/$file->company_id/$file->file_name");
+                        <?php 
+                        if ($type == 'form') {
+                            $dir = 'FORMS';
+                        } else if ($type == 'guide') {
+                            $dir = 'GUIDES';
+                        } else if ($type == 'record') {
+                            $dir = 'RECORDS';
+                        }
+                        
+                        $file_url = base_url("directory/$dir/$file->company_id/$file->file_name");
+                        $ext = strtolower($file->ext);
+                        ?>
+                        <?php if ($ext == '.pdf') :
                             if($isMobile){
-                                $src = "https://docs.google.com/gview?embedded=true&url=" . $file_url . "&rm=minimal";
+                                $src = "https://docs.google.com/gview?embedded=true&url=" . urlencode($file_url) . "&rm=minimal";
                             } else {
                                 $src = $file_url . "#toolbar=0&navpanes=0";
                             }
                         ?>
                             <iframe src="<?= $src ?>" frameborder="0" width="100%" height="500px"></iframe>
-                        <?php elseif ($file->ext == '.xlsx' || $file->ext == '.xls') :
-                            if ($type == 'form') {
-                                $dir = 'FORMS';
-                            } else if ($type == 'guide') {
-                                $dir = 'GUIDES';
-                            } else if ($type == 'record') {
-                                $dir = 'RECORDS';
-                            }
+                        <?php elseif (in_array($ext, ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx'])) : 
+                            $src = $file_url . "#toolbar=0&navpanes=0";
                         ?>
-                            <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="500px"></iframe>
+                            <iframe src="<?= $src ?>" frameborder="0" width="100%" height="500px"></iframe>
+                            <div class="text-center mt-3">
+                                <a href="<?= $file_url ?>" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download File</a>
+                            </div>
                         <?php else : ?>
-                            <iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="500px"></iframe>
+                            <iframe src="<?= $file_url ?>" frameborder="0" width="100%" height="500px"></iframe>
+                            <div class="text-center mt-3">
+                                <a href="<?= $file_url ?>" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download File</a>
+                            </div>
                         <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>

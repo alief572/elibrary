@@ -367,6 +367,25 @@ class Records extends Admin_Controller
 		$this->template->render('data-records');
 	}
 
+	public function search_records()
+	{
+		$procedure_id = $this->input->post('procedure_id');
+		$keyword = $this->input->post('keyword');
+		$getRecords = $this->RecModel->searchRecords($procedure_id, $keyword);
+		$this->template->set(['getRecords' => $getRecords, 'parent_id' => '', 'EOF' => true]);
+		$this->template->render('data-records');
+	}
+
+	public function child_rows($folder = null, $procedure_id = null, $depth = 1)
+	{
+		$getRecords = [];
+		if ($folder) {
+			$getRecords = $this->RecModel->getSubRecords($procedure_id, $folder);
+		}
+		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'depth' => $depth]);
+		$this->template->render('child-records');
+	}
+
 	public function saveFileRecord()
 	{
 		$data = $this->input->post('forms');
@@ -380,9 +399,10 @@ class Records extends Admin_Controller
 			$data['company_id'] = $this->company;
 			$data['flag_type'] = 'FILE';
 			$data['file_name'] = null;
+			$data['status'] = 'PUB';
 			unset($data['old_file'], $data['type']);
 			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
-			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Record', 'note' => 'Save link record']);
+			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => 'PUB', 'doc_type' => 'Record', 'note' => 'Save link record']);
 			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Link Record successfully saved.' : 'Link Record failed to save.')]);
 		} else {
 			// Save as file upload (original logic)
@@ -400,10 +420,11 @@ class Records extends Admin_Controller
 			}
 			$id = $data['id'] ?: uniqid(date('m'));
 			$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
-			$data['link_url'] = null;
+			$data['status'] = 'PUB';
 			unset($data['old_file'], $data['type']);
+			$data['link_url'] = null;
 			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
-			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => (isset($data['status']) ? $data['status'] : 'OPN'), 'doc_type' => 'Record', 'note' => 'Upload file']);
+			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => 'PUB', 'doc_type' => 'Record', 'note' => 'Upload file']);
 			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File Record successfully saved.' : 'File Record failed to save.')]);
 		}
 	}
