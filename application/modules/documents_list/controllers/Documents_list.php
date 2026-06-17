@@ -116,14 +116,8 @@ class Documents_list extends Admin_Controller
 			$groups 		= $this->List->getProcedureGroups();
 			$procedures 	= $this->List->getPublishedProcedures($this->company);
 
-			// Only show procedures that have a generated PDF file
-			$filteredProcedures = [];
-			foreach ($procedures as $pro) {
-				$pdfPath = FCPATH . 'directory/PROCEDURES_PDF/' . $this->company . '/procedure_' . $pro['id'] . '.pdf';
-				if (file_exists($pdfPath)) {
-					$filteredProcedures[] = $pro;
-				}
-			}
+			// Show all published procedures (viewPdf generates on-the-fly if PDF doesn't exist)
+			$filteredProcedures = $procedures;
 
 			$ArrPro = [];
 			foreach ($filteredProcedures as $pro) {

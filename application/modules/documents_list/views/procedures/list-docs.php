@@ -21,7 +21,32 @@
 				</ul>
 			</div>
 			<a href="#back" onclick="history.go(-1)" class="btn btn-primary btn-sm btn-icon mb-3"><i class="fa fa-arrow-left"></i></a>
-			<h1 class="text-white fa-3x"><?= $procedure[0]->name; ?></h1>
+			<h1 class="text-white fa-3x"><?= $procedure[0]->name; ?>
+				<?php if ($procedure[0]->status != 'PUB') : ?>
+					<?php
+					switch ($procedure[0]->status) {
+						case 'DFT':
+							echo '<span class="badge bg-secondary text-white font-weight-bold ml-2" style="font-size: 14px; vertical-align: middle;">Draft</span>';
+							break;
+						case 'REV':
+							echo '<span class="badge bg-warning text-white font-weight-bold ml-2" style="font-size: 14px; vertical-align: middle;">Review</span>';
+							break;
+						case 'COR':
+							echo '<span class="badge bg-danger text-white font-weight-bold ml-2" style="font-size: 14px; vertical-align: middle;">Correction</span>';
+							break;
+						case 'APV':
+							echo '<span class="badge bg-info text-white font-weight-bold ml-2" style="font-size: 14px; vertical-align: middle;">Approval</span>';
+							break;
+						case 'RVI':
+							echo '<span class="badge bg-danger text-white font-weight-bold ml-2" style="font-size: 14px; vertical-align: middle;">Revisi</span>';
+							break;
+						default:
+							echo '<span class="badge bg-danger text-white font-weight-bold ml-2" style="font-size: 14px; vertical-align: middle;">Dalam Proses Revisi</span>';
+							break;
+					}
+					?>
+				<?php endif; ?>
+			</h1>
 			<div class="row mb-10">
 				<div class="col-md-4">
 					<input type="text" name="serarch" id="search" placeholder="Pencarian" class="form-control rounded form-control-sm">
@@ -99,6 +124,30 @@
 														<td class="h6 text-dark"><?= $no; ?></td>
 														<td class="h4 text-dark d-flex align-items-center my-0"><i class="fa fa-file-alt text-success fa-2x mr-4"></i>
 															<span class="mt-2"><?= $lsPro->name; ?></span>
+															<?php if ($lsPro->status != 'PUB') : ?>
+																<?php
+																switch ($lsPro->status) {
+																	case 'DFT':
+																		echo '<span class="badge bg-secondary text-white font-weight-bold ml-2">Draft</span>';
+																		break;
+																	case 'REV':
+																		echo '<span class="badge bg-warning text-white font-weight-bold ml-2">Review</span>';
+																		break;
+																	case 'COR':
+																		echo '<span class="badge bg-danger text-white font-weight-bold ml-2">Correction</span>';
+																		break;
+																	case 'APV':
+																		echo '<span class="badge bg-info text-white font-weight-bold ml-2">Approval</span>';
+																		break;
+																	case 'RVI':
+																		echo '<span class="badge bg-danger text-white font-weight-bold ml-2">Revisi</span>';
+																		break;
+																	default:
+																		echo '<span class="badge bg-danger text-white font-weight-bold ml-2">Dalam Proses Revisi</span>';
+																		break;
+																}
+																?>
+															<?php endif; ?>
 														</td>
 														<td class="h6 text-center" style="vertical-align: middle;">
 															<button type="button" class="btn btn-icon btn-xs shadow-xs btn-info view-procedure" data-id="<?= $lsPro->id; ?>" data-toggle="tooltip" data-theme="dark" title="View Document"><i class="fa fa-eye"></i></button>

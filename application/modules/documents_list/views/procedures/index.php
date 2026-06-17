@@ -68,6 +68,30 @@
 																<i class="fa fa-folder text-warning fa-2x mr-2 pt-0"></i>
 																<strong class="mt-1">
 																	<a class="link-action" href="<?= base_url($this->uri->segment(1) . '/procedures/' . $list['id']); ?>"><?= $list['name']; ?></a>
+																	<?php if ($list['status'] != 'PUB') : ?>
+																		<?php
+																		switch ($list['status']) {
+																			case 'DFT':
+																				echo '<span class="badge bg-secondary text-white font-weight-bold ml-2">Draft</span>';
+																				break;
+																			case 'REV':
+																				echo '<span class="badge bg-warning text-white font-weight-bold ml-2">Review</span>';
+																				break;
+																			case 'COR':
+																				echo '<span class="badge bg-danger text-white font-weight-bold ml-2">Correction</span>';
+																				break;
+																			case 'APV':
+																				echo '<span class="badge bg-info text-white font-weight-bold ml-2">Approval</span>';
+																				break;
+																			case 'RVI':
+																				echo '<span class="badge bg-danger text-white font-weight-bold ml-2">Revisi</span>';
+																				break;
+																			default:
+																				echo '<span class="badge bg-danger text-white font-weight-bold ml-2">Dalam Proses Revisi</span>';
+																				break;
+																		}
+																		?>
+																	<?php endif; ?>
 																</strong>
 															</td>
 														</tr>
