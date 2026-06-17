@@ -12,7 +12,6 @@
 							<tr class="text-center">
 								<th class="p-2" width="40">No.</th>
 								<th class="p-2 text-left">Nama</th>
-								<th class="p-2" width="130">Status</th>
 								<th class="p-2" width="60">Action</th>
 							</tr>
 						</thead>
@@ -25,7 +24,6 @@
 										<td class="p-2 text-left">
 											<h6 class="my-0"><?= $dt->name; ?></h6>
 										</td>
-										<td class="p-2"><?= $status[$dt->status]; ?></td>
 										<td class="p-2">
 											<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-warning btn-icon btn-xs" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Records"><i class="fa fa-edit"></i></a>
 										</td>

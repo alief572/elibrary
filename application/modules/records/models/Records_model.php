@@ -115,6 +115,14 @@ class Records_model extends BF_Model
         ])->result();
     }
 
+    public function searchRecords($procedureId, $keyword)
+    {
+        $this->db->where('procedure_id', $procedureId);
+        $this->db->where('status !=', 'DEL');
+        $this->db->like('name', $keyword);
+        return $this->db->get('dir_records')->result();
+    }
+
     /* SAVE / UPDATE METHODS */
 
     public function saveProcedure($data, $dataFlow, $userId)
@@ -275,6 +283,7 @@ class Records_model extends BF_Model
         if (intval($check) == 0) {
             $data['created_by'] = $userId;
             $data['created_at'] = date('Y-m-d H:i:s');
+            $data['status']     = 'PUB';
             $res = $this->db->insert('dir_records', $data);
         } else {
             $data['modified_by'] = $userId;
