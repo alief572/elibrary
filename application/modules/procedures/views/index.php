@@ -15,25 +15,25 @@
 					<!-- Nav tabs -->
 					<ul class="nav nav-tabs nav-fill font-weight-bold nav-success nav-sm nav-pills pb-3 mb-3" id="myTab" role="tablist">
 						<li class="nav-item" role="presentation">
-							<a class="nav-link active p-2" id="draft-tab" data-toggle="tab" data-target="#draft" type="button" role="tab" aria-controls="draft" aria-selected="false">Draft <span class="badge bg-white badge-circle text-secondary ml-2"><?= count($dataDraft); ?></span></a>
+							<a class="nav-link active p-2" id="draft-tab" data-toggle="tab" data-target="#draft" type="button" role="tab" aria-controls="draft" aria-selected="false">Draft <span class="badge badge-circle badge-white text-secondary ml-2"><?= count($dataDraft); ?></span></a>
 						</li>
 						<li class="nav-item" role="presentation">
-							<a class="nav-link p-2" id="review-tab" data-toggle="tab" data-target="#review" type="button" role="tab" aria-controls="review" aria-selected="true">Review <span class="badge badge-circle bg-white text-warning ml-2"><?= count($dataRev); ?></span></a>
+							<a class="nav-link p-2" id="review-tab" data-toggle="tab" data-target="#review" type="button" role="tab" aria-controls="review" aria-selected="true">Review <span class="badge badge-circle badge-white text-warning ml-2"><?= count($dataRev); ?></span></a>
 						</li>
 						<li class="nav-item" role="presentation">
-							<a class="nav-link p-2" id="Correction-tab" data-toggle="tab" data-target="#Correction" type="button" role="tab" aria-controls="Correction" aria-selected="true">Correction <span class="badge badge-circle bg-white text-danger ml-2"><?= count($dataCor); ?></span></a>
+							<a class="nav-link p-2" id="Correction-tab" data-toggle="tab" data-target="#Correction" type="button" role="tab" aria-controls="Correction" aria-selected="true">Correction <span class="badge badge-circle badge-white text-danger ml-2"><?= count($dataCor); ?></span></a>
 						</li>
 						<li class="nav-item" role="presentation">
-							<a class="nav-link p-2" id="Approval-tab" data-toggle="tab" data-target="#Approval" type="button" role="tab" aria-controls="Approval" aria-selected="true">Approval <span class="badge badge-circle bg-white text-info ml-2"><?= count($dataApv); ?></span></a>
+							<a class="nav-link p-2" id="Approval-tab" data-toggle="tab" data-target="#Approval" type="button" role="tab" aria-controls="Approval" aria-selected="true">Approval <span class="badge badge-circle badge-white text-info ml-2"><?= count($dataApv); ?></span></a>
 						</li>
 						<li class="nav-item" role="presentation">
-							<a class="nav-link p-2" id="Revision-tab" data-toggle="tab" data-target="#Revision" type="button" role="tab" aria-controls="Revision" aria-selected="true">Revision <span class="badge badge-circle bg-white text-success ml-2"><?= count($dataRvi); ?></span></a>
+							<a class="nav-link p-2" id="Revision-tab" data-toggle="tab" data-target="#Revision" type="button" role="tab" aria-controls="Revision" aria-selected="true">Revision <span class="badge badge-circle badge-white text-success ml-2"><?= count($dataRvi); ?></span></a>
 						</li>
 						<li class="nav-item" role="presentation">
-							<a class="nav-link p-2" id="published-tab" data-toggle="tab" data-target="#published" type="button" role="tab" aria-controls="published" aria-selected="true">Published <span class="badge badge-circle bg-white text-primary ml-2"><?= count($dataPub); ?></span></a>
+							<a class="nav-link p-2" id="published-tab" data-toggle="tab" data-target="#published" type="button" role="tab" aria-controls="published" aria-selected="true">Published <span class="badge badge-circle badge-white text-primary ml-2"><?= count($dataPub); ?></span></a>
 						</li>
 						<li class="nav-item" role="presentation">
-							<a class="nav-link p-2" id="deletion-tab" data-toggle="tab" data-target="#deletion" type="button" role="tab" aria-controls="deletion" aria-selected="true">Deletion <span class="badge badge-circle bg-white text-danger ml-2"><?= count($dataDel); ?></span></a>
+							<a class="nav-link p-2" id="deletion-tab" data-toggle="tab" data-target="#deletion" type="button" role="tab" aria-controls="deletion" aria-selected="true">Deletion <span class="badge badge-circle badge-white text-danger ml-2"><?= count($dataDel); ?></span></a>
 						</li>
 					</ul>
 
