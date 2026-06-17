@@ -63,7 +63,7 @@
 <h4>Temuan</h4>
 <?php if (!empty($audit_temuan)) : ?>
 <table>
-    <thead><tr><th width="30">No</th><th>Temuan</th><th width="60">Kategori</th><th width="80">ISO</th><th width="100">Pasal</th></tr></thead>
+    <thead><tr><th width="30">No</th><th>Temuan</th><th width="60">Kategori</th><th width="80">Reference Standard</th><th width="100">Pasal</th></tr></thead>
     <tbody>
         <?php foreach ($audit_temuan as $k => $tm) : $k++;
             $iso_name = '';

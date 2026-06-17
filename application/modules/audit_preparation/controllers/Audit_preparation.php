@@ -758,7 +758,7 @@ class Audit_preparation extends Admin_Controller
 
         // 3. Validate Audit Scope: not empty, must be valid option
         $audit_scope = isset($data['audit_scope']) ? $data['audit_scope'] : '';
-        $valid_scopes = ['Audit Khusus', 'Audit Regular'];
+        $valid_scopes = ['Audit Khusus', 'Audit Regular', 'Audit Product', 'Audit Process'];
         if (empty($audit_scope)) {
             $errors[] = 'Audit Scope must be selected.';
         } elseif (!in_array($audit_scope, $valid_scopes)) {

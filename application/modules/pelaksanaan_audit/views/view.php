@@ -4,7 +4,7 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h2 class="m-0"><i class="<?= $icon; ?> text-primary mr-2"></i>View Pelaksanaan Audit</h2>
-					<a href="<?= site_url('pelaksanaan_audit'); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
+					<a href="<?= site_url('pelaksanaan_audit/schedules/' . $schedule->program_id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
 				</div>
 
 				<div class="card-body">
@@ -61,7 +61,7 @@
 						<?php if (!empty($audit_temuan)) : ?>
 							<table class="table table-bordered table-sm">
 								<thead class="text-center table-light">
-									<tr><th width="30">No</th><th>Temuan</th><th width="100">Kategori</th><th width="130">ISO</th><th style="width:300px;min-width:300px;max-width:300px;">Pasal</th><th width="80">Evidence</th></tr>
+									<tr><th width="30">No</th><th>Temuan</th><th width="100">Kategori</th><th width="130">Reference Standard</th><th style="width:400px;min-width:400px;max-width:400px;">Pasal</th><th width="80">Evidence</th></tr>
 								</thead>
 								<tbody>
 									<?php foreach ($audit_temuan as $k => $tm) : $k++; ?>
