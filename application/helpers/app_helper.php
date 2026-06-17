@@ -565,3 +565,47 @@ function limit_text($x, $length)
         return $y;
     }
 }
+
+if (!function_exists('get_smtp_config')) {
+    /**
+     * Get SMTP email configuration from settings table
+     * Returns array ready for CI Email library initialize()
+     */
+    function get_smtp_config()
+    {
+        $CI = &get_instance();
+        $smtp_rows = $CI->db->like('setting_name', 'smtp', 'after')->get('settings')->result();
+        $settings = [];
+        foreach ($smtp_rows as $row) {
+            $settings[$row->setting_name] = $row->value;
+        }
+
+        $host = isset($settings['smtp_host']) ? $settings['smtp_host'] : '';
+        $port = isset($settings['smtp_port']) ? $settings['smtp_port'] : '465';
+        $user = isset($settings['smtp_user']) ? $settings['smtp_user'] : '';
+        $pass_encrypted = isset($settings['smtp_pass']) ? $settings['smtp_pass'] : '';
+        $crypto = isset($settings['smtp_crypto']) ? $settings['smtp_crypto'] : 'ssl';
+
+        // Decrypt password
+        $key = 'sentral_sistem_2024';
+        $pass = openssl_decrypt(base64_decode($pass_encrypted), 'AES-256-CBC', $key, 0, str_pad(substr($key, 0, 16), 16, '0'));
+        if ($pass === false) $pass = $pass_encrypted; // fallback if not encrypted
+
+        // Build smtp_host with protocol prefix if not present
+        $smtp_host = $host;
+        if (!empty($host) && strpos($host, '://') === false) {
+            $smtp_host = $crypto . '://' . $host;
+        }
+
+        return [
+            'protocol'  => 'smtp',
+            'smtp_host' => $smtp_host,
+            'smtp_port' => (int) $port,
+            'smtp_user' => $user,
+            'smtp_pass' => $pass,
+            'mailtype'  => 'html',
+            'charset'   => 'utf-8',
+            'newline'   => "\r\n",
+        ];
+    }
+}

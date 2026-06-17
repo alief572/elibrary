@@ -433,19 +433,11 @@ class Audit_preparation extends Admin_Controller
         // Load CI email library and send
         $this->load->library('email');
 
-        $config = [
-            'protocol'  => 'smtp',
-            'smtp_host' => 'ssl://smtp.googlemail.com',
-            'smtp_port' => 465,
-            'smtp_user' => 'isoplatform26@gmail.com',
-            'smtp_pass' => 'rxob effq jdpj qwof',
-            'mailtype'  => 'html',
-            'charset'   => 'utf-8',
-            'newline'   => "\r\n",
-        ];
+        $config = get_smtp_config();
+        $smtp_user = $config['smtp_user'];
 
         $this->email->initialize($config);
-        $this->email->from('isoplatform26@gmail.com', 'Sentral Sistem - Audit');
+        $this->email->from($smtp_user, 'Sentral Sistem - Audit');
         $this->email->to($emails);
         $this->email->subject('Jadwal Audit');
         $this->email->message($body);
