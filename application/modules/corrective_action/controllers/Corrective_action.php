@@ -550,19 +550,11 @@ class Corrective_action extends Admin_Controller
         // Send email
         $this->load->library('email');
 
-        $config = [
-            'protocol'  => 'smtp',
-            'smtp_host' => 'ssl://smtp.googlemail.com',
-            'smtp_port' => 465,
-            'smtp_user' => 'isoplatform26@gmail.com',
-            'smtp_pass' => 'rxob effq jdpj qwof',
-            'mailtype'  => 'html',
-            'charset'   => 'utf-8',
-            'newline'   => "\r\n",
-        ];
+        $config = get_smtp_config();
+        $smtp_user = $config['smtp_user'];
 
         $this->email->initialize($config);
-        $this->email->from('isoplatform26@gmail.com', 'Sentral Sistem - Audit');
+        $this->email->from($smtp_user, 'Sentral Sistem - Audit');
         $this->email->to($auditor->email);
         $this->email->subject('Segera Approve Corrective Action');
         $this->email->message($body);
