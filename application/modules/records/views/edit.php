@@ -19,18 +19,22 @@
 
 				<div class="card card-stretch shadow card-custom">
 					<div class="card-header justify-content-between d-flex align-items-center">
-						<h2 class="m-0"><i class="fa fa-plus mr-2"></i><?= $title; ?></h2>
+						<h2 class="m-0"><i class="fa fa-folder-open text-warning mr-2"></i><?= $title; ?> : <span class="text-primary"><?= isset($data->name) ? $data->name : ''; ?></span></h2>
 						<a href="<?= base_url($this->uri->segment(1)); ?>" class="btn btn-danger"><i class="fa fa-reply"></i>Back</a>
 					</div>
 
-					<div class="card-body">
+					<div class="card-body pt-3">
+						<div class="d-flex justify-content-between align-items-center mb-3">
+							<button type="button" class="btn btn-warning add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
+							<div class="input-group" style="width: 300px;">
+								<div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-search"></i></span></div>
+								<input type="text" class="form-control" id="search-record" placeholder="Search files or folders...">
+							</div>
+						</div>
+						<hr>
 						<div id="data-records">
-							<button type="button" class="btn btn-warning mb-3" id="add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
-							<button type="button" class="btn btn-primary mb-3" disabled id="add_record"><i class="fa fa-plus"></i> Add Record</button>
-							<!-- <button type="button" class="btn btn-success btn-icon mb-3" id="refresh" title="Refresh"><i class="fa fa-sync-alt"></i></button> -->
-							<hr>
 							<input type="hidden" id="refresh_id" value="">
-							<table class="table datatable table-hover">
+							<table id="records-tree-table" class="table table-hover">
 								<thead>
 									<tr>
 										<th class="py-0">File or Folder Name</th>
@@ -39,13 +43,28 @@
 									</tr>
 								</thead>
 								<tbody>
-									<?php if (isset($getRecords)) : $n = 0; ?>
+									<?php if (isset($getRecords) && count($getRecords) > 0) : $n = 0; ?>
 										<?php foreach ($getRecords as $form) : $n++; ?>
-											<tr class="">
+											<tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
 												<td class="py-1">
-													<a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer folder text-dark">
+													<a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
 														<div class="d-flex justify-content-start align-items-center">
-															<i class="fa fa-folder text-warning fa-3x mr-3"></i>
+															<?php if ($form->flag_type == 'FOLDER') : ?>
+																<i class="fa fa-chevron-right mr-2 toggle-icon" style="transition: transform 0.2s;"></i>
+																<i class="fa fa-folder text-warning fa-2x mr-3"></i>
+															<?php elseif (isset($form->link_url) && $form->link_url) : ?>
+																<i class="fa fa-link text-info fa-2x mr-3 ml-4"></i>
+															<?php else : 
+																$ext = isset($form->ext) && $form->ext ? strtolower(str_replace('.', '', $form->ext)) : (isset($form->file_name) ? strtolower(pathinfo($form->file_name, PATHINFO_EXTENSION)) : '');
+																if ($ext == 'pdf') { $icon = 'fas fa-file-pdf text-danger'; }
+																elseif (in_array($ext, ['xls', 'xlsx'])) { $icon = 'fas fa-file-excel text-success'; }
+																elseif (in_array($ext, ['doc', 'docx'])) { $icon = 'fas fa-file-word text-primary'; }
+																elseif (in_array($ext, ['ppt', 'pptx'])) { $icon = 'fas fa-file-powerpoint text-warning'; }
+																elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) { $icon = 'fas fa-file-image text-info'; }
+																else { $icon = 'fas fa-file-alt text-success'; }
+															?>
+																<i class="<?= $icon ?> fa-2x mr-3 ml-4"></i>
+															<?php endif; ?>
 															<span class="text-name mt-3 h5"><?= $form->name; ?></span>
 														</div>
 													</a>
@@ -56,14 +75,21 @@
 													</div>
 												</td>
 												<td class="py-1 text-center">
-													<div class="btn-opsi">
+													<div class="btn-opsi mt-1">
 														<div class="dropdown">
 															<button class="btn btn-sm btn-icon btn-primary" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i></button>
 															<div class="dropdown-menu dropdown-menu-right">
 																<?php if ($form->flag_type == 'FILE'): ?>
-																	<a href="javascript:void(0)" class="dropdown-item view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf  text-primary mr-2"></i> View</a>
+																	<?php if (isset($form->link_url) && $form->link_url) : ?>
+																		<a href="<?= $form->link_url; ?>" target="_blank" class="dropdown-item" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
+																	<?php else: ?>
+																		<a href="javascript:void(0)" class="dropdown-item view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View</a>
+																	<?php endif; ?>
 																	<a href="javascript:void(0)" class="dropdown-item edit-record" title="Edit Document" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
 																<?php else: ?>
+																	<a href="javascript:void(0)" class="dropdown-item add-folder-inside" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
+																	<a href="javascript:void(0)" class="dropdown-item add-record-inside" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
+																	<div class="dropdown-divider"></div>
 																	<a href="javascript:void(0)" class="dropdown-item edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
 																<?php endif; ?>
 																<a href="javascript:void(0)" class="dropdown-item move-record" title="Move" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
@@ -77,8 +103,10 @@
 										<?php endforeach; ?>
 									<?php else : ?>
 										<tr>
-											<td colspan="3" class="text-center py-3">
-												<h5 class="text-light-secondary">~ No data available~ </h5>
+											<td colspan="3" class="text-center py-5">
+												<i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
+												<h5 class="text-muted">~ Folder Kosong ~</h5>
+												<button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
 											</td>
 										</tr>
 									<?php endif; ?>
@@ -131,7 +159,7 @@
 	$(document).ready(function() {
 
 		let id = '<?= $data->id; ?>'
-		$.getJSON(siteurl + active_controller + 'load_file_flow/' + id, function(result) {
+		$.getJSON(siteurl + 'procedures/load_file_flow/' + id, function(result) {
 			var data = result.data
 			var d = ''
 			const url = siteurl + 'directory/FLOW_FILE/' + data.company_id + '/' + data.flow_file;
@@ -1130,7 +1158,7 @@
 							timer: 2000
 						})
 						$('#modalRecord').modal('hide')
-						$('#refresh').click();
+						location.reload();
 					} else {
 						Swal.fire({
 							title: 'Warning!',
@@ -1177,6 +1205,7 @@
 								$(btn).parents('tr').fadeOut(1000);
 								setTimeout(function() {
 									$(btn).parents('tr').remove();
+									window.reload()
 								}, 1200)
 
 							} else {
@@ -1194,46 +1223,50 @@
 
 		/* FOLDER RECORDS */
 
-		$(document).on('click', '#add_folder', function() {
+		$(document).on('click', '.add_folder', function() {
 			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
-			$('#modelId').modal('show')
-			$('.modal-title').text('Add Folder')
+			$('#modelId').modal('show');
+			$('.modal-title').text('Add Folder');
 			$('#content_modal').html(`
-			<div class="modal-body row">
-				<div class="col-12">
-					<div class="form-group">
-						<label>New Folder</label>
-						<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name">
-						<span class="form-text text-danger invalid-feedback">Nama folder harus di isi</span>
-					</div>
-					<div class="d-flex justify-content-between">
-						<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
-						<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Close</button>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="form-group mb-0">
+							<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+							<input type="text" name="folder_name" id="folder_name" class="form-control" placeholder="Folder Name">
+							<span class="invalid-feedback">Folder Name is required</span>
+						</div>
 					</div>
 				</div>
+			</div>
+			<div class="modal-footer d-flex justify-content-end">
+				<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
+				<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
 			</div>`);
-		})
+		});
 
 		$(document).on('click', '.edit-folder', function() {
 			const id = $(this).data('id')
 			const name = $(this).data('name')
 			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
 			$('#modelId').modal('show')
-			$('.modal-title').text('Add Folder')
+			$('.modal-title').text('Edit Folder')
 			$('#content_modal').html(`
-			<div class="modal-body row">
-				<div class="col-12">
-					<div class="form-group">
-						<label>New Folder</label>
-						<input type="hidden" class="form-control" placeholder="Folder Name" id="folder_id" name="folder_id" value="` + id + `">
-						<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name" value="` + name + `">
-						<span class="form-text text-danger invalid-feedback">Nama folder harus di isi</span>
-					</div>
-					<div class="d-flex justify-content-between">
-						<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
-						<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Close</button>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="form-group mb-0">
+							<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+							<input type="hidden" class="form-control" placeholder="Folder Name" id="folder_id" name="folder_id" value="` + id + `">
+							<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name" value="` + name + `">
+							<span class="invalid-feedback">Folder Name is required</span>
+						</div>
 					</div>
 				</div>
+			</div>
+			<div class="modal-footer d-flex justify-content-end">
+			<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
+			<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
 			</div>`);
 		})
 
@@ -1282,7 +1315,7 @@
 							timer: 2000
 						}).then(function() {
 							$('#modelId').modal('hide')
-							$('#refresh').click()
+							location.reload();
 						})
 					} else {
 						Swal.fire({
@@ -1305,30 +1338,93 @@
 		})
 
 		$(document).on('click', '.folder', function() {
-			const procedure_id = $('#procedure_id').val()
-			const folder_id = $(this).data('id')
-			$('#refresh_id').val(folder_id) || null
-			if (folder_id) {
-				$('#data-records').load(siteurl + active_controller + 'records_folder/' + folder_id + "/" + procedure_id)
-			}
-		})
+			const procedure_id = $('#procedure_id').val();
+			const folder_id = $(this).data('id');
+			const row = $(this).closest('tr.tree-row');
+			const depth = parseInt(row.data('depth')) || 0;
+			const isLoaded = row.data('loaded');
+			const icon = $(this).find('.toggle-icon');
 
-		$(document).on('click', '.up_folder', function() {
-			const procedure_id = $('#procedure_id').val()
-			const parent_id = $(this).data('id') || null
-			$('#refresh_id').val(parent_id) || null
-			$('#data-records').load(siteurl + active_controller + 'up_folder/' + parent_id + "/" + procedure_id)
-		})
+			if (row.hasClass('expanded')) {
+				row.removeClass('expanded');
+				icon.css('transform', 'rotate(0deg)');
+				hideDescendants(folder_id);
+			} else {
+				row.addClass('expanded');
+				icon.css('transform', 'rotate(90deg)');
+				
+				if (!isLoaded || isLoaded === "false" || isLoaded === false) {
+					$.get(siteurl + 'records/child_rows/' + folder_id + "/" + procedure_id + "/" + (depth + 1), function(html) {
+						row.after(html);
+						row.data('loaded', 'true');
+						row.attr('data-loaded', 'true');
+					});
+				} else {
+					showChildren(folder_id);
+				}
+			}
+		});
+
+		function hideDescendants(parentId) {
+			$('#records-tree-table tr[data-parent-id="' + parentId + '"]').each(function() {
+				$(this).hide();
+				if ($(this).hasClass('expanded')) {
+					hideDescendants($(this).data('id'));
+				}
+			});
+		}
+
+		function showChildren(parentId) {
+			$('#records-tree-table tr[data-parent-id="' + parentId + '"]').each(function() {
+				$(this).show();
+				if ($(this).hasClass('expanded')) {
+					showChildren($(this).data('id'));
+				}
+			});
+		}
+
+		$(document).on('click', '.add-folder-inside', function() {
+			const parent_id = $(this).data('id');
+			const procedure_id = $('#procedure_id').val();
+			if (parent_id) {
+				$('#refresh_id').val(parent_id); // Required by .save-folder logic
+				$('.modal-title').html('Add Folder');
+				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
+				$('#content_modal').html(`
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="form-group mb-0">
+									<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+									<input type="text" name="folder_name" id="folder_name" class="form-control" placeholder="Folder Name">
+									<span class="invalid-feedback">Folder Name is required</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer d-flex justify-content-end">
+					<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+					</div>
+				`);
+				$('#modelId').modal('show');
+			}
+		});
+
+		$(document).on('click', '.add-record-inside', function() {
+			const parent_id = $(this).data('id');
+			const procedure_id = $('#procedure_id').val();
+			if (parent_id) {
+				$('.modal-title').html('Upload Record');
+				$('#record-content').load(siteurl + 'records/upload_record/' + procedure_id + '/' + parent_id);
+				$('#modalRecord').modal('show');
+			}
+		});
 
 		$(document).on('click', '#refresh', function() {
 			const procedure_id = $('#procedure_id').val()
-			const refresh_id = $('#refresh_id').val() || null
-			if (refresh_id) {
-				$('#data-records').load(siteurl + active_controller + 'refresh/' + refresh_id + "/" + procedure_id)
-			} else {
-				$('#data-records').load(siteurl + active_controller + 'refresh/' + refresh_id + "/" + procedure_id)
-			}
-		})
+			$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id)
+		});
 		$(document).on('click', '.move-record', function() {
 			const id = $(this).data('id')
 			if (id) {
@@ -1369,7 +1465,7 @@
 							timer: 2000
 						}).then(function() {
 							$('#modelId').modal('hide')
-							$('#refresh').click()
+							location.reload();
 						})
 					} else {
 						Swal.fire({
@@ -1390,6 +1486,31 @@
 				}
 			})
 		})
+
+		$(document).on('keydown', '#search-record', function(e) {
+			if (e.keyCode === 13) {
+				e.preventDefault();
+				return false;
+			}
+		});
+
+		$(document).on('keydown', '#search-record', function(e) {
+			if (e.key === 'Enter' || e.keyCode === 13) {
+				e.preventDefault();
+			}
+		});
+
+		$(document).on('keyup', '#search-record', function() {
+			const keyword = $(this).val();
+			const procedure_id = $('#procedure_id').val();
+			if (keyword.length > 2) {
+				$.post(siteurl + 'records/search_records', { procedure_id: procedure_id, keyword: keyword }, function(html) {
+					$('#data-records').html(html);
+				});
+			} else if (keyword.length == 0) {
+				$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id);
+			}
+		});
 
 	})
 

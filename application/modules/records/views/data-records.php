@@ -1,11 +1,6 @@
-<button type="button" class="btn btn-warning mb-3" id="add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
-<button type="button" class="btn btn-primary mb-3" <?= ($EOF) ? 'disabled' : ''; ?> id="add_record"><i class="fa fa-plus"></i> Add Record</button>
-<button type="button" class="btn btn-success btn-icon mb-3" id="refresh" title="Refresh"><i class="fa fa-sync-alt"></i></button>
-<hr>
-
 <input type="hidden" id="refresh_id" value="<?= ($parent_id) ?: ''; ?>">
 
-<table class="table table-hover">
+<table class="table table-hover" id="records-tree-table">
   <thead>
     <tr>
       <th class="py-0">File or Folder Name</th>
@@ -15,30 +10,27 @@
   </thead>
   <tbody>
     <?php if (($getRecords)) : ?>
-      <?php if (!$EOF) : ?>
-        <tr>
-          <td colspan="3" class="py-1">
-            <a href="javascript:void(0)" title="Up Folder" data-id="<?= ($parent_id) ?: ''; ?>" class="cursor-pointer up_folder text-dark">
-              <div class="d-flex justify-content-start align-items-center">
-                <i class="fa fa-level-up-alt text-success mr-3"></i>
-                <span class="text-name mt-3 h5"><i class="fa fa-ellipsis-h"></i></span>
-              </div>
-            </a>
-          </td>
-        </tr>
-      <?php endif; ?>
       <?php $n = 0; ?>
       <?php foreach ($getRecords as $form) : $n++; ?>
-        <tr class="">
+        <tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
           <td class="py-1">
             <a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
               <div class="d-flex justify-content-start align-items-center">
                 <?php if ($form->flag_type == 'FOLDER') : ?>
-                  <i class="fa fa-folder text-warning fa-3x mr-3"></i>
+                  <i class="fa fa-chevron-right mr-2 toggle-icon" style="transition: transform 0.2s;"></i>
+                  <i class="fa fa-folder text-warning fa-2x mr-3"></i>
                 <?php elseif (isset($form->link_url) && $form->link_url) : ?>
-                  <i class="fa fa-link text-info fa-3x mr-3"></i>
-                <?php else : ?>
-                  <i class="fa fa-file-alt text-success fa-3x mr-3"></i>
+                  <i class="fa fa-link text-info fa-2x mr-3 ml-4"></i>
+                <?php else : 
+                  $ext = isset($form->ext) && $form->ext ? strtolower(str_replace('.', '', $form->ext)) : (isset($form->file_name) ? strtolower(pathinfo($form->file_name, PATHINFO_EXTENSION)) : '');
+                  if ($ext == 'pdf') { $icon = 'fas fa-file-pdf text-danger'; }
+                  elseif (in_array($ext, ['xls', 'xlsx'])) { $icon = 'fas fa-file-excel text-success'; }
+                  elseif (in_array($ext, ['doc', 'docx'])) { $icon = 'fas fa-file-word text-primary'; }
+                  elseif (in_array($ext, ['ppt', 'pptx'])) { $icon = 'fas fa-file-powerpoint text-warning'; }
+                  elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) { $icon = 'fas fa-file-image text-info'; }
+                  else { $icon = 'fas fa-file-alt text-success'; }
+                ?>
+                  <i class="<?= $icon ?> fa-2x mr-3 ml-4"></i>
                 <?php endif; ?>
                 <span class="text-name mt-3 h5"><?= $form->name; ?></span>
               </div>
@@ -60,10 +52,15 @@
                     <?php if (isset($form->link_url) && $form->link_url) : ?>
                       <a class="dropdown-item" href="<?= $form->link_url; ?>" target="_blank" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
                     <?php else : ?>
-                      <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View Document</a>
+                      <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf text-primary' ?> mr-2"></i> View Document</a>
                     <?php endif; ?>
                     <a class="dropdown-item edit-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Document</a>
                   <?php else : ?>
+                    <?php if ($this->uri->segment(1) == 'records') : ?>
+                      <a class="dropdown-item add-folder-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
+                      <a class="dropdown-item add-record-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
+                      <div class="dropdown-divider"></div>
+                    <?php endif; ?>
                     <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
                   <?php endif; ?>
                   <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
@@ -76,21 +73,11 @@
         </tr>
       <?php endforeach; ?>
     <?php else : ?>
-      <?php if (!$EOF) : ?>
-        <tr>
-          <td colspan="3" class="py-1">
-            <a href="javascript:void(0)" title="Up Folder" data-id="<?= ($parent_id) ?: ''; ?>" class="cursor-pointer up_folder text-dark">
-              <div class="d-flex justify-content-start align-items-center">
-                <i class="fa fa-level-up-alt text-success mr-3"></i>
-                <span class="text-name mt-3 h5"><i class="fa fa-ellipsis-h"></i></span>
-              </div>
-            </a>
-          </td>
-        </tr>
-      <?php endif; ?>
       <tr>
-        <td colspan="3" class="text-center py-3">
-          <h5 class="text-gray">~ No data available~ </h5>
+        <td colspan="3" class="text-center py-5">
+          <i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
+          <h5 class="text-muted">~ Folder Kosong ~</h5>
+          <button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Create Folder</button>
         </td>
       </tr>
     <?php endif; ?>

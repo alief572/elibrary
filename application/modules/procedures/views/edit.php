@@ -639,12 +639,10 @@
 
 							<div class="tab-pane fade" id="records" role="tabpanel" aria-labelledby="records-tab">
 								<div id="data-records">
-									<button type="button" class="btn btn-warning mb-3" id="add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
-									<button type="button" class="btn btn-primary mb-3" disabled id="add_record"><i class="fa fa-plus"></i> Add Record</button>
-									<button type="button" class="btn btn-success btn-icon mb-3" id="refresh" title="Refresh"><i class="fa fa-sync-alt"></i></button>
+									<button type="button" class="btn btn-warning mb-3 add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
 									<hr>
 									<input type="hidden" id="refresh_id" value="">
-									<table class="table datatable table-hover">
+									<table class="table table-hover">
 										<thead>
 											<tr>
 												<th class="py-0">File or Folder Name</th>
@@ -684,8 +682,10 @@
 												<?php endforeach; ?>
 											<?php else : ?>
 												<tr>
-													<td colspan="3" class="text-center py-3">
-														<h5 class="text-light-secondary">~ No data available~ </h5>
+													<td colspan="3" class="text-center py-5">
+														<i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
+														<h5 class="text-muted">~ Folder Kosong ~</h5>
+														<button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Create Folder</button>
 													</td>
 												</tr>
 											<?php endif; ?>
@@ -1722,7 +1722,7 @@
 							timer: 2000
 						})
 						$('#modalRecord').modal('hide')
-						$('#refresh').click();
+						location.reload();
 					} else {
 						Swal.fire({
 							title: 'Warning!',
@@ -1786,23 +1786,25 @@
 
 		/* FOLDER RECORDS */
 
-		$(document).on('click', '#add_folder', function() {
+		$(document).on('click', '.add_folder', function() {
 			$('#modelId').modal('show')
 			$('.modal-title').text('Add Folder')
 			$('.modal-dialog').css('max-width', '50%')
 			$('#content_modal').html(`
-			<div class="modal-body row">
-				<div class="col-12">
-					<div class="form-group">
-						<label>New Folder</label>
-						<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name">
-						<span class="form-text text-danger invalid-feedback">Nama folder harus di isi</span>
-					</div>
-					<div class="d-flex justify-content-between">
-						<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
-						<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Close</button>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="form-group mb-0">
+							<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name">
+							<span class="invalid-feedback">Folder Name is required</span>
+						</div>
 					</div>
 				</div>
+			</div>
+			<div class="modal-footer d-flex justify-content-between">
+				<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+				<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
 			</div>`);
 		})
 
@@ -1813,19 +1815,21 @@
 			$('.modal-title').text('Add Folder')
 			$('.modal-dialog').css('max-width', '50%')
 			$('#content_modal').html(`
-			<div class="modal-body row">
-				<div class="col-12">
-					<div class="form-group">
-						<label>New Folder</label>
-						<input type="hidden" class="form-control" placeholder="Folder Name" id="folder_id" name="folder_id" value="` + id + `">
-						<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name" value="` + name + `">
-						<span class="form-text text-danger invalid-feedback">Nama folder harus di isi</span>
-					</div>
-					<div class="d-flex justify-content-between">
-						<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
-						<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Close</button>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="form-group mb-0">
+							<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+							<input type="hidden" class="form-control" placeholder="Folder Name" id="folder_id" name="folder_id" value="` + id + `">
+							<input type="text" class="form-control" placeholder="Folder Name" id="folder_name" name="folder_name" value="` + name + `">
+							<span class="invalid-feedback">Folder Name is required</span>
+						</div>
 					</div>
 				</div>
+			</div>
+			<div class="modal-footer d-flex justify-content-between">
+				<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+				<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
 			</div>`);
 		})
 
@@ -1874,7 +1878,7 @@
 							timer: 2000
 						}).then(function() {
 							$('#modelId').modal('hide')
-							$('#refresh').click()
+							location.reload();
 						})
 					} else {
 						Swal.fire({
@@ -1897,30 +1901,94 @@
 		})
 
 		$(document).on('click', '.folder', function() {
-			const procedure_id = $('#procedure_id').val()
-			const folder_id = $(this).data('id')
-			$('#refresh_id').val(folder_id) || null
-			if (folder_id) {
-				$('#data-records').load(siteurl + active_controller + 'records_folder/' + folder_id + "/" + procedure_id)
-			}
-		})
+			const procedure_id = $('#procedure_id').val();
+			const folder_id = $(this).data('id');
+			const row = $(this).closest('tr.tree-row');
+			const depth = parseInt(row.data('depth')) || 0;
+			const isLoaded = row.data('loaded');
+			const icon = $(this).find('.toggle-icon');
 
-		$(document).on('click', '.up_folder', function() {
-			const procedure_id = $('#procedure_id').val()
-			const parent_id = $(this).data('id') || null
-			$('#refresh_id').val(parent_id) || null
-			$('#data-records').load(siteurl + active_controller + 'up_folder/' + parent_id + "/" + procedure_id)
-		})
+			if (row.hasClass('expanded')) {
+				row.removeClass('expanded');
+				icon.css('transform', 'rotate(0deg)');
+				hideDescendants(folder_id);
+			} else {
+				row.addClass('expanded');
+				icon.css('transform', 'rotate(90deg)');
+				
+				if (!isLoaded || isLoaded === "false" || isLoaded === false) {
+					$.get(siteurl + 'records/child_rows/' + folder_id + "/" + procedure_id + "/" + (depth + 1), function(html) {
+						row.after(html);
+						row.data('loaded', 'true');
+						row.attr('data-loaded', 'true');
+					});
+				} else {
+					showChildren(folder_id);
+				}
+			}
+		});
+
+		function hideDescendants(parentId) {
+			$('#records-tree-table tr[data-parent-id="' + parentId + '"]').each(function() {
+				$(this).hide();
+				if ($(this).hasClass('expanded')) {
+					hideDescendants($(this).data('id'));
+				}
+			});
+		}
+
+		function showChildren(parentId) {
+			$('#records-tree-table tr[data-parent-id="' + parentId + '"]').each(function() {
+				$(this).show();
+				if ($(this).hasClass('expanded')) {
+					showChildren($(this).data('id'));
+				}
+			});
+		}
+
+		$(document).on('click', '.add-folder-inside', function() {
+			const parent_id = $(this).data('id');
+			const procedure_id = $('#procedure_id').val();
+			if (parent_id) {
+				$('#refresh_id').val(parent_id); // Required by .save-folder logic
+				$('.modal-title').html('Add Folder');
+				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
+				$('#content_modal').html(`
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="folder_name">Folder Name <span class="text-danger">*</span></label>
+								<input type="text" name="folder_name" id="folder_name" class="form-control" placeholder="Folder Name">
+								<span class="invalid-feedback">Folder Name is required</span>
+							</div>
+						</div>
+					</div>
+					<hr>
+					<div class="row">
+						<div class="col-md-12 text-right">
+							<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
+							<button type="button" class="btn btn-success save-folder"><i class="fa fa-save" aria-hidden="true"></i> Save</button>
+						</div>
+					</div>
+				`);
+				$('#modelId').modal('show');
+			}
+		});
+
+		$(document).on('click', '.add-record-inside', function() {
+			const parent_id = $(this).data('id');
+			const procedure_id = $('#procedure_id').val();
+			if (parent_id) {
+				$('.modal-title').html('Upload Record');
+				$('#record-content').load(siteurl + 'records/upload_record/' + procedure_id + '/' + parent_id);
+				$('#modalRecord').modal('show');
+			}
+		});
 
 		$(document).on('click', '#refresh', function() {
 			const procedure_id = $('#procedure_id').val()
-			const refresh_id = $('#refresh_id').val() || null
-			if (refresh_id) {
-				$('#data-records').load(siteurl + active_controller + 'refresh/' + refresh_id + "/" + procedure_id)
-			} else {
-				$('#data-records').load(siteurl + active_controller + 'refresh/' + refresh_id + "/" + procedure_id)
-			}
-		})
+			$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id)
+		});
 
 	})
 

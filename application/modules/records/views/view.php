@@ -328,7 +328,7 @@
 <script>
   $(document).ready(function() {
     let id = '<?= $data->id; ?>'
-    $.getJSON(siteurl + active_controller + 'load_file_flow/' + id, function(result) {
+    $.getJSON(siteurl + 'procedures/load_file_flow/' + id, function(result) {
       var data = result.data
       var d = ''
       const url = siteurl + 'directory/FLOW_FILE/' + data.company_id + '/' + data.flow_file;
