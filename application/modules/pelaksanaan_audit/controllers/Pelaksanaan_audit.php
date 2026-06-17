@@ -21,11 +21,39 @@ class Pelaksanaan_audit extends Admin_Controller
     }
 
     /**
-     * Index - shows two tabs: Konsep and Simulasi
+     * Index - shows audit programs (parent level), same as Jadwal & Persiapan Audit
      */
     public function index()
     {
-        $schedules = $this->model->getAllSchedules();
+        $programs = $this->model->getActivePrograms();
+        $this->template->set('programs', $programs);
+        $this->template->render('index');
+    }
+
+    /**
+     * Schedules - shows list of proses/schedules for a given program
+     *
+     * @param string $program_id
+     */
+    public function schedules($program_id = null)
+    {
+        if (!$program_id) {
+            show_404();
+            return;
+        }
+
+        $program = $this->db->select('audit_program.*, audit_auditor_consultant.name as auditor_name')
+            ->from('audit_program')
+            ->join('audit_auditor_consultant', 'audit_auditor_consultant.id = audit_program.lead_auditor_id', 'left')
+            ->where('audit_program.id', $program_id)
+            ->get()->row();
+
+        if (!$program) {
+            show_404();
+            return;
+        }
+
+        $schedules = $this->model->getSchedulesByProgram($program_id);
 
         // Check which schedules already have audit data
         $has_audit = [];
@@ -33,9 +61,10 @@ class Pelaksanaan_audit extends Admin_Controller
             $has_audit[$s->schedule_id] = $this->model->countAuditByScheduleId($s->schedule_id) > 0;
         }
 
+        $this->template->set('program', $program);
         $this->template->set('schedules', $schedules);
         $this->template->set('has_audit', $has_audit);
-        $this->template->render('index');
+        $this->template->render('schedules');
     }
 
     /**

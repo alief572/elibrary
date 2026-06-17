@@ -16,7 +16,7 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h2 class="m-0"><i class="<?= $icon; ?> text-primary mr-2"></i>Pelaksanaan Audit</h2>
-					<a href="<?= site_url('pelaksanaan_audit'); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
+					<a href="<?= site_url('pelaksanaan_audit/schedules/' . $schedule->program_id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
 				</div>
 
 				<div class="card-body">
@@ -203,7 +203,7 @@
 											<th width="30">No</th>
 											<th>Temuan</th>
 											<th width="120">Kategori</th>
-											<th width="150">ISO</th>
+											<th width="150">Reference Standard</th>
 											<th width="200">Pasal</th>
 											<th width="80">Evidence</th>
 											<th width="60">Action</th>
@@ -422,7 +422,7 @@ $(document).ready(function() {
 					beforeSend: function() { $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-2"></i> Saving...'); },
 					complete: function() { $btn.prop('disabled', false).html('<i class="fa fa-save mr-2"></i> Save'); },
 					success: function(res) {
-						if (res.status == 1) { Swal.fire({ title: 'Success!', icon: 'success', text: res.msg, timer: 2000 }).then(function() { window.location.href = '<?= site_url("pelaksanaan_audit"); ?>'; }); }
+						if (res.status == 1) { Swal.fire({ title: 'Success!', icon: 'success', text: res.msg, timer: 2000 }).then(function() { window.location.href = '<?= site_url("pelaksanaan_audit/schedules/" . $schedule->program_id); ?>'; }); }
 						else { Swal.fire({ title: 'Warning!', icon: 'warning', text: res.msg }); }
 					},
 					error: function() { Swal.fire({ title: 'Error!', icon: 'error', text: 'Server error, silakan coba lagi.' }); }
