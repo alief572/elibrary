@@ -1389,7 +1389,7 @@
 			if (parent_id) {
 				$('#refresh_id').val(parent_id); // Required by .save-folder logic
 				$('.modal-title').html('Add Folder');
-				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
+				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-lg');
 				$('#content_modal').html(`
 					<div class="modal-body">
 						<div class="row">
@@ -1429,7 +1429,7 @@
 			const id = $(this).data('id')
 			if (id) {
 				$('.modal-title').html('Move File/Folder')
-				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
+				$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-lg');
 				$('#content_modal').load(siteurl + active_controller + 'move_record/' + id)
 				$('#modelId').modal('show')
 			}

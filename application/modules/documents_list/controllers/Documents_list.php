@@ -210,26 +210,26 @@ class Documents_list extends Admin_Controller
 		$EOF = true;
 
 		if ($methode == 'home') {
-			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
+			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'flag_type' => 'FOLDER']);
 			$EOF = true;
 		} elseif ($methode == 'back') {
 			$dir = $this->List->getRecordById($id);
 			$parent_id = $dir ? $dir->parent_id : null;
 			if ($parent_id > 0) {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $parent_id, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $parent_id, 'flag_type' => 'FOLDER']);
 				$EOF = false;
 				$id = $parent_id;
 			} else {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'flag_type' => 'FOLDER']);
 				$EOF = true;
 				$id = '';
 			}
 		} elseif ($methode == 'refresh') {
 			if ($id) {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id, 'status' => 'PUB']);
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id]);
 				$EOF = false;
 			} else {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'status' => 'PUB', 'flag_type' => 'FOLDER']);
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'flag_type' => 'FOLDER']);
 				$EOF = true;
 			}
 		} elseif ($methode == 'find') {
