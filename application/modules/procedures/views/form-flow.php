@@ -18,7 +18,7 @@
 	<div class="form-group">
 		<label for="description" class="">Deskripsi <span class="text-danger">*</span></label>
 		<div class="">
-			<textarea rows="5" name="flow[description]" id="description" class="form-control" placeholder="Deskripsi" aria-describedby="helpId"><?= ($flow) ? $flow->description : ''; ?></textarea>
+			<textarea name="flow[description]" id="description" class="form-control" placeholder="Deskripsi" aria-describedby="helpId" style="overflow:hidden; resize:vertical;"><?= ($flow) ? $flow->description : ''; ?></textarea>
 			<small class="text-danger invalid-feedback">Deskripsi</small>
 		</div>
 	</div>
@@ -65,4 +65,16 @@
 		width: '100%',
 		allowClear: true
 	})
+
+	// Auto-resize textarea
+	function autoResize(el) {
+		el.style.height = '5px';
+		el.style.height = el.scrollHeight + 'px';
+	}
+
+	var desc = document.getElementById('description');
+	if (desc) {
+		desc.addEventListener('input', function() { autoResize(this); });
+		setTimeout(function() { autoResize(desc); }, 100);
+	}
 </script>

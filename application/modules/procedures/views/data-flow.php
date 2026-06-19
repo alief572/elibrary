@@ -5,7 +5,7 @@
 
 			<td style="vertical-align:middle;" class="text-center"><?= $dtl->number; ?></td>
 			<td style="vertical-align:middle;" class="text-center"><?= $dtl->pic; ?></td>
-			<td><?= $dtl->description; ?></td>
+			<td style="white-space:pre-line;"><?= $dtl->description; ?></td>
 			<td style="vertical-align: middle;">
 				<?php $relDocs = json_decode($dtl->relate_doc); ?>
 				<?php $relIK = json_decode($dtl->relate_ik_doc); ?>
