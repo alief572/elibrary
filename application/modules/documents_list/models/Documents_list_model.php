@@ -146,7 +146,7 @@ class Documents_list_model extends BF_Model
     {
         return $this->db->order_by('name', 'ASC')->get_where('dir_records', [
             'procedure_id' => $procedureId,
-            'status' => 'PUB',
+            'status !=' => 'DEL',
             'flag_type' => 'FOLDER',
             'company_id' => $companyId,
             'parent_id' => null
