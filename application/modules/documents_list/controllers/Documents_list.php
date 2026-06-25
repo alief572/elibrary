@@ -247,6 +247,26 @@ class Documents_list extends Admin_Controller
 		$this->template->render('procedures/records');
 	}
 
+	/**
+	 * Search records across all folders for a procedure (AJAX)
+	 */
+	public function search_records()
+	{
+		$procedure_id = $this->input->post('procedure_id');
+		$keyword = $this->input->post('keyword');
+
+		$records = $this->List->searchRecords($procedure_id, $this->company, $keyword);
+
+		$this->template->set([
+			'id' 			=> '',
+			'EOF' 			=> true,
+			'procedure_id' 	=> $procedure_id,
+			'records' 		=> $records,
+		]);
+
+		$this->template->render('procedures/records');
+	}
+
 
 
 	/* PEMENUHAN */

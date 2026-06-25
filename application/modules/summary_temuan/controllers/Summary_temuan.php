@@ -52,7 +52,7 @@ class Summary_temuan extends Admin_Controller
         // Get all schedules for this program
         $schedules = $this->model->getSchedulesByProgram($program_id);
 
-        // For each schedule, get audit data (temuan, conformity)
+        // For each schedule, get audit data (temuan, conformity, requirement details)
         $schedule_data = [];
         foreach ($schedules as $sched) {
             $audit = $this->model->getAuditByScheduleId($sched->schedule_id);
@@ -62,6 +62,8 @@ class Summary_temuan extends Admin_Controller
             $item->temuan = [];
             $item->conformity = [];
             $item->counts = ['Major' => 0, 'Minor' => 0, 'OFI' => 0];
+            $item->requirement_details = [];
+            $item->audit_requirement_details = [];
 
             if ($audit) {
                 $temuan = $this->model->getAuditTemuan($audit->id);
@@ -73,6 +75,12 @@ class Summary_temuan extends Admin_Controller
                     if (isset($item->counts[$tm->kategori])) {
                         $item->counts[$tm->kategori]++;
                     }
+                }
+
+                // Load requirement details for Audit Persyaratan
+                if (!empty($sched->requirement_id)) {
+                    $item->requirement_details = $this->model->getPasalByRequirement($sched->requirement_id);
+                    $item->audit_requirement_details = $this->model->getAuditRequirementDetails($audit->id);
                 }
             }
 
@@ -137,6 +145,8 @@ class Summary_temuan extends Admin_Controller
             $item->temuan = [];
             $item->conformity = [];
             $item->counts = ['Major' => 0, 'Minor' => 0, 'OFI' => 0];
+            $item->requirement_details = [];
+            $item->audit_requirement_details = [];
 
             if ($audit) {
                 $temuan = $this->model->getAuditTemuan($audit->id);
@@ -147,6 +157,12 @@ class Summary_temuan extends Admin_Controller
                     if (isset($item->counts[$tm->kategori])) {
                         $item->counts[$tm->kategori]++;
                     }
+                }
+
+                // Load requirement details for Audit Persyaratan
+                if (!empty($sched->requirement_id)) {
+                    $item->requirement_details = $this->model->getPasalByRequirement($sched->requirement_id);
+                    $item->audit_requirement_details = $this->model->getAuditRequirementDetails($audit->id);
                 }
             }
 

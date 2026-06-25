@@ -186,6 +186,20 @@ class Documents_list_model extends BF_Model
         return $this->db->order_by('name', 'ASC')->get_where('dir_records', $where)->result();
     }
 
+    /**
+     * Search records by keyword across all folders for a given procedure
+     */
+    public function searchRecords($procedureId, $companyId, $keyword)
+    {
+        return $this->db->where('procedure_id', $procedureId)
+            ->where('company_id', $companyId)
+            ->where('status !=', 'DEL')
+            ->like('name', $keyword)
+            ->order_by('name', 'ASC')
+            ->get('dir_records')
+            ->result();
+    }
+
     /* MATERI TRAINING */
 
     public function getMateri($companyId)
