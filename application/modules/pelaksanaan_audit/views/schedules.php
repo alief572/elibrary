@@ -35,7 +35,7 @@
 							<?php if (!empty($schedules)) foreach ($schedules as $k => $v) : $k++; ?>
 								<tr>
 									<td class="text-center"><?= $k; ?></td>
-									<td><?= !empty($v->process_name) ? strip_tags($v->process_name) : htmlspecialchars($v->process_name_free); ?></td>
+									<td><?= !empty($v->requirement_name) ? htmlspecialchars($v->requirement_name) : (!empty($v->process_name) ? strip_tags($v->process_name) : htmlspecialchars($v->process_name_free)); ?></td>
 									<td><?= isset($v->department_name) ? $v->department_name : '-'; ?></td>
 									<td><?= isset($v->auditor_name) ? $v->auditor_name : '-'; ?></td>
 									<td class="text-center"><?= date('d/m/Y', strtotime($v->audit_date)); ?></td>
@@ -69,11 +69,24 @@
 
 <script>
 $(document).ready(function() {
-	$('#dtSchedules').DataTable({
+	var table = $('#dtSchedules').DataTable({
 		fixedHeader: true,
 		processing: true,
 		destroy: true,
-		order: [[4, 'desc']]
+		order: [[4, 'desc']],
+		columnDefs: [{
+			targets: 0,
+			searchable: false,
+			orderable: false
+		}]
 	});
+
+	// Auto-number the "No" column after every draw (sort, page, search)
+	table.on('order.dt search.dt draw.dt', function() {
+		var i = 1;
+		table.cells(null, 0, { search: 'applied', order: 'applied' }).every(function() {
+			this.data(i++);
+		});
+	}).draw();
 });
 </script>
