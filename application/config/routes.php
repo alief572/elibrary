@@ -63,6 +63,7 @@ $route['list/procedures/(:any)'] = 'documents_list/procedures/$1';
 $route['list/getRecords/(:any)/(:any)/(:any)'] = 'documents_list/getRecords/$1/$2/$3';
 $route['list/getRecords/(:any)/(:any)'] = 'documents_list/getRecords/$1/$2';
 $route['list/getRecords/(:any)'] = 'documents_list/getRecords/$1';
+$route['list/search_records'] = 'documents_list/search_records';
 $route['list/view_records/(:any)'] = 'documents_list/view_record/$1';
 
 /* COMPLIANCES */

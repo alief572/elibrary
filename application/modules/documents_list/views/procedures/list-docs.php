@@ -468,6 +468,63 @@
 
 
 <script>
+	// Search functionality
+	$(document).ready(function() {
+		$('#search').on('keyup', function() {
+			var value = $(this).val().toLowerCase();
+			var activeTab = $('.tab-content .tab-pane.active').attr('id');
+
+			if (activeTab === 'data_record') {
+				// Records tab: search via AJAX across all subfolders
+				var keyword = $(this).val();
+				var procedure_id = '<?= $procedure[0]->id; ?>';
+				if (keyword.length > 2) {
+					$.post(siteurl + active_controller + 'search_records', { procedure_id: procedure_id, keyword: keyword }, function(html) {
+						$('#data-records').html(html);
+					});
+				} else if (keyword.length == 0) {
+					$('#data-records').load(siteurl + active_controller + 'getRecords/home/' + procedure_id);
+				}
+			} else {
+				// Other tabs: simple client-side filter
+				$('.tab-content .tab-pane.active table tbody tr').each(function() {
+					var text = $(this).text().toLowerCase();
+					$(this).toggle(text.indexOf(value) > -1);
+				});
+			}
+		});
+
+		// Prevent Enter key from submitting
+		$('#search').on('keydown', function(e) {
+			if (e.keyCode === 13) { e.preventDefault(); return false; }
+		});
+
+		// Re-apply search when switching tabs
+		$('a[data-toggle="tab"]').on('shown.bs.tab', function() {
+			var value = $('#search').val();
+			var valueLower = value.toLowerCase();
+			var activeTab = $('.tab-content .tab-pane.active').attr('id');
+
+			if (value.length > 0) {
+				if (activeTab === 'data_record') {
+					// Records tab: trigger AJAX search
+					var procedure_id = '<?= $procedure[0]->id; ?>';
+					if (value.length > 2) {
+						$.post(siteurl + active_controller + 'search_records', { procedure_id: procedure_id, keyword: value }, function(html) {
+							$('#data-records').html(html);
+						});
+					}
+				} else {
+					// Other tabs: client-side filter
+					$('.tab-content .tab-pane.active table tbody tr').each(function() {
+						var text = $(this).text().toLowerCase();
+						$(this).toggle(text.indexOf(valueLower) > -1);
+					});
+				}
+			}
+		});
+	});
+
 	function show(id) {
 		$('#modelId').modal('show')
 		$('#data-file').load(siteurl + active_controller + 'show/' + id)
