@@ -100,6 +100,7 @@
 								<div class="mb-2">
 									<strong>Temuan</strong>
 									<?php if (!empty($item->temuan)) : ?>
+										<div class="table-responsive">
 										<table class="table table-bordered table-sm mt-1">
 											<thead class="table-light text-center">
 												<tr>
@@ -131,6 +132,7 @@
 												<?php endforeach; ?>
 											</tbody>
 										</table>
+										</div>
 									<?php else : ?>
 										<p class="text-muted mt-1"><em>Tidak ada temuan.</em></p>
 									<?php endif; ?>
@@ -157,6 +159,7 @@
 								<?php if ($has_filled) : ?>
 								<div class="mb-2">
 									<strong><i class="fa fa-clipboard-check text-info mr-1"></i> Checklist Berdasarkan Persyaratan</strong>
+									<div class="table-responsive">
 									<table class="table table-bordered table-sm mt-1">
 										<thead class="table-light text-center">
 											<tr>
@@ -182,6 +185,7 @@
 											<?php endforeach; ?>
 										</tbody>
 									</table>
+									</div>
 								</div>
 								<?php endif; ?>
 								<?php endif; ?>
