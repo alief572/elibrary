@@ -19,6 +19,7 @@
 
 					<!-- Schedule List -->
 					<h5 class="font-weight-bold border-bottom pb-2 mt-4"><i class="fa fa-calendar-alt text-primary mr-2"></i>Pilih Proses Audit</h5>
+					<div class="table-responsive">
 					<table id="dtSchedules" class="table table-bordered table-sm table-hover">
 						<thead class="text-center table-light">
 							<tr>
@@ -61,6 +62,7 @@
 							<?php endforeach; ?>
 						</tbody>
 					</table>
+					</div>
 				</div>
 			</div>
 		</div>
