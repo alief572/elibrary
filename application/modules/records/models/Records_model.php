@@ -30,7 +30,13 @@ class Records_model extends BF_Model
 
     public function getProcedureDetails($procedureId)
     {
-        return $this->db->order_by('number', 'asc')->get_where('procedure_details', ['procedure_id' => $procedureId, 'status' => '1'])->result();
+        $results = $this->db->get_where('procedure_details', ['procedure_id' => $procedureId, 'status' => '1'])->result();
+
+        usort($results, function ($a, $b) {
+            return strnatcasecmp($a->number, $b->number);
+        });
+
+        return $results;
     }
 
     public function getProcedureGroups()
