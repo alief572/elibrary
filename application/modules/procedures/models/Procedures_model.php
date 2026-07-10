@@ -18,6 +18,19 @@ class Procedures_model extends BF_Model
         ])->result();
     }
 
+    /**
+     * Get all procedures for a company (regardless of status, excluding deleted/invalid)
+     */
+    public function getAllProcedures($companyId)
+    {
+        return $this->db->where('company_id', $companyId)
+            ->where('deleted_at', null)
+            ->where_not_in('status', ['0', 'DEL', 'HLD'])
+            ->order_by('name', 'ASC')
+            ->get('procedures')
+            ->result();
+    }
+
     public function getProcedureLogs($docType, $status)
     {
         return $this->db->order_by('id', 'DESC')
@@ -81,7 +94,27 @@ class Procedures_model extends BF_Model
 
     public function getFormsByProcedure($procedureId, $statusNot = 'DEL')
     {
-        return $this->db->get_where('dir_forms', ['procedure_id' => $procedureId])->result();
+        $this->db->where('procedure_id', $procedureId);
+        if ($statusNot) {
+            $this->db->where('status !=', $statusNot);
+        }
+        return $this->db->get('dir_forms')->result();
+    }
+
+    /**
+     * Get all forms across all procedures for a company
+     */
+    public function getAllForms($companyId)
+    {
+        return $this->db->select('dir_forms.*, procedures.name as procedure_name')
+            ->from('dir_forms')
+            ->join('procedures', 'procedures.id = dir_forms.procedure_id', 'left')
+            ->where('dir_forms.company_id', $companyId)
+            ->where('dir_forms.status !=', 'DEL')
+            ->order_by('procedures.name', 'ASC')
+            ->order_by('dir_forms.name', 'ASC')
+            ->get()
+            ->result();
     }
 
     public function getActiveFormsByProcedure($procedureId, $companyId)
@@ -96,7 +129,27 @@ class Procedures_model extends BF_Model
 
     public function getGuidesByProcedure($procedureId, $statusNot = 'DEL')
     {
-        return $this->db->get_where('dir_guides', ['procedure_id' => $procedureId])->result();
+        $this->db->where('procedure_id', $procedureId);
+        if ($statusNot) {
+            $this->db->where('status !=', $statusNot);
+        }
+        return $this->db->get('dir_guides')->result();
+    }
+
+    /**
+     * Get all guides (IK) across all procedures for a company
+     */
+    public function getAllGuides($companyId)
+    {
+        return $this->db->select('dir_guides.*, procedures.name as procedure_name')
+            ->from('dir_guides')
+            ->join('procedures', 'procedures.id = dir_guides.procedure_id', 'left')
+            ->where('dir_guides.company_id', $companyId)
+            ->where('dir_guides.status !=', 'DEL')
+            ->order_by('procedures.name', 'ASC')
+            ->order_by('dir_guides.name', 'ASC')
+            ->get()
+            ->result();
     }
 
     public function getActiveGuidesByProcedure($procedureId, $companyId)

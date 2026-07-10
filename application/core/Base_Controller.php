@@ -23,6 +23,8 @@ class Base_Controller extends MX_Controller
     {
         parent::__construct();
 
+        date_default_timezone_set("Asia/Jakarta");
+
         $this->load->library(array('form_validation','session'));
         $this->form_validation->CI =& $this;
 

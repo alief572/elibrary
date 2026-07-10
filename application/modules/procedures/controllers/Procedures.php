@@ -90,6 +90,34 @@ class Procedures extends Admin_Controller
 		$this->template->render('add');
 	}
 
+	/**
+	 * List all Forms across all procedures
+	 */
+	public function forms()
+	{
+		$forms = $this->ProModel->getAllForms($this->company);
+		$this->template->set([
+			'title' => 'List Form',
+			'icon'  => 'fa fa-file-alt',
+			'forms' => $forms,
+		]);
+		$this->template->render('forms_index');
+	}
+
+	/**
+	 * List all IK (Instruksi Kerja / Guides) across all procedures
+	 */
+	public function guides()
+	{
+		$guides = $this->ProModel->getAllGuides($this->company);
+		$this->template->set([
+			'title' => 'List IK',
+			'icon'  => 'fa fa-file-alt',
+			'guides' => $guides,
+		]);
+		$this->template->render('guides_index');
+	}
+
 	public function edit($id = '')
 	{
 		$Data = $this->ProModel->getProcedureById($id, $this->company);
@@ -426,6 +454,8 @@ class Procedures extends Admin_Controller
 
 	public function delete_form($id = null)
 	{
+		if (!$id) $id = $this->input->post('id');
+
 		if ($id) {
 			$this->db->trans_begin();
 			$data = [
@@ -470,6 +500,8 @@ class Procedures extends Admin_Controller
 
 	public function delete_guide($id = null)
 	{
+		if (!$id) $id = $this->input->post('id');
+
 		if ($id) {
 			$this->db->trans_begin();
 			$data = [
@@ -679,6 +711,39 @@ class Procedures extends Admin_Controller
 		$this->template->render('upload_file_form');
 	}
 
+	/**
+	 * Upload form modal content (standalone - with procedure selector)
+	 */
+	public function upload_form_standalone()
+	{
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$procedures = $this->ProModel->getAllProcedures($this->company);
+		$this->template->set([
+			'procedure_id' => null,
+			'procedures' => $procedures,
+			'users' => $users,
+			'data' => null,
+		]);
+		$this->template->render('upload_file_form_standalone');
+	}
+
+	/**
+	 * Edit form modal content (standalone - with procedure selector)
+	 */
+	public function edit_form_standalone($id = null)
+	{
+		$data = $this->ProModel->getFileById('dir_forms', $id);
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$procedures = $this->ProModel->getAllProcedures($this->company);
+		$this->template->set([
+			'procedure_id' => $data ? $data->procedure_id : null,
+			'procedures' => $procedures,
+			'users' => $users,
+			'data' => $data,
+		]);
+		$this->template->render('upload_file_form_standalone');
+	}
+
 	public function upload_guide($procedure_id = null)
 	{
 		$users = $this->ProModel->getActiveUsers($this->company);
@@ -688,6 +753,39 @@ class Procedures extends Admin_Controller
 			'data' => null,
 		]);
 		$this->template->render('upload_file_guide');
+	}
+
+	/**
+	 * Upload guide modal content (standalone - with procedure selector)
+	 */
+	public function upload_guide_standalone()
+	{
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$procedures = $this->ProModel->getAllProcedures($this->company);
+		$this->template->set([
+			'procedure_id' => null,
+			'procedures' => $procedures,
+			'users' => $users,
+			'data' => null,
+		]);
+		$this->template->render('upload_file_guide_standalone');
+	}
+
+	/**
+	 * Edit guide modal content (standalone - with procedure selector)
+	 */
+	public function edit_guide_standalone($id = null)
+	{
+		$data = $this->ProModel->getFileById('dir_guides', $id);
+		$users = $this->ProModel->getActiveUsers($this->company);
+		$procedures = $this->ProModel->getAllProcedures($this->company);
+		$this->template->set([
+			'procedure_id' => $data ? $data->procedure_id : null,
+			'procedures' => $procedures,
+			'users' => $users,
+			'data' => $data,
+		]);
+		$this->template->render('upload_file_guide_standalone');
 	}
 
 	public function upload_record($procedure_id = null, $parent_id = null)
@@ -762,6 +860,15 @@ class Procedures extends Admin_Controller
 		$data['company_id'] = $this->company;
 		if (isset($data['distribute_id']))
 			$data['distribute_id'] = implode(",", $data['distribute_id']);
+
+		// Clear opposite field based on form_type selection
+		$form_type = $this->input->post('form_type');
+		if ($form_type == 'upload_file') {
+			$data['link_form'] = null;
+		} elseif ($form_type == 'online_form') {
+			$data['file_name'] = null;
+		}
+
 		unset($data['old_file'], $data['type'], $data['flag_type']);
 
 		$success = $this->ProModel->saveFile($table, $data, $this->auth->user_id());
@@ -771,6 +878,74 @@ class Procedures extends Admin_Controller
 		} else {
 			echo json_encode(['status' => 0, 'msg' => "File $type failed to upload."]);
 		}
+	}
+
+	/**
+	 * List all PDF files (current + revision history) for a procedure
+	 * Returns HTML partial for modal display
+	 */
+	public function list_pdf_files($id = null)
+	{
+		if (!$id) {
+			echo '<p class="text-danger text-center">Invalid ID</p>';
+			return;
+		}
+
+		$pdfDir = FCPATH . 'directory/PROCEDURES_PDF/' . $this->company . '/';
+		$files = [];
+
+		if (is_dir($pdfDir)) {
+			// Find all PDF files matching this procedure ID
+			$pattern = 'procedure_' . $id;
+			$allFiles = scandir($pdfDir);
+			foreach ($allFiles as $file) {
+				if (strpos($file, $pattern) === 0 && pathinfo($file, PATHINFO_EXTENSION) === 'pdf') {
+					$filePath = $pdfDir . $file;
+					$files[] = [
+						'name' => $file,
+						'size' => filesize($filePath),
+						'date' => date('Y-m-d H:i:s', filemtime($filePath)),
+						'url'  => base_url('directory/PROCEDURES_PDF/' . $this->company . '/' . $file),
+						'is_current' => ($file === 'procedure_' . $id . '.pdf'),
+					];
+				}
+			}
+			// Sort: current first, then by date desc
+			usort($files, function($a, $b) {
+				if ($a['is_current']) return -1;
+				if ($b['is_current']) return 1;
+				return strcmp($b['date'], $a['date']);
+			});
+		}
+
+		$procedure = $this->ProModel->getProcedureById($id, $this->company);
+		$procName = $procedure ? strip_tags($procedure->name) : 'Procedure #' . $id;
+
+		$html = '<h6 class="font-weight-bold mb-3">' . htmlspecialchars($procName) . '</h6>';
+
+		if (empty($files)) {
+			$html .= '<p class="text-muted text-center"><em>Belum ada file PDF untuk prosedur ini.</em></p>';
+		} else {
+			$html .= '<table class="table table-bordered table-sm table-hover">';
+			$html .= '<thead class="table-light text-center"><tr><th width="40">No</th><th>File Name</th><th width="120">Size</th><th width="160">Date</th><th width="80">Action</th></tr></thead>';
+			$html .= '<tbody>';
+			$n = 0;
+			foreach ($files as $f) {
+				$n++;
+				$sizeKb = round($f['size'] / 1024, 1);
+				$label = $f['is_current'] ? ' <span class="badge badge-success">Current</span>' : ' <span class="badge badge-secondary">Before</span>';
+				$html .= '<tr>';
+				$html .= '<td class="text-center">' . $n . '</td>';
+				$html .= '<td>' . htmlspecialchars($f['name']) . $label . '</td>';
+				$html .= '<td class="text-center">' . $sizeKb . ' KB</td>';
+				$html .= '<td class="text-center">' . $f['date'] . '</td>';
+				$html .= '<td class="text-center"><a href="' . $f['url'] . '" target="_blank" class="btn btn-xs btn-icon btn-info" title="View PDF"><i class="fa fa-eye"></i></a></td>';
+				$html .= '</tr>';
+			}
+			$html .= '</tbody></table>';
+		}
+
+		echo $html;
 	}
 
 	public function view_form($id)
@@ -1009,9 +1184,17 @@ class Procedures extends Admin_Controller
 
 		$pdfPath = $this->_getPdfPath($id, $this->company);
 
-		// Delete old PDF if exists (force regenerate)
+		// Jika file PDF lama ada, rename dengan suffix _revisi_ddmmyy (jangan hapus)
 		if (file_exists($pdfPath)) {
-			unlink($pdfPath);
+			$pdfDir = dirname($pdfPath) . '/';
+			$revisionSuffix = '_revisi_' . date('dmY');
+			$archivePath = $pdfDir . 'procedure_' . $id . $revisionSuffix . '.pdf';
+			$counter = 1;
+			while (file_exists($archivePath)) {
+				$archivePath = $pdfDir . 'procedure_' . $id . $revisionSuffix . '_' . $counter . '.pdf';
+				$counter++;
+			}
+			rename($pdfPath, $archivePath);
 		}
 
 		try {
@@ -1052,9 +1235,17 @@ class Procedures extends Admin_Controller
 		foreach ($procedures as $proc) {
 			$pdfPath = $this->_getPdfPath($proc->id, $this->company);
 
-			// Delete old PDF if exists (force regenerate)
+			// Jika file PDF lama ada, rename dengan suffix _revisi_ddmmyy (jangan hapus)
 			if (file_exists($pdfPath)) {
-				unlink($pdfPath);
+				$pdfDir = dirname($pdfPath) . '/';
+				$revisionSuffix = '_revisi_' . date('dmY');
+				$archivePath = $pdfDir . 'procedure_' . $proc->id . $revisionSuffix . '.pdf';
+				$counter = 1;
+				while (file_exists($archivePath)) {
+					$archivePath = $pdfDir . 'procedure_' . $proc->id . $revisionSuffix . '_' . $counter . '.pdf';
+					$counter++;
+				}
+				rename($pdfPath, $archivePath);
 			}
 
 			try {
@@ -1091,10 +1282,18 @@ class Procedures extends Admin_Controller
 			return;
 		}
 
-		// Delete old PDF if exists
+		// Jika file PDF lama ada, rename dengan suffix _revisi_ddmmyy (jangan hapus)
 		$pdfPath = $this->_getPdfPath($id, $this->company);
 		if (file_exists($pdfPath)) {
-			unlink($pdfPath);
+			$pdfDir = dirname($pdfPath) . '/';
+			$revisionSuffix = '_revisi_' . date('dmY');
+			$archivePath = $pdfDir . 'procedure_' . $id . $revisionSuffix . '.pdf';
+			$counter = 1;
+			while (file_exists($archivePath)) {
+				$archivePath = $pdfDir . 'procedure_' . $id . $revisionSuffix . '_' . $counter . '.pdf';
+				$counter++;
+			}
+			rename($pdfPath, $archivePath);
 		}
 
 		$generated = $this->generatePdfFile($id, $this->company);
