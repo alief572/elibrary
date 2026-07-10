@@ -27,12 +27,15 @@
 							<li class="nav-item" role="presentation">
 								<button class="nav-link active" id="procedures-tab" data-toggle="tab" data-target="#procedures" type="button" role="tab" aria-controls="procedures" aria-selected="true">PROCEDURE</button>
 							</li>
+							<!-- FORM & IK tabs hidden - moved to separate menu -->
+							<!--
 							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="form-tab" data-toggle="tab" data-target="#form" type="button" role="tab" aria-controls="form" aria-selected="false">FORM</button>
 							</li>
 							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="guides-tab" data-toggle="tab" data-target="#guides" type="button" role="tab" aria-controls="guides" aria-selected="false">IK</button>
 							</li>
+							-->
 							<!-- <li class="nav-item" role="presentation">
 								<button class="nav-link" id="records-tab" data-toggle="tab" data-target="#records" type="button" role="tab" aria-controls="records" aria-selected="false">RECORD</button>
 							</li> -->
@@ -531,6 +534,8 @@
 
 							</div>
 
+							<!-- FORM tab content hidden - moved to separate menu -->
+							<!--
 							<div class="tab-pane fade" id="form" role="tabpanel" aria-labelledby="form-tab">
 								<button type="button" class="btn btn-primary mb-3" id="add_form"><i class="fa fa-plus"></i> Add Form</button>
 								<div id="form-data-content">
@@ -587,7 +592,10 @@
 									</table>
 								</div>
 							</div>
+							-->
 
+							<!-- IK tab content hidden - moved to separate menu -->
+							<!--
 							<div class="tab-pane fade" id="guides" role="tabpanel" aria-labelledby="guides-tab">
 								<button type="button" class="btn btn-primary mb-3" id="add_guide"><i class="fa fa-plus"></i> Add IK</button>
 								<div id="guide-data-content">
@@ -636,6 +644,7 @@
 									</table>
 								</div>
 							</div>
+							-->
 
 							<div class="tab-pane fade" id="records" role="tabpanel" aria-labelledby="records-tab">
 								<div id="data-records">

@@ -264,7 +264,7 @@
 										<th class="p-2" width="150">Kelompok Proses</th>
 										<th class="p-2" width="80">Revisi</th>
 										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="60">Action</th>
+										<th class="p-2" width="100">Action</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -283,6 +283,7 @@
 												<td class="p-2">
 													<a href="<?= base_url($this->uri->segment(1) . '/printout/' . $dt->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a>
 													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
+													<button type="button" class="btn btn-xs btn-icon btn-warning btn-list-pdf" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="List PDF Files"><i class="fa fa-file-pdf"></i></button>
 												</td>
 											</tr>
 									<?php endforeach;
@@ -936,4 +937,27 @@
 
 		});
 	}
+
+	// List PDF Files
+	$(document).on('click', '.btn-list-pdf', function() {
+		var id = $(this).data('id');
+		$('#modalListPdf .modal-title').text('List PDF Files');
+		$('#modal-pdf-content').load(siteurl + active_controller + 'list_pdf_files/' + id);
+		$('#modalListPdf').modal('show');
+	});
 </script>
+
+<!-- Modal List PDF -->
+<div class="modal fade" id="modalListPdf" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">List PDF Files</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+			</div>
+			<div class="modal-body" id="modal-pdf-content">
+				<p class="text-center text-muted">Loading...</p>
+			</div>
+		</div>
+	</div>
+</div>
