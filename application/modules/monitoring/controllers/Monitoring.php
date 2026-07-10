@@ -9,6 +9,7 @@ class Monitoring extends Admin_Controller
 		$this->load->model('monitoring/monitoring_model', 'Monitor_model');
 		$this->template->set_theme('dashboard');
 		$this->template->page_icon('fa fa-dashboard');
+		date_default_timezone_set("Asia/Jakarta");
 
 		$this->sts = [
 			'' => '<span class="label label-light-secondary label-pill label-inline mr-2 text-dark-50">!Null!</span>',
@@ -252,9 +253,17 @@ class Monitoring extends Admin_Controller
 
 			$pdfPath = $pdfDir . 'procedure_' . $procedureId . '.pdf';
 
-			// Delete old PDF if exists
+			// Jika file PDF lama ada, rename dengan suffix _revisi_ddmmyy (jangan hapus)
 			if (file_exists($pdfPath)) {
-				unlink($pdfPath);
+				$revisionSuffix = '_revisi_' . date('dmY');
+				$archivePath = $pdfDir . 'procedure_' . $procedureId . $revisionSuffix . '.pdf';
+				// Jika archive dengan tanggal yang sama sudah ada, tambahkan counter
+				$counter = 1;
+				while (file_exists($archivePath)) {
+					$archivePath = $pdfDir . 'procedure_' . $procedureId . $revisionSuffix . '_' . $counter . '.pdf';
+					$counter++;
+				}
+				rename($pdfPath, $archivePath);
 			}
 
 			if (ob_get_length()) ob_clean();
