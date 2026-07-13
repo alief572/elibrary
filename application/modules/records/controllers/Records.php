@@ -74,6 +74,7 @@ class Records extends Admin_Controller
 				'getForms' 		=> $getForms, 'getGuides' => $getGuides, 'getRecords' => $getRecords,
 				'jabatan' 		=> $jabatan, 'ArrForms' => $ArrForms, 'ArrGuides' => $ArrGuides, 'sts' => $this->sts,
 				'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+				'user_group_id' => $this->group_id,
 			]);
 			$this->template->render('edit');
 		} else {
@@ -325,14 +326,38 @@ class Records extends Admin_Controller
 	public function toggle_confidential()
 	{
 		$id = $this->input->post('id');
-		$value = $this->input->post('value');
-		$newValue = ($value == '1') ? '0' : '1';
-		$success = $this->db->update('dir_records', [
-			'flag_confidential' => $newValue,
+		$flag = $this->input->post('flag_confidential');
+		$group_ids = $this->input->post('group_ids'); // comma-separated or array
+
+		if (is_array($group_ids)) {
+			$group_ids = implode(',', $group_ids);
+		}
+
+		$updateData = [
+			'flag_confidential' => $flag,
+			'confidential_group_ids' => ($flag == '1') ? $group_ids : null,
 			'modified_by' => $this->auth->user_id(),
 			'modified_at' => date('Y-m-d H:i:s')
-		], ['id' => $id]);
-		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Confidential flag updated.' : 'Failed to update.'), 'new_value' => $newValue]);
+		];
+
+		$success = $this->db->update('dir_records', $updateData, ['id' => $id]);
+		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Confidential settings updated.' : 'Failed to update.')]);
+	}
+
+	public function get_levels()
+	{
+		$levels = $this->db->get_where('groups', ['active' => 'Y', 'company_id' => $this->company])->result();
+		$levelsGlobal = $this->db->get_where('groups', ['active' => 'Y', 'company_id' => null])->result();
+		echo json_encode(array_merge($levelsGlobal, $levels));
+	}
+
+	public function get_confidential_data($id)
+	{
+		$record = $this->db->get_where('dir_records', ['id' => $id])->row();
+		echo json_encode([
+			'flag_confidential' => $record->flag_confidential,
+			'confidential_group_ids' => $record->confidential_group_ids
+		]);
 	}
 
 	public function saveFolder()
@@ -350,6 +375,7 @@ class Records extends Admin_Controller
 		if ($folder) $getRecords = $this->RecModel->getSubRecords($procedure_id, $folder);
 		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'EOF' => false,
 			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+			'user_group_id' => $this->group_id,
 		]);
 		$this->template->render('data-records');
 	}
@@ -400,6 +426,7 @@ class Records extends Admin_Controller
 		}
 		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'depth' => $depth,
 			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+			'user_group_id' => $this->group_id,
 		]);
 		$this->template->render('child-records');
 	}
@@ -412,12 +439,16 @@ class Records extends Admin_Controller
 		if ($record_type === 'online_link') {
 			// Save as link (no file upload)
 			$id = $data['id'] ?: uniqid(date('m'));
+			$is_new = empty($data['id']);
 			$data['id'] = $id;
 			$data['name'] = $data['description'];
 			$data['company_id'] = $this->company;
 			$data['flag_type'] = 'FILE';
 			$data['file_name'] = null;
 			$data['status'] = 'PUB';
+			if ($is_new) {
+				$data['confidential_group_ids'] = $this->group_id;
+			}
 			unset($data['old_file'], $data['type']);
 			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
 			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => 'PUB', 'doc_type' => 'Record', 'note' => 'Save link record']);
@@ -437,8 +468,12 @@ class Records extends Admin_Controller
 				}
 			}
 			$id = $data['id'] ?: uniqid(date('m'));
+			$is_new = empty($data['id']);
 			$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
 			$data['status'] = 'PUB';
+			if ($is_new) {
+				$data['confidential_group_ids'] = $this->group_id;
+			}
 			unset($data['old_file'], $data['type']);
 			$data['link_url'] = null;
 			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());

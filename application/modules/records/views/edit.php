@@ -44,7 +44,26 @@
 								</thead>
 								<tbody>
 									<?php if (isset($getRecords) && count($getRecords) > 0) : $n = 0; ?>
-										<?php foreach ($getRecords as $form) : $n++; ?>
+										<?php foreach ($getRecords as $form) : $n++;
+											// Determine if this file is locked for current user
+											$is_locked = false;
+											if ($form->flag_type == 'FILE' && $form->flag_confidential == '1') {
+												$has_level = (isset($form->confidential_group_ids) && $form->confidential_group_ids);
+												if ($has_level) {
+													$allowed = explode(',', $form->confidential_group_ids);
+													if (isset($user_group_id) && in_array($user_group_id, $allowed)) {
+														// User's group is in allowed list, now check if user has confidential flag
+														$is_locked = (!isset($user_confidential) || $user_confidential != '1');
+													} else {
+														// User's group not in allowed list
+														$is_locked = true;
+													}
+												} else {
+													// No level restriction, just check user's confidential flag
+													$is_locked = (!isset($user_confidential) || $user_confidential != '1');
+												}
+											}
+										?>
 											<tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
 												<td class="py-1">
 													<a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
@@ -80,14 +99,14 @@
 															<button class="btn btn-sm btn-icon btn-primary" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i></button>
 															<div class="dropdown-menu dropdown-menu-right">
 																<?php if ($form->flag_type == 'FILE'): ?>
-																	<?php if ($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1')) : ?>
+																	<?php if ($is_locked) : ?>
 																		<a href="javascript:void(0)" class="dropdown-item disabled" style="pointer-events:none;opacity:0.6;"><i class="fa fa-lock text-danger mr-2"></i> Confidential Document</a>
 																	<?php elseif (isset($form->link_url) && $form->link_url) : ?>
 																		<a href="<?= $form->link_url; ?>" target="_blank" class="dropdown-item" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
 																	<?php else: ?>
 																		<a href="javascript:void(0)" class="dropdown-item view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View</a>
 																	<?php endif; ?>
-																	<?php if (isset($user_confidential) && $user_confidential == '1') : ?>
+																	<?php if (isset($user_confidential) && $user_confidential == '1' && !$is_locked) : ?>
 																	<a href="javascript:void(0)" class="dropdown-item toggle-confidential" data-id="<?= $form->id; ?>" data-value="<?= $form->flag_confidential; ?>">
 																		<i class="fa fa-lock text-dark mr-2"></i> Confidential
 																		<?php if ($form->flag_confidential == '1') : ?>
@@ -97,7 +116,7 @@
 																		<?php endif; ?>
 																	</a>
 																	<?php endif; ?>
-																	<?php if (!($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
+																	<?php if (!$is_locked) : ?>
 																	<div class="dropdown-divider"></div>
 																	<a href="javascript:void(0)" class="dropdown-item edit-record" title="Edit Document" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
 																	<?php endif; ?>
@@ -107,7 +126,7 @@
 																	<div class="dropdown-divider"></div>
 																	<a href="javascript:void(0)" class="dropdown-item edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
 																<?php endif; ?>
-																<?php if (!($form->flag_type == 'FILE' && $form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
+																<?php if (!($form->flag_type == 'FILE' && $is_locked)) : ?>
 																<a href="javascript:void(0)" class="dropdown-item move-record" title="Move" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
 																<div class="dropdown-divider"></div>
 																<a href="javascript:void(0)" class="dropdown-item delete-record" title="Delete" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
@@ -1241,22 +1260,87 @@
 		/* TOGGLE CONFIDENTIAL */
 		$(document).on('click', '.toggle-confidential', function() {
 			const id = $(this).data('id');
-			const value = $(this).data('value');
-			const btn = $(this);
+			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
+			$('#modelId').modal('show');
+			$('.modal-title').text('Set Confidential Access');
+			$('#content_modal').html(`
+				<div class="modal-body">
+					<div class="form-group">
+						<label class="font-weight-bold">Confidential</label>
+						<div class="checkbox-inline">
+							<label class="checkbox">
+								<input type="checkbox" id="conf_flag" value="1" checked>
+								<span></span> Enable Confidential
+							</label>
+						</div>
+					</div>
+					<div class="form-group" id="conf_levels_group">
+						<label class="font-weight-bold">Restricted to Level</label>
+						<select id="conf_group_ids" class="form-control" multiple="multiple" style="width:100%;">
+						</select>
+						<div class="form-text text-muted">Only users with these levels can access this document (leave empty for all confidential users)</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<button type="button" class="btn btn-primary" id="save_confidential" data-id="${id}"><i class="fa fa-save mr-1"></i> Save</button>
+				</div>
+			`);
+
+			// Load levels first, then load current data
+			$.getJSON(siteurl + active_controller + 'get_levels', function(levels) {
+				let options = '';
+				levels.forEach(function(lvl) {
+					options += `<option value="${lvl.id_group}">${lvl.nm_group}</option>`;
+				});
+				$('#conf_group_ids').html(options);
+				$('#conf_group_ids').select2({ placeholder: 'Select levels...', width: '100%', allowClear: true });
+
+				// After levels loaded, load current data
+				$.getJSON(siteurl + active_controller + 'get_confidential_data/' + id, function(data) {
+					// Only uncheck if explicitly already set to OFF (user wants to turn off)
+					if (data.flag_confidential == '0') {
+						// Keep checked as default (user is opening modal to enable it)
+						$('#conf_flag').prop('checked', true);
+						$('#conf_levels_group').show();
+					} else {
+						$('#conf_flag').prop('checked', true);
+						$('#conf_levels_group').show();
+					}
+					if (data.confidential_group_ids) {
+						let ids = data.confidential_group_ids.split(',');
+						$('#conf_group_ids').val(ids).trigger('change');
+					}
+				});
+			});
+
+			// Toggle visibility
+			$(document).off('change', '#conf_flag').on('change', '#conf_flag', function() {
+				if ($(this).is(':checked')) {
+					$('#conf_levels_group').show();
+				} else {
+					$('#conf_levels_group').hide();
+					$('#conf_group_ids').val(null).trigger('change');
+				}
+			});
+		});
+
+		$(document).on('click', '#save_confidential', function() {
+			const id = $(this).data('id');
+			const flag = $('#conf_flag').is(':checked') ? '1' : '0';
+			const group_ids = $('#conf_group_ids').val() || [];
+
 			$.ajax({
 				url: siteurl + active_controller + 'toggle_confidential',
 				type: 'POST',
 				dataType: 'JSON',
-				data: { id: id, value: value },
+				data: { id: id, flag_confidential: flag, group_ids: group_ids },
 				success: function(res) {
 					if (res.status == '1') {
-						btn.data('value', res.new_value);
-						if (res.new_value == '1') {
-							btn.find('span').removeClass('label-secondary').addClass('label-danger').text('ON');
-						} else {
-							btn.find('span').removeClass('label-danger').addClass('label-secondary').text('OFF');
-						}
-						Swal.fire({ title: 'Success!', text: res.msg, icon: 'success', timer: 1500 });
+						$('#modelId').modal('hide');
+						Swal.fire({ title: 'Success!', text: res.msg, icon: 'success', timer: 1500 }).then(function() {
+							location.reload();
+						});
 					} else {
 						Swal.fire('Warning', res.msg, 'warning');
 					}
