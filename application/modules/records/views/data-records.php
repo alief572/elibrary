@@ -11,7 +11,26 @@
   <tbody>
     <?php if (($getRecords)) : ?>
       <?php $n = 0; ?>
-      <?php foreach ($getRecords as $form) : $n++; ?>
+      <?php foreach ($getRecords as $form) : $n++;
+        // Determine if this file is locked for current user
+        $is_locked = false;
+        if ($form->flag_type == 'FILE' && $form->flag_confidential == '1') {
+          $has_level = (isset($form->confidential_group_ids) && $form->confidential_group_ids);
+          if ($has_level) {
+            $allowed = explode(',', $form->confidential_group_ids);
+            if (isset($user_group_id) && in_array($user_group_id, $allowed)) {
+              // User's group is in allowed list, now check if user has confidential flag
+              $is_locked = (!isset($user_confidential) || $user_confidential != '1');
+            } else {
+              // User's group not in allowed list
+              $is_locked = true;
+            }
+          } else {
+            // No level restriction, just check user's confidential flag
+            $is_locked = (!isset($user_confidential) || $user_confidential != '1');
+          }
+        }
+      ?>
         <tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
           <td class="py-1">
             <a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
@@ -49,14 +68,14 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
                   <?php if ($form->flag_type == 'FILE') : ?>
-                    <?php if ($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1')) : ?>
+                    <?php if ($is_locked) : ?>
                       <a class="dropdown-item disabled" href="javascript:void(0)" style="pointer-events:none;opacity:0.6;"><i class="fa fa-lock text-danger mr-2"></i> Confidential Document</a>
                     <?php elseif (isset($form->link_url) && $form->link_url) : ?>
                       <a class="dropdown-item" href="<?= $form->link_url; ?>" target="_blank" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
                     <?php else : ?>
                       <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf text-primary' ?> mr-2"></i> View Document</a>
                     <?php endif; ?>
-                    <?php if (isset($user_confidential) && $user_confidential == '1') : ?>
+                    <?php if (isset($user_confidential) && $user_confidential == '1' && !$is_locked) : ?>
                     <a class="dropdown-item toggle-confidential" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-value="<?= $form->flag_confidential; ?>">
                       <i class="fa fa-lock text-dark mr-2"></i> Confidential
                       <?php if ($form->flag_confidential == '1') : ?>
@@ -66,7 +85,7 @@
                       <?php endif; ?>
                     </a>
                     <?php endif; ?>
-                    <?php if (!($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
+                    <?php if (!$is_locked) : ?>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item edit-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Document</a>
                     <?php endif; ?>
@@ -78,7 +97,7 @@
                     <?php endif; ?>
                     <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
                   <?php endif; ?>
-                  <?php if (!($form->flag_type == 'FILE' && $form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
+                  <?php if (!($form->flag_type == 'FILE' && $is_locked)) : ?>
                   <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item delete-record text-danger" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i> Delete</a>
