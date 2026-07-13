@@ -49,12 +49,27 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
                   <?php if ($form->flag_type == 'FILE') : ?>
-                    <?php if (isset($form->link_url) && $form->link_url) : ?>
+                    <?php if ($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1')) : ?>
+                      <a class="dropdown-item disabled" href="javascript:void(0)" style="pointer-events:none;opacity:0.6;"><i class="fa fa-lock text-danger mr-2"></i> Confidential Document</a>
+                    <?php elseif (isset($form->link_url) && $form->link_url) : ?>
                       <a class="dropdown-item" href="<?= $form->link_url; ?>" target="_blank" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
                     <?php else : ?>
                       <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf text-primary' ?> mr-2"></i> View Document</a>
                     <?php endif; ?>
+                    <?php if (isset($user_confidential) && $user_confidential == '1') : ?>
+                    <a class="dropdown-item toggle-confidential" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-value="<?= $form->flag_confidential; ?>">
+                      <i class="fa fa-lock text-dark mr-2"></i> Confidential
+                      <?php if ($form->flag_confidential == '1') : ?>
+                        <span class="label label-inline label-danger ml-2">ON</span>
+                      <?php else : ?>
+                        <span class="label label-inline label-secondary ml-2">OFF</span>
+                      <?php endif; ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if (!($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item edit-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Document</a>
+                    <?php endif; ?>
                   <?php else : ?>
                     <?php if ($this->uri->segment(1) == 'records') : ?>
                       <a class="dropdown-item add-folder-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
@@ -63,9 +78,11 @@
                     <?php endif; ?>
                     <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
                   <?php endif; ?>
+                  <?php if (!($form->flag_type == 'FILE' && $form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
                   <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item delete-record text-danger" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i> Delete</a>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>

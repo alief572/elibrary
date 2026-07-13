@@ -98,6 +98,19 @@
 									</div>
 
 									<div class="form-group row">
+										<label class="col-form-label col-3 text-left">Access Confidential</label>
+										<div class="col-9">
+											<div class="checkbox-inline">
+												<label class="checkbox">
+													<input type="checkbox" name="flag_access_confidential" value="1" <?= (isset($data) && $data->flag_access_confidential == '1') ? 'checked' : ''; ?>>
+													<span></span>Yes
+												</label>
+											</div>
+											<div class="form-text text-muted">Allow user to access confidential documents</div>
+										</div>
+									</div>
+
+									<div class="form-group row">
 										<label class="col-xl-3 col-lg-3 col-form-label">Company</label>
 										<div class="col-lg-9 col-xl-9">
 
