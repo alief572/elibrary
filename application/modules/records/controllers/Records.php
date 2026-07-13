@@ -73,6 +73,7 @@ class Records extends Admin_Controller
 				'title' 		=> 'Edit Records', 'data' => $Data, 'users' => $users, 'detail' => $detail,
 				'getForms' 		=> $getForms, 'getGuides' => $getGuides, 'getRecords' => $getRecords,
 				'jabatan' 		=> $jabatan, 'ArrForms' => $ArrForms, 'ArrGuides' => $ArrGuides, 'sts' => $this->sts,
+				'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
 			]);
 			$this->template->render('edit');
 		} else {
@@ -321,6 +322,19 @@ class Records extends Admin_Controller
 		}
 	}
 
+	public function toggle_confidential()
+	{
+		$id = $this->input->post('id');
+		$value = $this->input->post('value');
+		$newValue = ($value == '1') ? '0' : '1';
+		$success = $this->db->update('dir_records', [
+			'flag_confidential' => $newValue,
+			'modified_by' => $this->auth->user_id(),
+			'modified_at' => date('Y-m-d H:i:s')
+		], ['id' => $id]);
+		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Confidential flag updated.' : 'Failed to update.'), 'new_value' => $newValue]);
+	}
+
 	public function saveFolder()
 	{
 		$Data = $this->input->post();
@@ -334,7 +348,9 @@ class Records extends Admin_Controller
 	public function records_folder($folder = null, $procedure_id = null)
 	{
 		if ($folder) $getRecords = $this->RecModel->getSubRecords($procedure_id, $folder);
-		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'EOF' => false]);
+		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'EOF' => false,
+			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+		]);
 		$this->template->render('data-records');
 	}
 
@@ -382,7 +398,9 @@ class Records extends Admin_Controller
 		if ($folder) {
 			$getRecords = $this->RecModel->getSubRecords($procedure_id, $folder);
 		}
-		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'depth' => $depth]);
+		$this->template->set(['getRecords' => $getRecords, 'parent_id' => $folder, 'depth' => $depth,
+			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+		]);
 		$this->template->render('child-records');
 	}
 

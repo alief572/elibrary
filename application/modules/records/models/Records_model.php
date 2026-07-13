@@ -99,7 +99,7 @@ class Records_model extends BF_Model
 
     public function getRecordsByProcedure($procedureId)
     {
-        return $this->db->get_where('dir_records', [
+        return $this->db->order_by('name', 'ASC')->get_where('dir_records', [
             'procedure_id' => $procedureId,
             'status !=' => 'DEL',
             'flag_type' => 'FOLDER',
@@ -114,7 +114,7 @@ class Records_model extends BF_Model
 
     public function getSubRecords($procedureId, $parentId)
     {
-        return $this->db->get_where('dir_records', [
+        return $this->db->order_by('name', 'ASC')->get_where('dir_records', [
             'procedure_id' => $procedureId,
             'parent_id'    => $parentId,
             'status !='    => 'DEL'
@@ -126,6 +126,7 @@ class Records_model extends BF_Model
         $this->db->where('procedure_id', $procedureId);
         $this->db->where('status !=', 'DEL');
         $this->db->like('name', $keyword);
+        $this->db->order_by('name', 'ASC');
         return $this->db->get('dir_records')->result();
     }
 
