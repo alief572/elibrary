@@ -31,8 +31,25 @@
 		<?php if (($records)) :
 			$no = 0;
 			foreach ($records as $lsRec) :
-				// Hide confidential files from non-confidential users
-				if ($lsRec->flag_type == 'FILE' && $lsRec->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1')) continue;
+				// Filter confidential files
+				if ($lsRec->flag_type == 'FILE' && $lsRec->flag_confidential == '1') {
+					$has_level_restriction = (isset($lsRec->confidential_group_ids) && $lsRec->confidential_group_ids);
+					
+					if ($has_level_restriction) {
+						// File has level restriction: check if user's group is in allowed groups
+						$allowed_groups = explode(',', $lsRec->confidential_group_ids);
+						if (isset($user_group_id) && in_array($user_group_id, $allowed_groups)) {
+							// User's group matches, now check if user has confidential flag
+							if (!isset($user_confidential) || $user_confidential != '1') continue;
+						} else {
+							// User's group not in allowed list
+							continue;
+						}
+					} else {
+						// File has no level restriction: only check user's confidential flag
+						if (!isset($user_confidential) || $user_confidential != '1') continue;
+					}
+				}
 				$no++; ?>
 				<tr class="cursor-pointer <?= ($lsRec->flag_type == 'FOLDER') ? 'record-item' : ''; ?>  " data-procedure="<?= $procedure_id; ?>" data-id="<?= $lsRec->id; ?>">
 					<td class="h4 text-dark d-flex align-items-center my-0 pt-1">
