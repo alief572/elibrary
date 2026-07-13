@@ -242,6 +242,7 @@ class Documents_list extends Admin_Controller
 			'EOF' 			=> $EOF,
 			'procedure_id' 	=> $procedure_id,
 			'records' 		=> $records,
+			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
 		]);
 
 		$this->template->render('procedures/records');
@@ -262,6 +263,7 @@ class Documents_list extends Admin_Controller
 			'EOF' 			=> true,
 			'procedure_id' 	=> $procedure_id,
 			'records' 		=> $records,
+			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
 		]);
 
 		$this->template->render('procedures/records');

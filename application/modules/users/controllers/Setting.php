@@ -326,6 +326,9 @@ class Setting extends Admin_Controller
         $data['ip']     = $this->input->ip_address();
         $company_id     = $data['company_id'];
         unset($data['company_id']);
+
+        // Handle checkbox: if not checked, set to '0'
+        $data['flag_access_confidential'] = isset($data['flag_access_confidential']) ? $data['flag_access_confidential'] : '0';
     
         /**
          * This code will benchmark your server to determine how high of a cost you can

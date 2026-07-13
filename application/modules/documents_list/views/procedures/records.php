@@ -30,7 +30,10 @@
 	<tbody>
 		<?php if (($records)) :
 			$no = 0;
-			foreach ($records as $lsRec) : $no++; ?>
+			foreach ($records as $lsRec) :
+				// Hide confidential files from non-confidential users
+				if ($lsRec->flag_type == 'FILE' && $lsRec->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1')) continue;
+				$no++; ?>
 				<tr class="cursor-pointer <?= ($lsRec->flag_type == 'FOLDER') ? 'record-item' : ''; ?>  " data-procedure="<?= $procedure_id; ?>" data-id="<?= $lsRec->id; ?>">
 					<td class="h4 text-dark d-flex align-items-center my-0 pt-1">
 						<?php if ($lsRec->flag_type == 'FOLDER') : ?>

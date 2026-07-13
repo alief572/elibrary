@@ -80,21 +80,38 @@
 															<button class="btn btn-sm btn-icon btn-primary" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-cog"></i></button>
 															<div class="dropdown-menu dropdown-menu-right">
 																<?php if ($form->flag_type == 'FILE'): ?>
-																	<?php if (isset($form->link_url) && $form->link_url) : ?>
+																	<?php if ($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1')) : ?>
+																		<a href="javascript:void(0)" class="dropdown-item disabled" style="pointer-events:none;opacity:0.6;"><i class="fa fa-lock text-danger mr-2"></i> Confidential Document</a>
+																	<?php elseif (isset($form->link_url) && $form->link_url) : ?>
 																		<a href="<?= $form->link_url; ?>" target="_blank" class="dropdown-item" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
 																	<?php else: ?>
 																		<a href="javascript:void(0)" class="dropdown-item view-record" title="View Document" data-id="<?= $form->id; ?>"><i class="fas fa-file-pdf text-primary mr-2"></i> View</a>
 																	<?php endif; ?>
+																	<?php if (isset($user_confidential) && $user_confidential == '1') : ?>
+																	<a href="javascript:void(0)" class="dropdown-item toggle-confidential" data-id="<?= $form->id; ?>" data-value="<?= $form->flag_confidential; ?>">
+																		<i class="fa fa-lock text-dark mr-2"></i> Confidential
+																		<?php if ($form->flag_confidential == '1') : ?>
+																			<span class="label label-inline label-danger ml-2">ON</span>
+																		<?php else : ?>
+																			<span class="label label-inline label-secondary ml-2">OFF</span>
+																		<?php endif; ?>
+																	</a>
+																	<?php endif; ?>
+																	<?php if (!($form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
+																	<div class="dropdown-divider"></div>
 																	<a href="javascript:void(0)" class="dropdown-item edit-record" title="Edit Document" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
+																	<?php endif; ?>
 																<?php else: ?>
 																	<a href="javascript:void(0)" class="dropdown-item add-folder-inside" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
 																	<a href="javascript:void(0)" class="dropdown-item add-record-inside" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
 																	<div class="dropdown-divider"></div>
 																	<a href="javascript:void(0)" class="dropdown-item edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
 																<?php endif; ?>
+																<?php if (!($form->flag_type == 'FILE' && $form->flag_confidential == '1' && (!isset($user_confidential) || $user_confidential != '1'))) : ?>
 																<a href="javascript:void(0)" class="dropdown-item move-record" title="Move" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
 																<div class="dropdown-divider"></div>
 																<a href="javascript:void(0)" class="dropdown-item delete-record" title="Delete" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
+																<?php endif; ?>
 															</div>
 														</div>
 													</div>
@@ -1220,6 +1237,35 @@
 			})
 
 		})
+
+		/* TOGGLE CONFIDENTIAL */
+		$(document).on('click', '.toggle-confidential', function() {
+			const id = $(this).data('id');
+			const value = $(this).data('value');
+			const btn = $(this);
+			$.ajax({
+				url: siteurl + active_controller + 'toggle_confidential',
+				type: 'POST',
+				dataType: 'JSON',
+				data: { id: id, value: value },
+				success: function(res) {
+					if (res.status == '1') {
+						btn.data('value', res.new_value);
+						if (res.new_value == '1') {
+							btn.find('span').removeClass('label-secondary').addClass('label-danger').text('ON');
+						} else {
+							btn.find('span').removeClass('label-danger').addClass('label-secondary').text('OFF');
+						}
+						Swal.fire({ title: 'Success!', text: res.msg, icon: 'success', timer: 1500 });
+					} else {
+						Swal.fire('Warning', res.msg, 'warning');
+					}
+				},
+				error: function() {
+					Swal.fire('Error!', 'Server timeout. Please try again!', 'error');
+				}
+			});
+		});
 
 		/* FOLDER RECORDS */
 
