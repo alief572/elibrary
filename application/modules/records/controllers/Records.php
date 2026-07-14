@@ -335,7 +335,7 @@ class Records extends Admin_Controller
 
 		$updateData = [
 			'flag_confidential' => $flag,
-			'confidential_group_ids' => ($flag == '1') ? $group_ids : null,
+			'confidential_group_ids' => $group_ids ?: null,
 			'modified_by' => $this->auth->user_id(),
 			'modified_at' => date('Y-m-d H:i:s')
 		];

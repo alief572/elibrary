@@ -1320,7 +1320,6 @@
 					$('#conf_levels_group').show();
 				} else {
 					$('#conf_levels_group').hide();
-					$('#conf_group_ids').val(null).trigger('change');
 				}
 			});
 		});
