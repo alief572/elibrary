@@ -4,6 +4,7 @@
   <thead>
     <tr>
       <th class="py-0">File or Folder Name</th>
+      <th class="py-0 text-left">Description</th>
       <th class="py-0 text-right">Last Update</th>
       <th class="py-0 text-center" width="50">Opsi</th>
     </tr>
@@ -54,6 +55,9 @@
                 <span class="text-name mt-3 h5"><?= $form->name; ?></span>
               </div>
             </a>
+          </td>
+          <td class="py-1 text-left">
+            <span class="text-muted mt-3 h6"><?= (isset($form->description) && $form->description) ? $form->description : '-'; ?></span>
           </td>
           <td class="py-1 text-right">
             <div class="d-flex justify-content-end align-items-center">
@@ -110,7 +114,7 @@
       <?php endforeach; ?>
     <?php else : ?>
       <tr>
-        <td colspan="3" class="text-center py-5">
+        <td colspan="4" class="text-center py-5">
           <i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
           <h5 class="text-muted">~ Folder Kosong ~</h5>
           <button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Create Folder</button>
