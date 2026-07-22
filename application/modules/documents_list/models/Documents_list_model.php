@@ -184,10 +184,44 @@ class Documents_list_model extends BF_Model
 
     public function getRecordsFiltered($where)
     {
-        // Ensure deleted records are excluded
-        $where['status !='] = 'DEL';
-        // Apply default alphabetical sorting
-        return $this->db->order_by('name', 'ASC')->get_where('dir_records', $where)->result();
+        $this->db->where('status !=', 'DEL');
+        if (array_key_exists('parent_id', $where)) {
+            $parentId = $where['parent_id'];
+            unset($where['parent_id']);
+            if (empty($parentId) || $parentId === 'null' || $parentId === '0') {
+                $this->db->group_start()
+                    ->where('parent_id', null)
+                    ->or_where('parent_id', '')
+                    ->or_where('parent_id', '0')
+                    ->group_end();
+            } else {
+                $this->db->where('parent_id', $parentId);
+            }
+        }
+        if (!empty($where)) {
+            $this->db->where($where);
+        }
+        return $this->db->order_by('name', 'ASC')->get('dir_records')->result();
+    }
+
+    /**
+     * Get breadcrumb folder chain for a record folder
+     */
+    public function getRecordBreadcrumbs($folderId)
+    {
+        $breadcrumbs = [];
+        $currId = $folderId;
+        $guard = 0;
+        while (!empty($currId) && $currId != '0' && $currId != 'null' && $guard < 20) {
+            $folder = $this->db->get_where('dir_records', ['id' => $currId, 'status !=' => 'DEL'])->row();
+            if (!$folder) {
+                break;
+            }
+            array_unshift($breadcrumbs, $folder);
+            $currId = $folder->parent_id;
+            $guard++;
+        }
+        return $breadcrumbs;
     }
 
     /**

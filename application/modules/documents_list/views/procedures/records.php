@@ -1,3 +1,33 @@
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb">
+	<ol class="breadcrumb bg-light py-2 px-3 mb-3 font-weight-bold font-size-sm rounded">
+		<li class="breadcrumb-item">
+			<?php if (empty($breadcrumbs)) : ?>
+				<span class="text-dark"><i class="fa fa-home mr-1"></i> Home</span>
+			<?php else : ?>
+				<a href="javascript:void(0)" class="record-breadcrumb text-primary" data-id="" data-procedure="<?= $procedure_id; ?>">
+					<i class="fa fa-home mr-1"></i> Home
+				</a>
+			<?php endif; ?>
+		</li>
+		<?php if (!empty($breadcrumbs)) : ?>
+			<?php foreach ($breadcrumbs as $index => $bc) : ?>
+				<?php if ($index == count($breadcrumbs) - 1) : ?>
+					<li class="breadcrumb-item active text-dark" aria-current="page">
+						<i class="fa fa-folder-open text-warning mr-1"></i> <?= htmlspecialchars($bc->name); ?>
+					</li>
+				<?php else : ?>
+					<li class="breadcrumb-item">
+						<a href="javascript:void(0)" class="record-breadcrumb text-primary" data-id="<?= $bc->id; ?>" data-procedure="<?= $procedure_id; ?>">
+							<i class="fa fa-folder text-warning mr-1"></i> <?= htmlspecialchars($bc->name); ?>
+						</a>
+					</li>
+				<?php endif; ?>
+			<?php endforeach; ?>
+		<?php endif; ?>
+	</ol>
+</nav>
+
 <!-- Nav tabs -->
 <ul class="nav pb-2 nav-success nav-tabs nav-pills">
 	<li class="nav-item">

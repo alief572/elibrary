@@ -316,11 +316,19 @@ class Records extends Admin_Controller
 	public function delete_record($id = null)
 	{
 		if ($id) {
-			$fileName = $this->RecModel->getFileName('dir_records', $id);
-			$success = $this->RecModel->deleteFile('dir_records', $id, $this->auth->user_id());
-			if ($success) $this->_delete_file('RECORDS', $fileName);
-			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Data successfully deleted.' : 'Data failed to delete.')]);
+			$record = $this->RecModel->getFileById('dir_records', $id);
+			if ($record) {
+				$fileName = $record->file_name;
+				$success = $this->RecModel->deleteFile('dir_records', $id, $this->auth->user_id());
+				if ($success && $record->flag_type == 'FOLDER') {
+					$this->RecModel->deleteDescendants($id, $this->auth->user_id());
+				}
+				if ($success && $fileName) $this->_delete_file('RECORDS', $fileName);
+				echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Data successfully deleted.' : 'Data failed to delete.')]);
+				return;
+			}
 		}
+		echo json_encode(['status' => 0, 'msg' => 'Data not found.']);
 	}
 
 	public function toggle_confidential()
