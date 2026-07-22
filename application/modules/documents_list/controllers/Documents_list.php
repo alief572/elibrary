@@ -100,7 +100,7 @@ class Documents_list extends Admin_Controller
 			$procedure 		= $this->List->getProcedureResult($id);
 			$forms 			= $this->List->getFormsByProcedure($id);
 			$guides 		= $this->List->getGuidesByProcedure($id);
-			$records 		= $this->List->getRecordsByProcedure($id, $this->company);
+			$records 		= $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $id, 'parent_id' => null]);
 			$countRecords 	= $this->List->countRecords($id, $this->company);
 
 			$this->template->set([
@@ -108,8 +108,14 @@ class Documents_list extends Admin_Controller
 				'forms' 			=> $forms,
 				'guides' 			=> $guides,
 				'records' 			=> $records,
+				'breadcrumbs'		=> [],
+				'id'				=> '',
+				'EOF'				=> true,
+				'procedure_id'		=> $id,
 				'MainData' 			=> $this->MainData,
-				'countRecords' 	 	=> $countRecords
+				'countRecords' 	 	=> $countRecords,
+				'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+				'user_group_id' 	=> $this->group_id,
 			]);
 			$this->template->render('procedures/list-docs');
 		} else {
@@ -208,33 +214,49 @@ class Documents_list extends Admin_Controller
 	{
 		$records = [];
 		$EOF = true;
+		$breadcrumbs = [];
 
-		if ($methode == 'home') {
-			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'flag_type' => 'FOLDER']);
+		if ($methode == 'home' || empty($id) || $id == 'null') {
+			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null]);
 			$EOF = true;
+			$id = '';
+			$breadcrumbs = [];
 		} elseif ($methode == 'back') {
 			$dir = $this->List->getRecordById($id);
-			$parent_id = $dir ? $dir->parent_id : null;
-			if ($parent_id > 0) {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $parent_id, 'flag_type' => 'FOLDER']);
+			$parent_id = ($dir && !empty($dir->parent_id) && $dir->parent_id != '0') ? $dir->parent_id : null;
+			if (!empty($parent_id)) {
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $parent_id]);
 				$EOF = false;
 				$id = $parent_id;
+				$breadcrumbs = $this->List->getRecordBreadcrumbs($parent_id);
 			} else {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'flag_type' => 'FOLDER']);
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null]);
 				$EOF = true;
 				$id = '';
+				$breadcrumbs = [];
 			}
 		} elseif ($methode == 'refresh') {
-			if ($id) {
+			if (!empty($id) && $id != 'null') {
 				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id]);
 				$EOF = false;
+				$breadcrumbs = $this->List->getRecordBreadcrumbs($id);
 			} else {
-				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null, 'flag_type' => 'FOLDER']);
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null]);
 				$EOF = true;
+				$id = '';
+				$breadcrumbs = [];
 			}
 		} elseif ($methode == 'find') {
-			$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id]);
-			$EOF = false;
+			if (!empty($id) && $id != 'null') {
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => $id]);
+				$EOF = false;
+				$breadcrumbs = $this->List->getRecordBreadcrumbs($id);
+			} else {
+				$records = $this->List->getRecordsFiltered(['company_id' => $this->company, 'procedure_id' => $procedure_id, 'parent_id' => null]);
+				$EOF = true;
+				$id = '';
+				$breadcrumbs = [];
+			}
 		}
 
 		$this->template->set([
@@ -242,6 +264,7 @@ class Documents_list extends Admin_Controller
 			'EOF' 			=> $EOF,
 			'procedure_id' 	=> $procedure_id,
 			'records' 		=> $records,
+			'breadcrumbs'	=> $breadcrumbs,
 			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
 			'user_group_id' => $this->group_id,
 		]);
@@ -264,6 +287,7 @@ class Documents_list extends Admin_Controller
 			'EOF' 			=> true,
 			'procedure_id' 	=> $procedure_id,
 			'records' 		=> $records,
+			'breadcrumbs'	=> [],
 			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
 			'user_group_id' => $this->group_id,
 		]);
