@@ -436,12 +436,17 @@ class Records extends Admin_Controller
 		$data = $this->input->post('forms');
 		$record_type = $this->input->post('record_type');
 
+		if (!isset($data['name']) || empty($data['name'])) {
+			if (isset($data['description'])) {
+				$data['name'] = $data['description'];
+			}
+		}
+
 		if ($record_type === 'online_link') {
 			// Save as link (no file upload)
 			$id = $data['id'] ?: uniqid(date('m'));
 			$is_new = empty($data['id']);
 			$data['id'] = $id;
-			$data['name'] = $data['description'];
 			$data['company_id'] = $this->company;
 			$data['flag_type'] = 'FILE';
 			$data['file_name'] = null;
@@ -469,13 +474,17 @@ class Records extends Admin_Controller
 			}
 			$id = $data['id'] ?: uniqid(date('m'));
 			$is_new = empty($data['id']);
-			$data['id'] = $id; $data['name'] = $data['description']; $data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
+			$data['id'] = $id;
+			$data['company_id'] = $this->company; $data['flag_type'] = 'FILE';
 			$data['status'] = 'PUB';
 			if ($is_new) {
 				$data['confidential_group_ids'] = $this->group_id;
 			}
 			unset($data['old_file'], $data['type']);
 			$data['link_url'] = null;
+			if (!isset($data['description']) || empty($data['description'])) {
+				$data['description'] = isset($data['name']) ? $data['name'] : '';
+			}
 			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
 			if ($success) $this->RecModel->updateHistory(['directory_id' => $id, 'new_status' => 'PUB', 'doc_type' => 'Record', 'note' => 'Upload file']);
 			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'File Record successfully saved.' : 'File Record failed to save.')]);

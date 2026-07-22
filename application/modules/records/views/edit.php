@@ -38,6 +38,7 @@
 								<thead>
 									<tr>
 										<th class="py-0">File or Folder Name</th>
+										<th class="py-0 text-left">Description</th>
 										<th class="py-0 text-right">Last Update</th>
 										<th class="py-0 text-center" width="50">Opsi</th>
 									</tr>
@@ -87,6 +88,9 @@
 															<span class="text-name mt-3 h5"><?= $form->name; ?></span>
 														</div>
 													</a>
+												</td>
+												<td class="py-1 text-left">
+													<span class="text-muted mt-3 h6"><?= (isset($form->description) && $form->description) ? $form->description : '-'; ?></span>
 												</td>
 												<td class="py-1 text-right">
 													<div class="d-flex justify-content-end align-items-center">
@@ -1133,14 +1137,16 @@
 		$(document).on('click', '#save-record', function() {
 			let formdata = new FormData($('#form-records')[0])
 			let btn = $('.save')
+			$('#name').removeClass('is-invalid')
 			$('#description').removeClass('is-invalid')
 			$('#image').removeClass('is-invalid')
 			$('#link-url').removeClass('is-invalid')
-			const description = $('#description').val();
+			const docName = $('#name').length ? $('#name').val() : $('#description').val();
 			const record_type = $('input[name="record_type"]:checked').val();
 
-			if (description !== undefined && (description == '' || description == null)) {
-				$('#description').addClass('is-invalid')
+			if (docName !== undefined && (docName == '' || docName == null)) {
+				if ($('#name').length) $('#name').addClass('is-invalid');
+				else $('#description').addClass('is-invalid');
 				return false;
 			}
 

@@ -43,6 +43,9 @@
           </div>
         </a>
       </td>
+      <td class="py-1 text-left">
+        <span class="text-muted mt-3 h6"><?= (isset($form->description) && $form->description) ? $form->description : '-'; ?></span>
+      </td>
       <td class="py-1 text-right">
         <div class="d-flex justify-content-end align-items-center">
           <h6 class="mt-4 ml-4"><?= $form->created_at; ?></h6>
@@ -98,7 +101,7 @@
   <?php endforeach; ?>
 <?php else: ?>
   <tr class="tree-row empty-folder" data-parent-id="<?= $parent_id; ?>">
-    <td colspan="3" class="py-2 text-muted" style="padding-left: <?= ($depth * 30) + 40 ?>px;">
+    <td colspan="4" class="py-2 text-muted" style="padding-left: <?= ($depth * 30) + 40 ?>px;">
       <em>Folder is empty</em>
     </td>
   </tr>

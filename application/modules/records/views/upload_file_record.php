@@ -7,8 +7,8 @@
 					<input type="hidden" id="id" name="forms[id]" class="form-control" value="<?= isset($data) ? $data->id : ''; ?>" />
 					<input type="hidden" name="forms[procedure_id]" class="form-control" value="<?= isset($data) ? $data->procedure_id : $procedure_id; ?>" />
 					<input type="hidden" name="forms[parent_id]" class="form-control" value="<?= isset($data) ? $data->parent_id : $parent_id; ?>" />
-					<input type="text" class="form-control" id="description" placeholder="Document Name" name="forms[description]" value="<?= isset($data) ? $data->name : ''; ?>" autocomplete="off" />
-					<span class="form-text text-danger invalid-feedback">Deskripsi harus di isi</span>
+					<input type="text" class="form-control" id="name" placeholder="Document Name" name="forms[name]" value="<?= isset($data) ? $data->name : ''; ?>" autocomplete="off" />
+					<span class="form-text text-danger invalid-feedback">Document Name harus di isi</span>
 				</div>
 				<input type="hidden" name="forms[type]" value="record">
 			</div>
@@ -43,7 +43,7 @@
 						<?php endif; ?>
 					</div>
 				<?php elseif (isset($data) && $data->link_url) : ?>
-					<div class="form-group row">
+					<div class="form-group row mb-2">
 						<label class="col-12 col-form-label"><span class="text-danger">*</span> Link Google Form</label>
 						<div class="col-12">
 							<div class="input-group mb-3">
@@ -51,6 +51,12 @@
 								<input type="text" class="form-control" id="link-url" placeholder="Link Form" name="forms[link_url]" value="<?= isset($data) ? $data->link_url : ''; ?>" autocomplete="off" />
 							</div>
 							<span class="form-text text-danger invalid-feedback">Link harus di isi</span>
+						</div>
+					</div>
+					<div class="form-group row mb-0">
+						<label class="col-12 col-form-label">Description :</label>
+						<div class="col-12">
+							<textarea class="form-control" id="description" placeholder="Description" name="forms[description]" rows="3" autocomplete="off"><?= isset($data) ? $data->description : ''; ?></textarea>
 						</div>
 					</div>
 				<?php endif; ?>
@@ -87,7 +93,7 @@
 				`);
 			} else {
 				$('#type-record').html(`
-					<div class="form-group row">
+					<div class="form-group row mb-2">
 						<label class="col-12 col-form-label"><span class="text-danger">*</span> Link Google Form</label>
 						<div class="col-12">
 							<div class="input-group mb-3">
@@ -95,6 +101,12 @@
 								<input type="text" class="form-control" id="link-url" placeholder="Link Form" name="forms[link_url]" value="" autocomplete="off" />
 							</div>
 							<span class="form-text text-danger invalid-feedback">Link harus di isi</span>
+						</div>
+					</div>
+					<div class="form-group row mb-0">
+						<label class="col-12 col-form-label">Description :</label>
+						<div class="col-12">
+							<textarea class="form-control" id="description" placeholder="Description" name="forms[description]" rows="3" autocomplete="off"></textarea>
 						</div>
 					</div>
 				`);
