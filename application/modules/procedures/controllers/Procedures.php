@@ -880,6 +880,57 @@ class Procedures extends Admin_Controller
 		}
 	}
 
+	public function saveFolder()
+	{
+		$Data = $this->input->post();
+		$id = (isset($Data['folder_id']) && $Data['folder_id']) ? $Data['folder_id'] : uniqid(date('m'));
+		$Data['id'] = $id;
+		$Data['name'] = isset($Data['folder_name']) ? $Data['folder_name'] : '';
+		$Data['parent_id'] = (isset($Data['parent_id']) && $Data['parent_id']) ? $Data['parent_id'] : null;
+		$Data['company_id'] = $this->company;
+		$Data['flag_type'] = 'FOLDER';
+		unset($Data['folder_id'], $Data['folder_name']);
+
+		$check = $this->db->get_where('dir_records', ['id' => $id])->num_rows();
+		if (intval($check) == 0) {
+			$Data['created_by'] = $this->auth->user_id();
+			$Data['created_at'] = date('Y-m-d H:i:s');
+			$Data['status'] = 'PUB';
+			$success = $this->db->insert('dir_records', $Data);
+		} else {
+			$Data['modified_by'] = $this->auth->user_id();
+			$Data['modified_at'] = date('Y-m-d H:i:s');
+			$success = $this->db->update('dir_records', $Data, ['id' => $id]);
+		}
+
+		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Folder successfully saved.' : 'Folder failed to save.'), 'id' => isset($Data['procedure_id']) ? $Data['procedure_id'] : '']);
+	}
+
+	public function delete_record($id = null)
+	{
+		if ($id) {
+			$record = $this->db->get_where('dir_records', ['id' => $id])->row();
+			if ($record) {
+				$data = [
+					'status' => 'DEL',
+					'deleted_by' => $this->auth->user_id(),
+					'deleted_at' => date('Y-m-d H:i:s')
+				];
+				$success = $this->db->update('dir_records', $data, ['id' => $id]);
+				if ($record->flag_type == 'FOLDER') {
+					$this->db->update('dir_records', $data, ['parent_id' => $id]);
+				}
+				if ($success && $record->file_name) {
+					$file_path = "./directory/RECORDS/$this->company/" . $record->file_name;
+					if (file_exists($file_path)) unlink($file_path);
+				}
+				echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Data successfully deleted.' : 'Data failed to delete.')]);
+				return;
+			}
+		}
+		echo json_encode(['status' => 0, 'msg' => 'Data not found.']);
+	}
+
 	/**
 	 * List all PDF files (current + revision history) for a procedure
 	 * Returns HTML partial for modal display

@@ -226,63 +226,7 @@
 								</div>
 								<div class="tab-pane fade" id="data_record" role="tabpanel" aria-labelledby="tab_record">
 									<div id="data-records">
-										<!-- Nav tabs -->
-										<ul class="nav pb-2 nav-success nav-tabs nav-pills" id="navId">
-											<li class="nav-item">
-												<a href="javascript:void(0)" id="home" data-id="" data-procedure="<?= $procedure[0]->id; ?>" class="nav-link py-2 px-3">
-													<i class="fa fa-home mr-2"></i>
-													Home
-												</a>
-											</li>
-											<li class="nav-item">
-												<a href="javascript:void(0)" id="back" data-parent="<?= isset($parent_id) ? $parent_id : ''; ?>" data-procedure="<?= $procedure[0]->id; ?>" class="disabled nav-link py-2 px-3">
-													<i class="fa fa-arrow-up mr-2"></i>
-													Up Folder
-												</a>
-											</li>
-											<li class="nav-item">
-												<a href="javascript:void(0)" id="refresh" data-parent="<?= isset($parent_id) ? $parent_id : ''; ?>" data-procedure="<?= $procedure[0]->id; ?>" class="nav-link py-2 px-3">
-													<i class="fa fa-sync-alt mr-2"></i>
-													Refresh
-												</a>
-											</li>
-										</ul>
-										<table class="table table-condensed table-hover">
-											<thead>
-												<tr class="">
-													<th class="py-1">File Name</th>
-													<th class="py-1 text-center" width="50px"></th>
-													<th class="py-1 text-right" width="150">Last Update</th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php if (isset($records)) :
-													$no = 0;
-													foreach ($records as $lsRec) : $no++; ?>
-														<tr class="cursor-pointer record-item" data-id="<?= $lsRec->id; ?>" data-procedure="<?= $procedure[0]->id; ?>">
-															<td class="h4 text-dark d-flex align-items-center my-0 pt-1">
-																<?php if ($lsRec->flag_type == 'FOLDER') : ?>
-																	<i class="fa fa-folder text-warning fa-2x mr-4"></i>
-																<?php else : ?>
-																	<i class="fa fa-file-alt text-info fa-2x mr-4"></i>
-																<?php endif; ?>
-																<span class="mt-2"><?= $lsRec->name; ?></span>
-															</td>
-															<td class="h6 text-center pt-1" style="vertical-align: middle;">
-																<?php if ($lsRec->flag_type == 'FILE') : ?>
-																	<button type="button" class="btn btn-icon btn-xs shadow-xs btn-info view-record" data-id="<?= $lsRec->id; ?>" data-toggle="tooltip" data-theme="dark" title="View Document"><i class="fa fa-eye"></i></button>
-																<?php endif; ?>
-															</td>
-															<td style="vertical-align: middle;" class="text-right pt-1"><?= ($lsRec->modified_at) ?: $lsRec->created_at; ?></td>
-														</tr>
-													<?php endforeach;
-												else : ?>
-													<tr>
-														<td colspan="2" class="text-center h4"><i>No data available</i></td>
-													</tr>
-												<?php endif; ?>
-											</tbody>
-										</table>
+										<?php $this->load->view('procedures/records'); ?>
 									</div>
 								</div>
 							</div>
@@ -588,6 +532,18 @@
 			Swal.fire('Warning!!', 'Not available data to process', 'waring', 2000);
 		}
 	})
+
+	$(document).on('click', '.record-breadcrumb', function() {
+		const id = $(this).data('id') || '';
+		const procedure_id = $(this).data('procedure');
+		let url = '';
+		if (id) {
+			url = siteurl + active_controller + 'getRecords/find/' + procedure_id + '/' + id;
+		} else {
+			url = siteurl + active_controller + 'getRecords/home/' + procedure_id;
+		}
+		$('#data-records').load(url);
+	});
 
 	$(document).on('click', '#home', function() {
 		const procedure_id = $(this).data('procedure')

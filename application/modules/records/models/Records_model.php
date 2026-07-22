@@ -356,4 +356,20 @@ class Records_model extends BF_Model
         }
         return $descendants;
     }
+
+    public function deleteDescendants($folderId, $userId)
+    {
+        $children = $this->db->get_where('dir_records', ['parent_id' => $folderId, 'status !=' => 'DEL'])->result();
+        foreach ($children as $child) {
+            $data = [
+                'status'     => 'DEL',
+                'deleted_by' => $userId,
+                'deleted_at' => date('Y-m-d H:i:s')
+            ];
+            $this->db->update('dir_records', $data, ['id' => $child->id]);
+            if ($child->flag_type == 'FOLDER') {
+                $this->deleteDescendants($child->id, $userId);
+            }
+        }
+    }
 }
