@@ -11,7 +11,8 @@
 					<!-- Section 1: Header -->
 					<div class="mb-5">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-file-alt text-primary mr-2"></i>Informasi Header</h5>
-						<table class="table table-bordered table-sm">
+						<div class="table-responsive">
+						<table class="table table-bordered table-sm" style="min-width:400px;">
 							<tr>
 								<th width="200">ID Program</th>
 								<td><?= $program->id; ?></td>
@@ -37,6 +38,7 @@
 								<td><?= isset($program->created_at) ? date('d-m-Y H:i', strtotime($program->created_at)) : '-'; ?></td>
 							</tr>
 						</table>
+						</div>
 					</div>
 
 					<!-- Section 2: Evaluasi Audit Sebelumnya (hidden for now) -->
@@ -44,7 +46,8 @@
 					<div class="mb-5">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-history text-primary mr-2"></i>Evaluasi Audit Sebelumnya</h5>
 						<?php if (!empty($evaluations)) : ?>
-							<table class="table table-bordered table-sm table-hover">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm table-hover" style="min-width:600px;">
 								<thead class="table-light">
 									<tr class="text-center">
 										<th width="40">No</th>
@@ -73,6 +76,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada data evaluasi audit sebelumnya.</em></p>
 						<?php endif; ?>
@@ -83,7 +87,8 @@
 					<div class="mb-5">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-exclamation-triangle text-primary mr-2"></i>Improvement Program Audit</h5>
 						<?php if (!empty($critical_issues)) : ?>
-							<table class="table table-bordered table-sm table-hover">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm table-hover" style="min-width:600px;">
 								<thead class="table-light">
 									<tr class="text-center">
 										<th width="40">No</th>
@@ -101,6 +106,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada critical issue.</em></p>
 						<?php endif; ?>
@@ -121,7 +127,8 @@
 								$grouped_opp[$key]['items'][] = $opp;
 							}
 							?>
-							<table class="table table-bordered table-sm table-hover">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm table-hover" style="min-width:600px;">
 								<thead class="table-light">
 									<tr class="text-center">
 										<th width="40">No</th>
@@ -145,6 +152,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada isu proses.</em></p>
 						<?php endif; ?>
@@ -154,7 +162,8 @@
 					<div class="mb-5">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-calendar-alt text-primary mr-2"></i>Jadwal Audit</h5>
 						<?php if (!empty($schedules)) : ?>
-							<table class="table table-bordered table-sm table-hover">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm table-hover" style="min-width:800px;">
 								<thead class="table-light">
 									<tr class="text-center">
 										<th width="40">No</th>
@@ -194,6 +203,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada jadwal audit.</em></p>
 						<?php endif; ?>
