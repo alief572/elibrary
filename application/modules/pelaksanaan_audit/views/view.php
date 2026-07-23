@@ -12,20 +12,23 @@
 					<!-- HEADER -->
 					<div class="mb-4">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-calendar-alt text-primary mr-2"></i><span class="text-primary">Header</span></h5>
-						<table class="table table-bordered table-sm">
+						<div class="table-responsive">
+						<table class="table table-bordered table-sm" style="min-width:400px;">
 							<tr><th width="200">Prosedur</th><td><?= !empty($schedule->requirement_name) ? htmlspecialchars($schedule->requirement_name) : (!empty($schedule->process_name) ? strip_tags($schedule->process_name) : htmlspecialchars($schedule->process_name_free)); ?></td></tr>
 							<tr><th>Date</th><td><?= date('d/m/Y', strtotime($schedule->audit_date)); ?></td></tr>
 							<tr><th>Department - Company</th><td><?= isset($schedule->department_name) ? $schedule->department_name : '-'; ?></td></tr>
 							<tr><th>Auditor</th><td><?= isset($schedule->auditor_name) ? $schedule->auditor_name : '-'; ?></td></tr>
 							<tr><th>Auditee</th><td><?= isset($audit_data->auditee_text) && $audit_data->auditee_text ? nl2br(htmlspecialchars($audit_data->auditee_text)) : '-'; ?></td></tr>
 						</table>
+						</div>
 					</div>
 
 					<!-- ISU PROSES -->
 					<div class="mb-4">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-lightbulb text-warning mr-2"></i><span class="text-warning">Isu Proses</span></h5>
 						<?php if (!empty($issues)) : ?>
-							<table class="table table-bordered table-sm table-hover">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm table-hover" style="min-width:600px;">
 								<thead class="table-light"><tr class="text-center"><th width="200">Issue</th><th>Investigasi</th></tr></thead>
 								<tbody>
 									<?php foreach ($issues as $issue) : ?>
@@ -33,6 +36,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada isu proses.</em></p>
 						<?php endif; ?>
@@ -98,7 +102,8 @@
 						<!-- Conformity (hanya Strong Point) -->
 						<h6 class="font-weight-bold mt-3 mb-2">Conformity / Strong Point</h6>
 						<?php if (!empty($audit_conformity)) : ?>
-							<table class="table table-bordered table-sm">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm" style="min-width:400px;">
 								<thead class="text-center table-light"><tr><th width="30">No</th><th>Strong Point</th></tr></thead>
 								<tbody>
 									<?php foreach ($audit_conformity as $k => $cf) : $k++; ?>
@@ -106,6 +111,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada data conformity.</em></p>
 						<?php endif; ?>
@@ -114,7 +120,8 @@
 						<?php if (empty($schedule->requirement_id)) : ?>
 						<h6 class="font-weight-bold mt-3 mb-2">Temuan</h6>
 						<?php if (!empty($audit_temuan)) : ?>
-							<table class="table table-bordered table-sm">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm" style="min-width:800px;">
 								<thead class="text-center table-light">
 									<tr><th width="30">No</th><th>Temuan</th><th width="100">Kategori</th><th width="130">Reference Standard</th><th style="width:400px;min-width:400px;max-width:400px;">Pasal</th><th width="80">Evidence</th></tr>
 								</thead>
@@ -146,6 +153,7 @@
 									<?php endforeach; ?>
 								</tbody>
 							</table>
+							</div>
 						<?php else : ?>
 							<p class="text-muted"><em>Tidak ada data temuan.</em></p>
 						<?php endif; ?>

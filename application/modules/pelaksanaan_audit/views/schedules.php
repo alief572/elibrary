@@ -8,8 +8,8 @@
 				</div>
 				<div class="card-body">
 					<!-- Header Info -->
-					<div class="mb-4">
-						<table class="table table-bordered table-sm" style="max-width:600px;">
+					<div class="mb-4 table-responsive">
+						<table class="table table-bordered table-sm" style="min-width:400px; max-width:600px;">
 							<tr><th width="180">ID Program</th><td><?= $program->id; ?></td></tr>
 							<tr><th>Company</th><td><?= $program->company; ?></td></tr>
 							<tr><th>Lead Auditor</th><td><?= $program->auditor_name; ?></td></tr>
