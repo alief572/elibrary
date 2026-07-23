@@ -26,7 +26,8 @@
 						<!-- ================ HEADER INFO ================ -->
 						<div class="mb-4">
 							<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-calendar-alt text-primary mr-2"></i><span class="text-primary">Header</span></h5>
-							<table class="table table-bordered table-sm">
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm" style="min-width:400px;">
 								<tr><th width="200">Prosedur</th><td><?= !empty($schedule->requirement_name) ? htmlspecialchars($schedule->requirement_name) : (!empty($schedule->process_name) ? strip_tags($schedule->process_name) : htmlspecialchars($schedule->process_name_free)); ?></td></tr>
 								<tr><th>Date</th><td><?= date('d/m/Y', strtotime($schedule->audit_date)); ?></td></tr>
 								<tr><th>Department - Company</th><td><?= isset($schedule->department_name) ? $schedule->department_name : '-'; ?></td></tr>
@@ -36,13 +37,15 @@
 									<td><textarea name="auditee_text" class="form-control form-control-sm" rows="3" placeholder="Input Auditee..."><?= isset($audit_data->auditee_text) ? htmlspecialchars($audit_data->auditee_text) : ''; ?></textarea></td>
 								</tr>
 							</table>
+							</div>
 						</div>
 
 						<!-- ================ ISU PROSES ================ -->
 						<div class="mb-4">
 							<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-lightbulb text-warning mr-2"></i><span class="text-warning">Isu Proses</span></h5>
 							<?php if (!empty($issues)) : ?>
-								<table class="table table-bordered table-sm table-hover">
+								<div class="table-responsive">
+								<table class="table table-bordered table-sm table-hover" style="min-width:600px;">
 									<thead class="table-light"><tr class="text-center"><th width="200">Issue</th><th>Investigasi</th></tr></thead>
 									<tbody>
 										<?php foreach ($issues as $issue) : ?>
@@ -50,6 +53,7 @@
 										<?php endforeach; ?>
 									</tbody>
 								</table>
+								</div>
 							<?php else : ?>
 								<p class="text-muted"><em>Tidak ada isu proses yang terkait.</em></p>
 							<?php endif; ?>
