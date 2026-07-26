@@ -1,83 +1,89 @@
 <div class="row">
-	<div class="col-6">
-		<table class="table table-borderless">
-			<tbody>
-				<tr>
-					<td width="150">Nomor</td>
-					<td width="10">:</td>
-					<td width=""><?= $data->number; ?></td>
-				</tr>
-				<tr>
-					<td>Kelompok</td>
-					<td>:</td>
-					<td><?= $data->group_name; ?></td>
-				</tr>
-				<tr>
-					<td>Jenis Alat</td>
-					<td>:</td>
-					<td><?= $data->guide_detail_data_name; ?></td>
-				</tr>
-				<tr>
-					<td width="">Metode</td>
-					<td width="">:</td>
-					<td width=""><?php if ($data->methode) foreach (json_decode($data->methode) as $mth) echo "<span class='badge badge-success'>$methode[$mth]</span> "; ?></td>
-				</tr>
-				<tr>
-					<td>Referensi</td>
-					<td>:</td>
-					<td>
-						<?php if ($data->reference) : ?>
-							<ul style="list-style-type: none;" class="px-0">
-								<?php foreach (json_decode($data->reference) as $ref) : ?>
-									<li><?= (isset($ArrStd[$ref])) ? $ArrStd[$ref] : ''; ?></li>
-								<?php endforeach; ?>
-							</ul>
-						<?php endif; ?>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+	<div class="col-12 col-md-6">
+		<div class="table-responsive">
+			<table class="table table-borderless">
+				<tbody>
+					<tr>
+						<td width="150">Nomor</td>
+						<td width="10">:</td>
+						<td width=""><?= $data->number; ?></td>
+					</tr>
+					<tr>
+						<td>Kelompok</td>
+						<td>:</td>
+						<td><?= $data->group_name; ?></td>
+					</tr>
+					<tr>
+						<td>Jenis Alat</td>
+						<td>:</td>
+						<td><?= $data->guide_detail_data_name; ?></td>
+					</tr>
+					<tr>
+						<td width="">Metode</td>
+						<td width="">:</td>
+						<td width=""><?php if ($data->methode) foreach (json_decode($data->methode) as $mth) echo "<span class='badge badge-success'>$methode[$mth]</span> "; ?></td>
+					</tr>
+					<tr>
+						<td>Referensi</td>
+						<td>:</td>
+						<td>
+							<?php if ($data->reference) : ?>
+								<ul style="list-style-type: none;" class="px-0">
+									<?php foreach (json_decode($data->reference) as $ref) : ?>
+										<li><?= (isset($ArrStd[$ref])) ? $ArrStd[$ref] : ''; ?></li>
+									<?php endforeach; ?>
+								</ul>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
-	<div class="col-6">
-		<table class="table table-borderless">
-			<tbody>
-				<tr>
-					<td width="150">Tanggal Terbit</td>
-					<td width="10">:</td>
-					<td><?= $data->publish_date; ?></td>
-				</tr>
-				<tr>
-					<td>Tanggal Revisi</td>
-					<td>:</td>
-					<td><?= $data->revision_date; ?></td>
-				</tr>
-				<tr>
-					<td>Nomor Revisi</td>
-					<td>:</td>
-					<td><?= $data->revision_number; ?></td>
-				</tr>
-			</tbody>
-		</table>
-		<table class="table table-sm">
-			<thead class="table-light">
-				<tr>
-					<th class="text-center py-1">Sub Alat <span class="text-danger">*</span></th>
-					<th class="text-center py-1">Rentang Ukur <span class="text-danger">*</span></th>
-					<th class="text-center py-1">Ketidakpastian</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ($ArrCombine) : ?>
-					<?php foreach ($ArrCombine as $k => $rm) : reset($ArrCombine) ?>
-						<tr>
-							<td class="text-center"><?= (isset($ArrSubTools[$k]) && $ArrSubTools[$k] ? $ArrSubTools[$k] : ''); ?></td>
-							<td class="text-center"><?= $k; ?></td>
-							<td class="text-center"><?= $rm; ?></td>
-						</tr>
-				<?php endforeach;
-				endif; ?>
-			</tbody>
-		</table>
+	<div class="col-12 col-md-6">
+		<div class="table-responsive">
+			<table class="table table-borderless">
+				<tbody>
+					<tr>
+						<td width="150">Tanggal Terbit</td>
+						<td width="10">:</td>
+						<td><?= $data->publish_date; ?></td>
+					</tr>
+					<tr>
+						<td>Tanggal Revisi</td>
+						<td>:</td>
+						<td><?= $data->revision_date; ?></td>
+					</tr>
+					<tr>
+						<td>Nomor Revisi</td>
+						<td>:</td>
+						<td><?= $data->revision_number; ?></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="table-responsive">
+			<table class="table table-sm">
+				<thead class="table-light">
+					<tr>
+						<th class="text-center py-1">Sub Alat <span class="text-danger">*</span></th>
+						<th class="text-center py-1">Rentang Ukur <span class="text-danger">*</span></th>
+						<th class="text-center py-1">Ketidakpastian</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ($ArrCombine) : ?>
+						<?php foreach ($ArrCombine as $k => $rm) : reset($ArrCombine) ?>
+							<tr>
+								<td class="text-center"><?= (isset($ArrSubTools[$k]) && $ArrSubTools[$k] ? $ArrSubTools[$k] : ''); ?></td>
+								<td class="text-center"><?= $k; ?></td>
+								<td class="text-center"><?= $rm; ?></td>
+							</tr>
+					<?php endforeach;
+					endif; ?>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
 <hr>
@@ -88,35 +94,37 @@
 </div>
 
 <!-- Nav tabs -->
-<ul class="nav nav-tabs nav-fill nav-success nav-pills mb-3 border-0" id="myTab" role="tablist">
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder active w-100" id="IK-tab" data-toggle="tab" data-target="#IK" type="button" role="tab" aria-controls="IK" aria-selected="true">IK</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="CMC-tab" data-toggle="tab" data-target="#CMC" type="button" role="tab" aria-controls="CMC" aria-selected="false">CMC</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="Template-tab" data-toggle="tab" data-target="#Template" type="button" role="tab" aria-controls="Template" aria-selected="false">Template</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="UBLK-tab" data-toggle="tab" data-target="#UBLK" type="button" role="tab" aria-controls="UBLK" aria-selected="false">UBLK</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="Sertifikat-tab" data-toggle="tab" data-target="#Sertifikat" type="button" role="tab" aria-controls="Sertifikat" aria-selected="false">Format Sertifikat</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="Analisa-tab" data-toggle="tab" data-target="#Analisa" type="button" role="tab" aria-controls="Analisa" aria-selected="false">Analisa Drift</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="SertCalibrator-tab" data-toggle="tab" data-target="#SertCalibrator" type="button" role="tab" aria-controls="SertCalibrator" aria-selected="false">Sertifikat Calibrator</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="CekAntara-tab" data-toggle="tab" data-target="#CekAntara" type="button" role="tab" aria-controls="CekAntara" aria-selected="false">Cek Antara</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link font-weight-bolder w-100" id="Video-tab" data-toggle="tab" data-target="#Video" type="button" role="tab" aria-controls="Video" aria-selected="false">Video</button>
-	</li>
-</ul>
+<div class="table-responsive pb-2">
+	<ul class="nav nav-tabs nav-fill nav-success nav-pills mb-3 border-0 flex-nowrap text-nowrap" id="myTab" role="tablist" style="min-width: max-content;">
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder active w-100" id="IK-tab" data-toggle="tab" data-target="#IK" type="button" role="tab" aria-controls="IK" aria-selected="true">IK</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="CMC-tab" data-toggle="tab" data-target="#CMC" type="button" role="tab" aria-controls="CMC" aria-selected="false">CMC</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="Template-tab" data-toggle="tab" data-target="#Template" type="button" role="tab" aria-controls="Template" aria-selected="false">Template</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="UBLK-tab" data-toggle="tab" data-target="#UBLK" type="button" role="tab" aria-controls="UBLK" aria-selected="false">UBLK</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="Sertifikat-tab" data-toggle="tab" data-target="#Sertifikat" type="button" role="tab" aria-controls="Sertifikat" aria-selected="false">Format Sertifikat</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="Analisa-tab" data-toggle="tab" data-target="#Analisa" type="button" role="tab" aria-controls="Analisa" aria-selected="false">Analisa Drift</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="SertCalibrator-tab" data-toggle="tab" data-target="#SertCalibrator" type="button" role="tab" aria-controls="SertCalibrator" aria-selected="false">Sertifikat Calibrator</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="CekAntara-tab" data-toggle="tab" data-target="#CekAntara" type="button" role="tab" aria-controls="CekAntara" aria-selected="false">Cek Antara</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link font-weight-bolder w-100" id="Video-tab" data-toggle="tab" data-target="#Video" type="button" role="tab" aria-controls="Video" aria-selected="false">Video</button>
+		</li>
+	</ul>
+</div>
 
 <!-- Tab panes -->
 <div class="tab-content ">
