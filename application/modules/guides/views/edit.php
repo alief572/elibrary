@@ -70,7 +70,7 @@
 								</div>
 
 							</div>
-							<div class="col-6">
+							<div class="col-md-6">
 								<div class="row mb-3">
 									<label class="col-4 col-form-label">Tanggal Terbit</label>
 									<div class="col-8">
@@ -90,29 +90,31 @@
 									</div>
 								</div>
 								<div class="row mb-3">
-									<table id="list-range" class="table table-bordered table-sm table-condensed">
-										<thead class="table-light">
-											<tr>
-												<th class="text-center py-1">Sub Alat <span class="text-danger">*</span></th>
-												<th class="text-center py-1">Rentang Ukur <span class="text-danger">*</span></th>
-												<th class="text-center py-1">Ketidakpastian</th>
-												<th class="text-center py-1">Opsi</th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php if (count($ArrRange) > 0) : ?>
-												<?php foreach ($ArrRange as $k => $rm) : ?>
-													<tr>
-														<td><input type="text" name="sub_tools[]" value="<?= (isset($ArrSubTools[$k]) && $ArrSubTools[$k] ? $ArrSubTools[$k] : ''); ?>" class="form-control border-0 mb-0 p-1"></td>
-														<td><input type="text" name="range_measure[]" value="<?= $rm; ?>" placeholder="0mm - 0mm" class="form-control border-0 mb-0 p-1"></td>
-														<td><input type="text" name="uncertainty[]" value="<?= ($ArrUncert[$k]); ?>" placeholder="0mm" class="form-control border-0 mb-0 p-1"></td>
-														<td class="text-center"><button type="button" class="btn btn-icon btn-xs btn-light-danger remove-range-list"><i class="fa fa-times fa-sm"></i></button></td>
-													</tr>
-											<?php endforeach;
-											endif; ?>
-										</tbody>
-									</table>
-									<button type="button" id="add-range" class="btn btn-info btn-sm px-2 py-1"><i class="fa fa-plus fa-sm"></i> Add Range</button>
+									<div class="table-responsive w-100">
+										<table id="list-range" class="table table-bordered table-sm table-condensed">
+											<thead class="table-light">
+												<tr>
+													<th class="text-center py-1">Sub Alat <span class="text-danger">*</span></th>
+													<th class="text-center py-1">Rentang Ukur <span class="text-danger">*</span></th>
+													<th class="text-center py-1">Ketidakpastian</th>
+													<th class="text-center py-1">Opsi</th>
+												</tr>
+											</thead>
+											<tbody>
+												<?php if (count($ArrRange) > 0) : ?>
+													<?php foreach ($ArrRange as $k => $rm) : ?>
+														<tr>
+															<td><input type="text" name="sub_tools[]" value="<?= (isset($ArrSubTools[$k]) && $ArrSubTools[$k] ? $ArrSubTools[$k] : ''); ?>" class="form-control border-0 mb-0 p-1"></td>
+															<td><input type="text" name="range_measure[]" value="<?= $rm; ?>" placeholder="0mm - 0mm" class="form-control border-0 mb-0 p-1"></td>
+															<td><input type="text" name="uncertainty[]" value="<?= ($ArrUncert[$k]); ?>" placeholder="0mm" class="form-control border-0 mb-0 p-1"></td>
+															<td class="text-center"><button type="button" class="btn btn-icon btn-xs btn-light-danger remove-range-list"><i class="fa fa-times fa-sm"></i></button></td>
+														</tr>
+												<?php endforeach;
+												endif; ?>
+											</tbody>
+										</table>
+									</div>
+									<button type="button" id="add-range" class="btn btn-info btn-sm px-2 py-1 mt-2"><i class="fa fa-plus fa-sm"></i> Add Range</button>
 								</div>
 							</div>
 						</div>
@@ -123,35 +125,37 @@
 						</div>
 
 						<!-- Nav tabs -->
-						<ul class="nav nav-tabs nav-fill nav-success nav-pills mb-3 border-0" id="myTab" role="tablist">
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder active w-100" id="IK-tab" data-toggle="tab" data-target="#IK" type="button" role="tab" aria-controls="IK" aria-selected="true">IK</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="CMC-tab" data-toggle="tab" data-target="#CMC" type="button" role="tab" aria-controls="CMC" aria-selected="false">CMC</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="Template-tab" data-toggle="tab" data-target="#Template" type="button" role="tab" aria-controls="Template" aria-selected="false">Template</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="UBLK-tab" data-toggle="tab" data-target="#UBLK" type="button" role="tab" aria-controls="UBLK" aria-selected="false">UBLK</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="Sertifikat-tab" data-toggle="tab" data-target="#Sertifikat" type="button" role="tab" aria-controls="Sertifikat" aria-selected="false">Format Sertifikat</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="Analisa-tab" data-toggle="tab" data-target="#Analisa" type="button" role="tab" aria-controls="Analisa" aria-selected="false">Analisa Drift</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="SertCalibrator-tab" data-toggle="tab" data-target="#SertCalibrator" type="button" role="tab" aria-controls="SertCalibrator" aria-selected="false">Sertifikat Calibrator</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="CekAntara-tab" data-toggle="tab" data-target="#CekAntara" type="button" role="tab" aria-controls="CekAntara" aria-selected="false">Cek Antara</button>
-							</li>
-							<li class="nav-item" role="presentation">
-								<button class="nav-link font-weight-bolder w-100" id="Video-tab" data-toggle="tab" data-target="#Video" type="button" role="tab" aria-controls="Video" aria-selected="false">Video</button>
-							</li>
-						</ul>
+						<div class="table-responsive pb-2">
+							<ul class="nav nav-tabs nav-fill nav-success nav-pills mb-3 border-0 flex-nowrap text-nowrap" id="myTab" role="tablist" style="min-width: max-content;">
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder active w-100" id="IK-tab" data-toggle="tab" data-target="#IK" type="button" role="tab" aria-controls="IK" aria-selected="true">IK</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="CMC-tab" data-toggle="tab" data-target="#CMC" type="button" role="tab" aria-controls="CMC" aria-selected="false">CMC</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="Template-tab" data-toggle="tab" data-target="#Template" type="button" role="tab" aria-controls="Template" aria-selected="false">Template</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="UBLK-tab" data-toggle="tab" data-target="#UBLK" type="button" role="tab" aria-controls="UBLK" aria-selected="false">UBLK</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="Sertifikat-tab" data-toggle="tab" data-target="#Sertifikat" type="button" role="tab" aria-controls="Sertifikat" aria-selected="false">Format Sertifikat</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="Analisa-tab" data-toggle="tab" data-target="#Analisa" type="button" role="tab" aria-controls="Analisa" aria-selected="false">Analisa Drift</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="SertCalibrator-tab" data-toggle="tab" data-target="#SertCalibrator" type="button" role="tab" aria-controls="SertCalibrator" aria-selected="false">Sertifikat Calibrator</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="CekAntara-tab" data-toggle="tab" data-target="#CekAntara" type="button" role="tab" aria-controls="CekAntara" aria-selected="false">Cek Antara</button>
+								</li>
+								<li class="nav-item" role="presentation">
+									<button class="nav-link font-weight-bolder w-100" id="Video-tab" data-toggle="tab" data-target="#Video" type="button" role="tab" aria-controls="Video" aria-selected="false">Video</button>
+								</li>
+							</ul>
+						</div>
 
 						<!-- Tab panes -->
 						<div class="tab-content ">
