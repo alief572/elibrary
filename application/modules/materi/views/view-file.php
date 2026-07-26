@@ -15,8 +15,15 @@
 <div class="tab-content">
 	<div class="tab-pane active p-0 border border-top-0 rounded-bottom" id="upload-document" role="tabpanel" aria-labelledby="upload-file-tab">
 		<?php if ($data->document) : ?>
-			<div style="width:98%;background-color: aquamarine; position: absolute;opacity: 0;height:103%"></div>
-			<iframe style="pointer-events:visibleStroke;" onclick="cek(e)" oncontextmenu="cek(r)" src="<?= base_url("directory/MATERI/$data->company_id/$data->document"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="550"></iframe>
+			<div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap">
+				<span class="text-muted small"><i class="fa fa-info-circle mr-1"></i> Preview Dokumen PDF</span>
+				<a href="<?= base_url("directory/MATERI/$data->company_id/$data->document"); ?>" target="_blank" class="btn btn-sm btn-primary my-1">
+					Buka / Download PDF <i class="fas fa-external-link-alt ml-1" aria-hidden="true"></i>
+				</a>
+			</div>
+			<div class="position-relative w-100" style="height: 550px;">
+				<iframe src="<?= base_url("directory/MATERI/$data->company_id/$data->document"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="550"></iframe>
+			</div>
 		<?php else : ?>
 			<h5 class="text-center mt-5">~ Not available data ~</h5>
 		<?php endif; ?>
