@@ -1,6 +1,6 @@
 <form id="form-upload">
 	<div class="row">
-		<div class="col-6">
+		<div class="col-12 col-md-6">
 			<div class="row">
 				<label class="col-12 col-form-label">Document Name :</label>
 				<div class="col-12">
@@ -97,7 +97,7 @@
 			</div>
 		</div>
 
-		<div class="col-6">
+		<div class="col-12 col-md-6">
 			<div class="row">
 				<label class="col-12 col-form-label">Nomor :</label>
 				<div class="col-12">
