@@ -19,8 +19,9 @@
 				<div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
 					<div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
 					<ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">
-						<li>Browser mobile (Android Chrome / Safari iOS) tidak mendukung ekstensi <em>Office Editing</em> untuk merender file Excel di dalam <code>iframe</code>.</li>
-						<li>Server ini berada di jaringan lokal (intranet), sehingga cloud viewer (seperti Google Docs/Office Online) tidak dapat mengunduh dan merender file secara internal.</li>
+						<li>Browser di HP/Mobile tidak memiliki fitur renderer bawaan untuk menampilkan file Excel/Word di dalam frame browser.</li>
+						<li>Browser mobile (Android Chrome / Safari iOS) juga tidak mendukung ekstensi browser seperti <em>Office Editing</em>.</li>
+						<li>Server ini berada di jaringan lokal (intranet), sehingga cloud viewer (seperti Google Docs/Office Online) tidak dapat mengakses file ini dari luar.</li>
 					</ul>
 					<div class="border-top pt-2 mt-2 small text-dark">
 						<i class="fas fa-lightbulb text-warning mr-1"></i> <strong>Saran:</strong> Untuk membuka & melihat preview file Excel/Word langsung di browser tanpa mengunduh, disarankan menggunakan browser di <strong>PC Desktop/Laptop</strong> yang terinstall ekstensi <strong>Office Editing for Docs, Sheets & Slides</strong>.
