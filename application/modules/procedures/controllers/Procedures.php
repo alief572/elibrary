@@ -169,6 +169,8 @@ class Procedures extends Admin_Controller
 		$getForms = $this->ProModel->getFormsByProcedure($id, ''); // Show all
 		$getGuides = $this->ProModel->getGuidesByProcedure($id, '');
 		$jabatan = $this->ProModel->getPositions();
+		$history = $this->ProModel->getDirectoryLogs($id);
+		$revisions = $this->ProModel->getProcedureRevisions($id);
 		$ArrUsr = $ArrJab = $ArrForms = $ArrGuides = [];
 
 		foreach ($getForms as $frm) {
@@ -184,11 +186,28 @@ class Procedures extends Admin_Controller
 			$ArrJab[$jab->id] = $jab;
 		}
 
+		$companyId = (isset($Data->company_id) && $Data->company_id) ? $Data->company_id : $this->company;
+		$Cross = $this->ProModel->getCrossReferences($id, $companyId);
+		$ArrData = $ArrStd = [];
+		if ($Cross) {
+			foreach ($Cross as $dt) {
+				$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
+				$ArrData['standards'][$dt->requirement_id][] = $dt;
+			}
+			foreach ($Cross as $dtstd) {
+				$ArrStd[$dtstd->requirement_id] = $dtstd;
+			}
+		}
+
+		$company = $this->ProModel->getCompany($companyId);
+		$company_name = (isset($company->nm_perusahaan) ? $company->nm_perusahaan : '');
+
 		if ($Data) {
 			$Data_detail = $this->ProModel->getProcedureDetails($id);
 			$this->template->set([
 				'title' => 'Procedures',
 				'data' => $Data,
+				'file' => $Data,
 				'detail' => $Data_detail,
 				'users' => $users,
 				'jabatan' => $jabatan,
@@ -196,6 +215,14 @@ class Procedures extends Admin_Controller
 				'ArrJab' => $ArrJab,
 				'ArrForms' => $ArrForms,
 				'ArrGuides' => $ArrGuides,
+				'history' => $history,
+				'revisions' => $revisions,
+				'sts' => $this->sts,
+				'Cross' => $Cross,
+				'ArrData' => $ArrData,
+				'ArrStd' => $ArrStd,
+				'company_name' => $company_name,
+				'view_data' => true,
 			]);
 			$this->template->render('view');
 		} else {

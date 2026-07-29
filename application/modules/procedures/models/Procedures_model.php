@@ -350,4 +350,98 @@ class Procedures_model extends BF_Model
     {
         return $this->db->get_where($table, ['id' => $id])->row();
     }
+
+    public function getDirectoryLogs($id)
+    {
+        return $this->db->select('directory_log.*, users.full_name')
+            ->from('directory_log')
+            ->join('users', 'users.id_user = directory_log.updated_by', 'left')
+            ->where('directory_log.directory_id', $id)
+            ->order_by('directory_log.updated_at', 'ASC')
+            ->get()
+            ->result();
+    }
+
+    public function getProcedureRevisions($procedureId)
+    {
+        if (!$this->db->table_exists('procedure_history_revisions')) {
+            $this->_createProcedureHistoryRevisionsTable();
+        }
+
+        $revisions = $this->db->select('r.*, u1.full_name as creator_name, u2.full_name as approver_name')
+            ->from('procedure_history_revisions r')
+            ->join('users u1', 'u1.id_user = r.created_by', 'left')
+            ->join('users u2', 'u2.id_user = r.approved_by', 'left')
+            ->where('r.procedure_id', $procedureId)
+            ->order_by('r.revision_no', 'ASC')
+            ->get()
+            ->result();
+
+        // Auto-backfill for existing published procedure if missing from procedure_history_revisions
+        if (empty($revisions)) {
+            $procedure = $this->getProcedureById($procedureId, isset($this->company) ? $this->company : null);
+            if ($procedure && (in_array($procedure->status, ['PUB', 'APV']) || !empty($procedure->approved_at))) {
+                $revNo = (int)(isset($procedure->revision) ? $procedure->revision : 0);
+                $companyId = isset($procedure->company_id) ? $procedure->company_id : (isset($this->company) ? $this->company : 1);
+                $fileName = "procedure_{$procedureId}.pdf";
+                $filePath = "directory/PROCEDURES_PDF/{$companyId}/{$fileName}";
+                $createdBy = !empty($procedure->prepared_by) ? $procedure->prepared_by : (!empty($procedure->created_by) ? $procedure->created_by : 'ADMIN');
+                $approvedBy = !empty($procedure->approved_by) ? $procedure->approved_by : $createdBy;
+                $approvedAt = !empty($procedure->approved_at) ? $procedure->approved_at : (!empty($procedure->created_at) ? $procedure->created_at : date('Y-m-d H:i:s'));
+                $createdAt = !empty($procedure->created_at) ? $procedure->created_at : date('Y-m-d H:i:s');
+                $desc = "Initial Published Document (Revisi {$revNo})";
+
+                $revRecord = [
+                    'procedure_id' => $procedureId,
+                    'revision_no'  => $revNo,
+                    'description'  => $desc,
+                    'file_name'    => $fileName,
+                    'file_path'    => $filePath,
+                    'created_by'   => $createdBy,
+                    'approved_by'  => $approvedBy,
+                    'approved_at'  => $approvedAt,
+                    'created_at'   => $createdAt,
+                ];
+                $this->saveProcedureRevision($revRecord);
+
+                $revisions = $this->db->select('r.*, u1.full_name as creator_name, u2.full_name as approver_name')
+                    ->from('procedure_history_revisions r')
+                    ->join('users u1', 'u1.id_user = r.created_by', 'left')
+                    ->join('users u2', 'u2.id_user = r.approved_by', 'left')
+                    ->where('r.procedure_id', $procedureId)
+                    ->order_by('r.revision_no', 'ASC')
+                    ->get()
+                    ->result();
+            }
+        }
+
+        return $revisions;
+    }
+
+    public function saveProcedureRevision($data)
+    {
+        if (!$this->db->table_exists('procedure_history_revisions')) {
+            $this->_createProcedureHistoryRevisionsTable();
+        }
+        return $this->db->insert('procedure_history_revisions', $data);
+    }
+
+    private function _createProcedureHistoryRevisionsTable()
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS `procedure_history_revisions` (
+          `id` INT AUTO_INCREMENT PRIMARY KEY,
+          `procedure_id` VARCHAR(50) NOT NULL,
+          `revision_no` INT NOT NULL DEFAULT 0,
+          `description` TEXT NULL,
+          `file_name` VARCHAR(255) NULL,
+          `file_path` VARCHAR(255) NULL,
+          `created_by` VARCHAR(50) NOT NULL,
+          `approved_by` VARCHAR(50) NULL,
+          `approved_at` DATETIME NULL,
+          `created_at` DATETIME NOT NULL,
+          INDEX (`procedure_id`),
+          INDEX (`revision_no`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        return $this->db->query($sql);
+    }
 }

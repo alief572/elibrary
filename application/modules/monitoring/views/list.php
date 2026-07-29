@@ -8,14 +8,15 @@
         <?= $title; ?>
       </div>
     </div>
-    <div class="input-group mb-3 w-25">
-      <span class="input-group-text rounded-right-0 "><i class="fa fa-search"></i></span>
-      <input type="text" name="search" id="search" class="form-control w-300" placeholder="Search">
+    <div class="input-group mb-3 w-100 w-md-25" style="max-width: 350px;">
+      <span class="input-group-text rounded-right-0"><i class="fa fa-search"></i></span>
+      <input type="text" name="search" id="search" class="form-control" placeholder="Search">
     </div>
     <div class="card">
       <div class="pt-1 px-3 card-body">
-        <!-- PRODEDURES -->
-        <table class="table table-hover datatable">
+        <!-- PROCEDURES -->
+        <div class="table-responsive">
+          <table class="table table-hover datatable w-100">
           <thead>
             <tr class="table-light">
               <th width="30px">No</th>
@@ -37,10 +38,10 @@
                 <tr>
                   <td style="vertical-align: middle;" class="text-center"><?= $n; ?></td>
                   <td style="vertical-align: middle;"><?= $list->nomor; ?></td>
-                  <td class="text-dark-75" style="vertical-align: middle;">
-                    <div class="d-flex justify-content-start">
-                      <i class='text-success fa fa-file-alt mr-2 fa-2x py-0' style='vertical-align:middle;'></i>
-                      <span class="h5 mb-0 pt-2"><?= $list->name; ?></span>
+                  <td class="text-dark-75" style="vertical-align: middle; min-width: 180px; max-width: 280px;">
+                    <div class="d-flex justify-content-start align-items-center">
+                      <i class='text-success fa fa-file-alt mr-2 fa-2x py-0 flex-shrink-0' style='vertical-align:middle;'></i>
+                      <span class="h6 mb-0 font-weight-bold text-line-clamp-2" title="<?= htmlspecialchars($list->name); ?>"><?= $list->name; ?></span>
                     </div>
                   </td>
                   <td style="vertical-align: middle;"><?= (isset($ArrGroup[$list->group_procedure])) ? $ArrGroup[$list->group_procedure] : '-'; ?></td>
@@ -54,9 +55,7 @@
                       <?= $ArrUsers[$list->prepared_by]->full_name;; ?>
                     <?php endif; ?>
                   </td>
-                  <!-- <td class="text-center" style="vertical-align: middle;"><?= $list->created_at; ?></td> -->
-                  <!-- <td class="text-center" style="vertical-align: middle;" class="mt-1"><?= $ArrUsers[$list->created_by]->full_name; ?></td> -->
-                  <td class="text-center" style="vertical-align: middle;" class="mt-1">
+                  <td class="text-center" style="vertical-align: middle;">
                     <?= $sts[$list->status] ?>
                   </td>
                   <td class="text-center">
@@ -93,47 +92,52 @@
             endif; ?>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal fade" id="Modal" data-backdrop="static" data-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content" data-scroll="true" style="height:650px;">
-      <form class="form-horiontal" id="form-review">
-        <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
-          <span type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <div class="fa fa-times"></div>
-          </span>
-        </div>
-        <div class="modal-body overflow-auto">
-          <div id="content-modal"></div>
-        </div>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content overflow-hidden" style="height:85vh; max-height:850px;">
+      <form class="form-horiontal h-100 d-flex flex-column" id="form-review">
+        <div id="content-modal" class="h-100 d-flex flex-column overflow-hidden"></div>
       </form>
     </div>
   </div>
 </div>
 
 <div class="modal fade" id="Modal2" data-backdrop="static" data-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content" data-scroll="true" style="height:650px;">
-      <form class="form-horiontal" id="form-revision">
-        <div class="modal-header">
-          <h5 class="modal-title">Modal title</h5>
-          <span type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <div class="fa fa-times"></div>
-          </span>
-        </div>
-        <div class="modal-body overflow-auto">
-          <div id="content-modal2"></div>
-        </div>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content overflow-hidden" style="height:85vh; max-height:850px;">
+      <form class="form-horiontal h-100 d-flex flex-column" id="form-revision">
+        <div id="content-modal2" class="h-100 d-flex flex-column overflow-hidden"></div>
       </form>
     </div>
   </div>
 </div>
 
+<!-- SUB MODAL UNTUK DOKUMEN TERKAIT (FORM & IK) -->
+<div class="modal fade" id="ModalSub" data-backdrop="static" data-keyboard="true" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0" style="height: 80vh; max-height: 750px;">
+      <div class="modal-header py-2 px-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="modal-title font-weight-bold text-dark mb-0" id="ModalSubTitle"><i class="fa fa-file-alt text-primary mr-2"></i> Detail Dokumen Terkait</h5>
+        <button type="button" class="close" onclick="$('#ModalSub').modal('hide');" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-3 overflow-auto" id="content-modal-sub">
+      </div>
+      <div class="modal-footer py-2 px-3 bg-light border-top text-right">
+        <button type="button" class="btn btn-secondary btn-sm px-4" onclick="$('#ModalSub').modal('hide');">
+          <i class="fa fa-times mr-1"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <style>
   p {
@@ -142,6 +146,27 @@
 
   .dataTables_filter {
     display: none;
+  }
+
+  .text-line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    max-height: 2.6em;
+    word-break: break-word;
+  }
+
+  @media (max-width: 767.98px) {
+    .modal-dialog.modal-xl {
+      margin: 0.5rem;
+      max-width: calc(100% - 1rem) !important;
+    }
+    .modal-content {
+      height: 92vh !important;
+    }
   }
 </style>
 
@@ -674,6 +699,38 @@
         }
       })
 
+    });
+
+    $(document).on('click', '.view-form', function(e) {
+      e.preventDefault();
+      const id = $(this).data('id');
+      if (id) {
+        $('#ModalSubTitle').html('<i class="fa fa-file-alt text-success mr-2"></i> Detail Form Dokumen');
+        $('#content-modal-sub').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Loading detail form...</p></div>');
+        $('#ModalSub').modal('show');
+        $('#content-modal-sub').load(siteurl + active_controller + 'view_form/' + id);
+      } else {
+        Swal.fire('Warning!', 'Data form tidak tersedia', 'warning');
+      }
+    });
+
+    $(document).on('click', '.view-guide', function(e) {
+      e.preventDefault();
+      const id = $(this).data('id');
+      if (id) {
+        $('#ModalSubTitle').html('<i class="fa fa-book text-danger mr-2"></i> Detail Instruksi Kerja (IK)');
+        $('#content-modal-sub').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Loading detail IK...</p></div>');
+        $('#ModalSub').modal('show');
+        $('#content-modal-sub').load(siteurl + active_controller + 'view_guide/' + id);
+      } else {
+        Swal.fire('Warning!', 'Data IK tidak tersedia', 'warning');
+      }
+    });
+
+    $('#ModalSub').on('hidden.bs.modal', function () {
+      if ($('#Modal').is(':visible')) {
+        $('body').addClass('modal-open');
+      }
     });
 
   })

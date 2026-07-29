@@ -13,26 +13,26 @@
 				<div class="card-body">
 
 					<!-- Nav tabs -->
-					<ul class="nav nav-tabs nav-fill font-weight-bold nav-success nav-sm nav-pills pb-3 mb-3" id="myTab" role="tablist">
-						<li class="nav-item" role="presentation">
+					<ul class="nav nav-tabs nav-fill font-weight-bold nav-success nav-sm nav-pills pb-3 mb-3 flex-nowrap overflow-auto" id="myTab" role="tablist" style="-webkit-overflow-scrolling: touch; white-space: nowrap;">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link active p-2" id="draft-tab" data-toggle="tab" data-target="#draft" type="button" role="tab" aria-controls="draft" aria-selected="false">Draft <span class="badge badge-circle badge-white text-secondary ml-2"><?= count($dataDraft); ?></span></a>
 						</li>
-						<li class="nav-item" role="presentation">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link p-2" id="review-tab" data-toggle="tab" data-target="#review" type="button" role="tab" aria-controls="review" aria-selected="true">Review <span class="badge badge-circle badge-white text-warning ml-2"><?= count($dataRev); ?></span></a>
 						</li>
-						<li class="nav-item" role="presentation">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link p-2" id="Correction-tab" data-toggle="tab" data-target="#Correction" type="button" role="tab" aria-controls="Correction" aria-selected="true">Correction <span class="badge badge-circle badge-white text-danger ml-2"><?= count($dataCor); ?></span></a>
 						</li>
-						<li class="nav-item" role="presentation">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link p-2" id="Approval-tab" data-toggle="tab" data-target="#Approval" type="button" role="tab" aria-controls="Approval" aria-selected="true">Approval <span class="badge badge-circle badge-white text-info ml-2"><?= count($dataApv); ?></span></a>
 						</li>
-						<li class="nav-item" role="presentation">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link p-2" id="Revision-tab" data-toggle="tab" data-target="#Revision" type="button" role="tab" aria-controls="Revision" aria-selected="true">Revision <span class="badge badge-circle badge-white text-success ml-2"><?= count($dataRvi); ?></span></a>
 						</li>
-						<li class="nav-item" role="presentation">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link p-2" id="published-tab" data-toggle="tab" data-target="#published" type="button" role="tab" aria-controls="published" aria-selected="true">Published <span class="badge badge-circle badge-white text-primary ml-2"><?= count($dataPub); ?></span></a>
 						</li>
-						<li class="nav-item" role="presentation">
+						<li class="nav-item flex-shrink-0" role="presentation">
 							<a class="nav-link p-2" id="deletion-tab" data-toggle="tab" data-target="#deletion" type="button" role="tab" aria-controls="deletion" aria-selected="true">Deletion <span class="badge badge-circle badge-white text-danger ml-2"><?= count($dataDel); ?></span></a>
 						</li>
 					</ul>
@@ -42,293 +42,307 @@
 
 						<!-- Draft -->
 						<div class="tab-pane fade active show" id="draft" role="tabpanel" aria-labelledby="draft-tab">
-							<table id="example2" class="table datatable table-bordered table-sm table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="100">Status</th>
-										<th class="p-2" width="60">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataDraft) && $dataDraft) :
-										$n = 0;
-										foreach ($dataDraft as $draft) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $draft->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $draft->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$draft->group_procedure])) ? $ArrGroup[$draft->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $draft->revision; ?></td>
-												<td class="p-2"><?= $status[$draft->status]; ?></td>
-												<td class="p-2">
-													<a href="<?= base_url($this->uri->segment(1) . '/printout/' . $draft->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $draft->status; ?>" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a>
-													<div class="dropdown open d-inline">
-														<button class="btn btn-success btn-xs btn-icon" type="button" id="triggerId" data-toggle="dropdown" title="Opsi" aria-haspopup="true" aria-expanded="false">
-															<i class="fa fa-cog"></i>
-														</button>
-														<div class="dropdown-menu" aria-labelledby="triggerId">
-															<button type="button" class="dropdown-item view text-info" data-status="<?= $draft->status; ?>" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search mr-2 text-info"></i>View</button>
-															<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $draft->id); ?>" class="dropdown-item text-warning" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit mr-2 text-warning"></i>Edit</a>
-															<div class="dropdown-divider my-0"></div>
-															<button type="button" class="dropdown-item text-primary review" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Process to Review"><i class="fa fa-sync mr-2 text-primary"></i>Process to Review</button>
-															<div class="dropdown-divider my-0"></div>
-															<button type="button" class="dropdown-item delete text-danger" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash mr-2 text-danger"></i>Delete</button>
+							<div class="table-responsive">
+								<table id="example2" class="table datatable table-bordered table-sm table-hover" style="width: 100%; min-width: 900px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 90px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataDraft) && $dataDraft) :
+											$n = 0;
+											foreach ($dataDraft as $draft) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $draft->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($draft->name); ?>"><?= $draft->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$draft->group_procedure])) ? $ArrGroup[$draft->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $draft->revision; ?></td>
+													<td class="p-2"><?= $status[$draft->status]; ?></td>
+													<td class="p-2">
+														<a href="<?= base_url($this->uri->segment(1) . '/printout/' . $draft->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $draft->status; ?>" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a>
+														<div class="dropdown open d-inline">
+															<button class="btn btn-success btn-xs btn-icon" type="button" id="triggerId" data-toggle="dropdown" title="Opsi" aria-haspopup="true" aria-expanded="false">
+																<i class="fa fa-cog"></i>
+															</button>
+															<div class="dropdown-menu" aria-labelledby="triggerId">
+																<button type="button" class="dropdown-item view text-info" data-status="<?= $draft->status; ?>" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search mr-2 text-info"></i>View</button>
+																<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $draft->id); ?>" class="dropdown-item text-warning" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit mr-2 text-warning"></i>Edit</a>
+																<div class="dropdown-divider my-0"></div>
+																<button type="button" class="dropdown-item text-primary review" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Process to Review"><i class="fa fa-sync mr-2 text-primary"></i>Process to Review</button>
+																<div class="dropdown-divider my-0"></div>
+																<button type="button" class="dropdown-item delete text-danger" data-id="<?= $draft->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash mr-2 text-danger"></i>Delete</button>
+															</div>
 														</div>
-													</div>
 
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Review -->
 						<div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
-							<table id="tblReview" class="table datatable table-bordered table-sm table-condensed table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="60">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataRev) && $dataRev) :
-										$n = 0;
-										foreach ($dataRev as $dt) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $dt->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $dt->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $dt->revision; ?></td>
-												<td class="p-2"><?= $status[$dt->status]; ?></td>
-												<td class="p-2">
-													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
-													<button type="button" class="btn btn-xs btn-icon btn-light-danger cancle-review" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Cancel Review"><i class="fa fa-undo"></i></button>
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+							<div class="table-responsive">
+								<table id="tblReview" class="table datatable table-bordered table-sm table-condensed table-hover" style="width: 100%; min-width: 900px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 90px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataRev) && $dataRev) :
+											$n = 0;
+											foreach ($dataRev as $dt) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $dt->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($dt->name); ?>"><?= $dt->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $dt->revision; ?></td>
+													<td class="p-2"><?= $status[$dt->status]; ?></td>
+													<td class="p-2">
+														<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
+														<button type="button" class="btn btn-xs btn-icon btn-light-danger cancle-review" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Cancel Review"><i class="fa fa-undo"></i></button>
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Correction -->
 						<div class="tab-pane fade" id="Correction" role="tabpanel" aria-labelledby="Correction-tab">
-							<table id="tblCorrection" class="table datatable table-bordered table-sm table-condensed table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="60">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataCor) && $dataCor) :
-										$n = 0;
-										foreach ($dataCor as $dt) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $dt->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $dt->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $dt->revision; ?></td>
-												<td class="p-2"><?= $status[$dt->status]; ?></td>
-												<td class="p-2">
-													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
-													<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-xs btn-icon btn-warning" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit"></i></a>
-													<!-- <button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash"></i></button> -->
-													<button type="button" class="btn btn-icon btn-primary review btn-xs" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Process to Review"><i class="fa fa-sync"></i></button>
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+							<div class="table-responsive">
+								<table id="tblCorrection" class="table datatable table-bordered table-sm table-condensed table-hover" style="width: 100%; min-width: 900px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 90px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataCor) && $dataCor) :
+											$n = 0;
+											foreach ($dataCor as $dt) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $dt->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($dt->name); ?>"><?= $dt->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $dt->revision; ?></td>
+													<td class="p-2"><?= $status[$dt->status]; ?></td>
+													<td class="p-2">
+														<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
+														<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-xs btn-icon btn-warning" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit"></i></a>
+														<!-- <button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash"></i></button> -->
+														<button type="button" class="btn btn-icon btn-primary review btn-xs" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Process to Review"><i class="fa fa-sync"></i></button>
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Approval -->
 						<div class="tab-pane fade" id="Approval" role="tabpanel" aria-labelledby="Approval-tab">
-							<table id="tblApproval" class="table datatable table-bordered table-sm table-condensed table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="60">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataApv) && $dataApv) :
-										$n = 0;
-										foreach ($dataApv as $dt) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $dt->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $dt->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $dt->revision; ?></td>
-												<td class="p-2"><?= $status[$dt->status]; ?></td>
-												<td class="p-2">
-													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" title="View Data"><i class="fa fa-search"></i></button>
-													<?php if ($dt->approval_id == $this->auth->user_id()) : ?>
-														<!-- <a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-xs btn-icon btn-warning" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit"></i></a> -->
-													<?php endif; ?>
-													<!-- <button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash"></i></button> -->
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+							<div class="table-responsive">
+								<table id="tblApproval" class="table datatable table-bordered table-sm table-condensed table-hover" style="width: 100%; min-width: 900px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 90px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataApv) && $dataApv) :
+											$n = 0;
+											foreach ($dataApv as $dt) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $dt->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($dt->name); ?>"><?= $dt->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $dt->revision; ?></td>
+													<td class="p-2"><?= $status[$dt->status]; ?></td>
+													<td class="p-2">
+														<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" title="View Data"><i class="fa fa-search"></i></button>
+														<?php if ($dt->approval_id == $this->auth->user_id()) : ?>
+															<!-- <a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-xs btn-icon btn-warning" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit"></i></a> -->
+														<?php endif; ?>
+														<!-- <button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash"></i></button> -->
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Revision -->
 						<div class="tab-pane fade" id="Revision" role="tabpanel" aria-labelledby="Revision-tab">
-							<table id="tblRevision" class="table datatable table-bordered table-sm table-condensed table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2 text-left">Reason</th>
-										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="60">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataRvi) && $dataRvi) :
-										$n = 0;
-										foreach ($dataRvi as $dt) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $dt->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $dt->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $dt->revision; ?></td>
-												<td class="p-2 text-left">
-													<?= $ArrReason[$dt->id]->note; ?>
-												</td>
-												<td class="p-2"><?= $status[$dt->status]; ?></td>
-												<td class="p-2">
-													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
-													<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-xs btn-icon btn-warning" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit"></i></a>
-													<button type="button" class="btn btn-xs btn-icon btn-success review" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Process to Review"><i class="fa fa-sync-alt"></i></button>
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+							<div class="table-responsive">
+								<table id="tblRevision" class="table datatable table-bordered table-sm table-condensed table-hover" style="width: 100%; min-width: 950px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2 text-left" style="min-width: 150px;">Reason</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 90px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataRvi) && $dataRvi) :
+											$n = 0;
+											foreach ($dataRvi as $dt) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $dt->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($dt->name); ?>"><?= $dt->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $dt->revision; ?></td>
+													<td class="p-2 text-left">
+														<?= $ArrReason[$dt->id]->note; ?>
+													</td>
+													<td class="p-2"><?= $status[$dt->status]; ?></td>
+													<td class="p-2">
+														<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
+														<a href="<?= base_url($this->uri->segment(1) . '/edit/' . $dt->id); ?>" class="btn btn-xs btn-icon btn-warning" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Edit Data"><i class="fa fa-edit"></i></a>
+														<button type="button" class="btn btn-xs btn-icon btn-success review" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Process to Review"><i class="fa fa-sync-alt"></i></button>
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Published -->
 						<div class="tab-pane fade" id="published" role="tabpanel" aria-labelledby="published-tab">
-							<table id="example1" class="table datatable table-bordered table-sm table-condensed table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="100">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataPub) && $dataPub) :
-										$n = 0;
-										foreach ($dataPub as $dt) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $dt->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $dt->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $dt->revision; ?></td>
-												<td class="p-2"><?= $status[$dt->status]; ?></td>
-												<td class="p-2">
-													<a href="<?= base_url($this->uri->segment(1) . '/printout/' . $dt->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a>
-													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
-													<button type="button" class="btn btn-xs btn-icon btn-warning btn-list-pdf" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="List PDF Files"><i class="fa fa-file-pdf"></i></button>
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+							<div class="table-responsive">
+								<table id="example1" class="table datatable table-bordered table-sm table-condensed table-hover" style="width: 100%; min-width: 900px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 110px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataPub) && $dataPub) :
+											$n = 0;
+											foreach ($dataPub as $dt) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $dt->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($dt->name); ?>"><?= $dt->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $dt->revision; ?></td>
+													<td class="p-2"><?= $status[$dt->status]; ?></td>
+													<td class="p-2">
+														<a href="<?= base_url($this->uri->segment(1) . '/printout/' . $dt->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a>
+														<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
+														<button type="button" class="btn btn-xs btn-icon btn-warning btn-list-pdf" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="List PDF Files"><i class="fa fa-file-pdf"></i></button>
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 						<!-- Deletion -->
 						<div class="tab-pane fade" id="deletion" role="tabpanel" aria-labelledby="deletion-tab">
-							<table class="table datatable table-bordered table-sm table-condensed table-hover">
-								<thead class="text-center table-light">
-									<tr class="text-center">
-										<th class="p-2" width="30">No.</th>
-										<th class="p-2" width="120">Nomor</th>
-										<th class="p-2 text-left">Nama</th>
-										<th class="p-2" width="150">Kelompok Proses</th>
-										<th class="p-2" width="80">Revisi</th>
-										<th class="p-2" width="120">Status</th>
-										<th class="p-2" width="60">Action</th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php if (isset($dataDel) && $dataDel) :
-										$n = 0;
-										foreach ($dataDel as $dt) : $n++; ?>
-											<tr class="text-center">
-												<td class="p-2"><?= $n; ?></td>
-												<td class="p-2"><?= $dt->nomor; ?></td>
-												<td class="p-2 text-left">
-													<h6 class="my-0"><?= $dt->name; ?></h6>
-												</td>
-												<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
-												<td class="p-2">Rev. <?= $dt->revision; ?></td>
-												<td class="p-2"><?= $status[$dt->status]; ?></td>
-												<td class="p-2">
-													<!-- <a href="<?= base_url($this->uri->segment(1) . '/printout/' . $dt->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a> -->
-													<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
-													<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash"></i></button>
-												</td>
-											</tr>
-									<?php endforeach;
-									endif; ?>
-								</tbody>
-							</table>
+							<div class="table-responsive">
+								<table class="table datatable table-bordered table-sm table-condensed table-hover" style="width: 100%; min-width: 900px;">
+									<thead class="text-center table-light">
+										<tr class="text-center">
+											<th class="p-2" style="width: 40px;">No.</th>
+											<th class="p-2" style="width: 140px;">Nomor</th>
+											<th class="p-2 text-left" style="min-width: 250px;">Nama</th>
+											<th class="p-2 text-left" style="width: 180px;">Kelompok Proses</th>
+											<th class="p-2" style="width: 90px;">Revisi</th>
+											<th class="p-2" style="width: 110px;">Status</th>
+											<th class="p-2" style="width: 90px;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php if (isset($dataDel) && $dataDel) :
+											$n = 0;
+											foreach ($dataDel as $dt) : $n++; ?>
+												<tr class="text-center">
+													<td class="p-2"><?= $n; ?></td>
+													<td class="p-2"><?= $dt->nomor; ?></td>
+													<td class="p-2 text-left">
+														<h6 class="my-0 text-line-clamp-2" title="<?= htmlspecialchars($dt->name); ?>"><?= $dt->name; ?></h6>
+													</td>
+													<td class="p-2 text-left"><?= (isset($ArrGroup[$dt->group_procedure])) ? $ArrGroup[$dt->group_procedure] : '-'; ?></td>
+													<td class="p-2">Rev. <?= $dt->revision; ?></td>
+													<td class="p-2"><?= $status[$dt->status]; ?></td>
+													<td class="p-2">
+														<!-- <a href="<?= base_url($this->uri->segment(1) . '/printout/' . $dt->id); ?>" target="_blank" class="btn btn-xs btn-icon btn-light print" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Print Data"><i class="fa fa-print"></i></a> -->
+														<button type="button" class="btn btn-xs btn-icon btn-info view" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="View Data"><i class="fa fa-search"></i></button>
+														<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-status="<?= $dt->status; ?>" data-id="<?= $dt->id; ?>" data-toggle="tooltip" title="Delete Data"><i class="fa fa-trash"></i></button>
+													</td>
+												</tr>
+										<?php endforeach;
+										endif; ?>
+									</tbody>
+								</table>
+							</div>
 						</div>
 
 					</div>
@@ -362,21 +376,10 @@
 </div>
 
 <div class="modal fade" id="modalView" data-keyboard="false" tabindex="-1" aria-labelledby="modal-view" aria-hidden="true">
-	<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
-		<div class="modal-content" data-scroll="true" data-height="700">
-			<form class="form-horiontal" id="form-input">
-				<div class="modal-header">
-					<h6 class="modal-title" id="modal-view">View Procedure</h6>
-					<span type="button" onclick="$('#name').val('')" class="btn-close" data-dismiss="modal" aria-label="Close">
-						<i class="fa fa-times"></i>
-					</span>
-				</div>
-				<div class="modal-body">
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-danger" data-dismiss="modal" onclick="$('#name').val('')"><i class="fa fa-times"></i>Close</button>
-				</div>
-			</form>
+	<div class="modal-dialog modal-xl modal-dialog-centered">
+		<div class="modal-content overflow-hidden" style="height:85vh; max-height:850px;">
+			<div class="modal-body p-0 overflow-hidden h-100">
+			</div>
 		</div>
 	</div>
 </div>
@@ -394,6 +397,27 @@
 			</div>
 		</div>
 	</div>
+</div>
+
+<!-- SUB MODAL UNTUK DOKUMEN TERKAIT (FORM & IK) -->
+<div class="modal fade" id="ModalSub" data-backdrop="static" data-keyboard="true" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0" style="height: 80vh; max-height: 750px;">
+      <div class="modal-header py-2 px-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="modal-title font-weight-bold text-dark mb-0" id="ModalSubTitle"><i class="fa fa-file-alt text-primary mr-2"></i> Detail Dokumen Terkait</h5>
+        <button type="button" class="close" onclick="$('#ModalSub').modal('hide');" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-3 overflow-auto" id="content-modal-sub">
+      </div>
+      <div class="modal-footer py-2 px-3 bg-light border-top text-right">
+        <button type="button" class="btn btn-secondary btn-sm px-4" onclick="$('#ModalSub').modal('hide');">
+          <i class="fa fa-times mr-1"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade px-0 py-0 modalViewImg" id="" tabindex="-1" role="dialog" aria-labelledby="modelTitleImg" aria-hidden="true">
@@ -514,6 +538,17 @@
 		cursor: pointer;
 	}
 
+	.text-line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		line-height: 1.3;
+		max-height: 2.6em;
+		word-break: break-word;
+	}
+
 	/* 100% Image Width on Smaller Screens */
 	@media only screen and (max-width: 700px) {
 		.modal-content-img {
@@ -532,7 +567,7 @@
 		});
 
 		$('.datatable').DataTable({
-			responsive: true,
+			responsive: false,
 		});
 		
 
@@ -826,28 +861,37 @@
 			})
 		})
 
-		$(document).on('click', '.view-form', function() {
+		$(document).on('click', '.view-form', function(e) {
+			e.preventDefault();
 			const id = $(this).data('id')
 			if (id) {
-				$('.modal-title').html('View Form')
-				$('#content_modal').load(siteurl + active_controller + 'view_form/' + id)
-				$('#modelId').modal('show')
-				$('.modal-dialog').css('max-width', '')
+				$('#ModalSubTitle').html('<i class="fa fa-file-alt text-success mr-2"></i> Detail Form Dokumen')
+				$('#content-modal-sub').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Loading detail form...</p></div>')
+				$('#ModalSub').modal('show')
+				$('#content-modal-sub').load(siteurl + active_controller + 'view_form/' + id)
 			} else {
-				Swal.fire('Warning!!', 'Not available data to process', 'waring', 2000);
+				Swal.fire('Warning!!', 'Not available data to process', 'warning');
 			}
 		})
 
-		$(document).on('click', '.view-guide', function() {
+		$(document).on('click', '.view-guide', function(e) {
+			e.preventDefault();
 			const id = $(this).data('id')
 			if (id) {
-				$('.modal-title').html('View IK')
-				$('#content_modal').load(siteurl + active_controller + 'view_guide/' + id)
-				$('#modelId').modal('show')
+				$('#ModalSubTitle').html('<i class="fa fa-book text-danger mr-2"></i> Detail Instruksi Kerja (IK)')
+				$('#content-modal-sub').html('<div class="text-center py-5"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Loading detail IK...</p></div>')
+				$('#ModalSub').modal('show')
+				$('#content-modal-sub').load(siteurl + active_controller + 'view_guide/' + id)
 			} else {
-				Swal.fire('Warning!!', 'Not available data to process', 'waring', 2000);
+				Swal.fire('Warning!!', 'Not available data to process', 'warning');
 			}
 		})
+
+		$('#ModalSub').on('hidden.bs.modal', function () {
+			if ($('#modalView').is(':visible')) {
+				$('body').addClass('modal-open');
+			}
+		});
 
 		/* PREVIEW IMAGE */
 		$(document).on('click', '.view-image', function() {
