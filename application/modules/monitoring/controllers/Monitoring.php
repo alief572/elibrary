@@ -355,10 +355,12 @@ class Monitoring extends Admin_Controller
 		$procedures = $this->Monitor_model->getProceduresByStatus($this->company, 'PUB');
 		$users = $this->Monitor_model->getAllUsers();
 		$ArrUsers = []; foreach ($users as $u) { $ArrUsers[$u->id_user] = $u; }
+		$positions = $this->Monitor_model->getPositionsByCompany($this->company);
+		$ArrPosition = array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
 		$groups = $this->Monitor_model->getGroupProcedures();
 		$ArrGroup = array_combine(array_column($groups, 'id'), array_column($groups, 'name'));
 
-		$this->template->set(['title' => 'PUBLISHED PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
+		$this->template->set(['title' => 'PUBLISHED PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosition' => $ArrPosition, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
 		$this->template->render('list');
 	}
 
@@ -441,11 +443,13 @@ class Monitoring extends Admin_Controller
 	{
 		$procedures = $this->Monitor_model->getProceduresByStatusAndDeletion($this->company, 'HLD', 'OPN');
 		$users = $this->Monitor_model->getAllUsers();
+		$positions = $this->Monitor_model->getPositionsByCompany($this->company);
+		$ArrPosition = array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
 		$groups = $this->Monitor_model->getGroupProcedures();
 		$ArrGroup = array_combine(array_column($groups, 'id'), array_column($groups, 'name'));
 		$ArrUsers = []; foreach ($users as $u) { $ArrUsers[$u->id_user] = $u; }
 
-		$this->template->set(['title' => 'REVIEW DELETION PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
+		$this->template->set(['title' => 'REVIEW DELETION PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosition' => $ArrPosition, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
 		$this->template->render('list');
 	}
 
@@ -465,11 +469,13 @@ class Monitoring extends Admin_Controller
 	{
 		$procedures = $this->Monitor_model->getProceduresByStatusAndDeletion($this->company, 'HLD', 'REV');
 		$users = $this->Monitor_model->getAllUsers();
+		$positions = $this->Monitor_model->getPositionsByCompany($this->company);
+		$ArrPosition = array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
 		$groups = $this->Monitor_model->getGroupProcedures();
 		$ArrGroup = array_combine(array_column($groups, 'id'), array_column($groups, 'name'));
 		$ArrUsers = []; foreach ($users as $u) { $ArrUsers[$u->id_user] = $u; }
 
-		$this->template->set(['title' => 'APPROVAL DELETION PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
+		$this->template->set(['title' => 'APPROVAL DELETION PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosition' => $ArrPosition, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
 		$this->template->render('list');
 	}
 
@@ -490,11 +496,13 @@ class Monitoring extends Admin_Controller
 	{
 		$procedures = $this->Monitor_model->getProceduresByStatusAndDeletion($this->company, 'HLD', 'APV');
 		$users = $this->Monitor_model->getAllUsers();
+		$positions = $this->Monitor_model->getPositionsByCompany($this->company);
+		$ArrPosition = array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
 		$groups = $this->Monitor_model->getGroupProcedures();
 		$ArrGroup = array_combine(array_column($groups, 'id'), array_column($groups, 'name'));
 		$ArrUsers = []; foreach ($users as $u) { $ArrUsers[$u->id_user] = $u; }
 
-		$this->template->set(['title' => 'NEED ACTION TO DELETE PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
+		$this->template->set(['title' => 'NEED ACTION TO DELETE PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosition' => $ArrPosition, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
 		$this->template->render('list');
 	}
 
