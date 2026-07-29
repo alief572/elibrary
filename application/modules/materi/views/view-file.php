@@ -15,14 +15,36 @@
 <div class="tab-content">
 	<div class="tab-pane active p-0 border border-top-0 rounded-bottom" id="upload-document" role="tabpanel" aria-labelledby="upload-file-tab">
 		<?php if ($data->document) : ?>
-			<div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap">
-				<span class="text-muted small"><i class="fa fa-info-circle mr-1"></i> Preview Dokumen PDF</span>
-				<a href="<?= base_url("directory/MATERI/$data->company_id/$data->document"); ?>" target="_blank" class="btn btn-sm btn-primary my-1">
-					Buka / Download PDF <i class="fas fa-external-link-alt ml-1" aria-hidden="true"></i>
+			<?php $pdfMateriUrl = base_url("directory/MATERI/$data->company_id/$data->document"); ?>
+			<!-- Mobile View PDF: technical explanation + download button -->
+			<div class="text-center py-4 px-3 d-block d-md-none">
+				<i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+				<h5 class="mb-2"><?= isset($data->name) ? $data->name : 'Dokumen Materi PDF'; ?></h5>
+				<div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
+					<div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
+					<ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">
+						<li>Browser di HP/Mobile (seperti Android Chrome) tidak memiliki fitur renderer bawaan untuk merender dokumen PDF di dalam frame browser.</li>
+						<li>Beberapa perangkat mobile memerlukan aplikasi pembaca PDF eksternal untuk membaca berkas PDF.</li>
+					</ul>
+					<div class="border-top pt-2 mt-2 small text-dark">
+						<i class="fas fa-lightbulb text-warning mr-1"></i> <strong>Saran:</strong> Tekan tombol di bawah untuk membuka / mengunduh PDF secara langsung di tab baru atau aplikasi PDF HP Anda.
+					</div>
+				</div>
+				<a href="<?= $pdfMateriUrl; ?>" target="_blank" class="btn btn-primary btn-lg">
+					<i class="fas fa-external-link-alt mr-2"></i> Buka / Download PDF
 				</a>
 			</div>
-			<div class="position-relative w-100" style="height: 550px;">
-				<iframe src="<?= base_url("directory/MATERI/$data->company_id/$data->document"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="550"></iframe>
+			<!-- Desktop View PDF -->
+			<div class="d-none d-md-block">
+				<div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap">
+					<span class="text-muted small"><i class="fa fa-info-circle mr-1"></i> Preview Dokumen PDF</span>
+					<a href="<?= $pdfMateriUrl; ?>" target="_blank" class="btn btn-sm btn-primary my-1">
+						Buka / Download PDF <i class="fas fa-external-link-alt ml-1" aria-hidden="true"></i>
+					</a>
+				</div>
+				<div class="position-relative w-100" style="height: 550px;">
+					<iframe src="<?= $pdfMateriUrl; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="550"></iframe>
+				</div>
 			</div>
 		<?php else : ?>
 			<h5 class="text-center mt-5">~ Not available data ~</h5>

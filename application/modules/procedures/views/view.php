@@ -554,8 +554,28 @@ if (!isset($file) && isset($data)) {
 			<!-- TAB 4: PREVIEW FILE (PDF IFRAME) -->
 			<div class="tab-pane fade" id="tab-preview-file" role="tabpanel" aria-labelledby="tab-preview-file-link">
 				<?php if ($file) : ?>
-					<div class="position-relative w-100 border rounded" style="height: 520px; min-height: 350px;">
-						<iframe src="<?= base_url("procedures/printOut/" . $file->id); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="100%" style="min-height:350px;"></iframe>
+					<?php $pdfPrintUrl = base_url("procedures/printOut/" . $file->id); ?>
+					<!-- Mobile View PDF: technical explanation + download/open button -->
+					<div class="text-center py-4 px-3 d-block d-md-none">
+						<i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+						<h5 class="mb-2"><?= strtoupper($file->name); ?></h5>
+						<div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
+							<div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
+							<ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">
+								<li>Browser di HP/Mobile (seperti Android Chrome) tidak memiliki fitur renderer bawaan untuk merender dokumen PDF di dalam <code>iframe</code> secara native.</li>
+								<li>Beberapa perangkat mobile memerlukan aplikasi pembaca PDF eksternal untuk membaca berkas PDF.</li>
+							</ul>
+							<div class="border-top pt-2 mt-2 small text-dark">
+								<i class="fas fa-lightbulb text-warning mr-1"></i> <strong>Saran:</strong> Tekan tombol di bawah untuk membuka PDF di tab baru atau mengunduhnya ke aplikasi PDF HP Anda.
+							</div>
+						</div>
+						<a href="<?= $pdfPrintUrl; ?>" target="_blank" class="btn btn-primary btn-lg">
+							<i class="fas fa-external-link-alt mr-2"></i> Buka / Download PDF
+						</a>
+					</div>
+					<!-- Desktop View PDF -->
+					<div class="position-relative w-100 border rounded d-none d-md-block" style="height: 520px; min-height: 350px;">
+						<iframe src="<?= $pdfPrintUrl; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="100%" style="min-height:350px;"></iframe>
 					</div>
 				<?php else : ?>
 					<div class="text-center py-5 text-muted">
