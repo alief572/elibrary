@@ -55,20 +55,94 @@ class Monitoring extends Admin_Controller
 		$this->template->render('index');
 	}
 
-	public function view($id = null, $type = null)
+	private function _prepare_view_data($id, $type, $view_data)
 	{
+		$this->load->model('procedures/Procedures_model', 'ProModel');
+
 		$file = $this->Monitor_model->getProcedureById($id);
 		$history = $this->Monitor_model->getDirectoryLogs($id);
-		$this->template->set(['sts' => $this->sts, 'file' => $file, 'type' => $type, 'history' => $history, 'view_data' => false]);
+		$revisions = $this->Monitor_model->getProcedureRevisions($id);
+
+		$flowDetail = $this->ProModel->getProcedureDetails($id);
+		$getForms = $this->ProModel->getFormsByProcedure($id, '');
+		$getGuides = $this->ProModel->getGuidesByProcedure($id, '');
+		$users = $this->ProModel->getAllActiveUsers();
+		$jabatan = $this->ProModel->getPositions();
+
+		$ArrUsr = $ArrJab = $ArrForms = $ArrGuides = [];
+		foreach ($getForms as $frm) {
+			$ArrForms[$frm->id] = $frm;
+		}
+		foreach ($getGuides as $gui) {
+			$ArrGuides[$gui->id] = $gui;
+		}
+		foreach ($users as $usr) {
+			$ArrUsr[$usr->id_user] = $usr;
+		}
+		foreach ($jabatan as $jab) {
+			$ArrJab[$jab->id] = $jab;
+		}
+
+		$companyId = (isset($file->company_id) && $file->company_id) ? $file->company_id : $this->company;
+		$Cross = $this->ProModel->getCrossReferences($id, $companyId);
+		$ArrData = $ArrStd = [];
+		if ($Cross) {
+			foreach ($Cross as $dt) {
+				$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
+				$ArrData['standards'][$dt->requirement_id][] = $dt;
+			}
+			foreach ($Cross as $dtstd) {
+				$ArrStd[$dtstd->requirement_id] = $dtstd;
+			}
+		}
+
+		$company = $this->ProModel->getCompany($companyId);
+		$company_name = (isset($company->nm_perusahaan) ? $company->nm_perusahaan : '');
+
+		// Scan for PDF revision archive files
+		$pdfDir = FCPATH . 'directory/PROCEDURES_PDF/' . $companyId . '/';
+		$revFiles = [];
+		if (is_dir($pdfDir)) {
+			$scannedFiles = scandir($pdfDir);
+			foreach ($scannedFiles as $f) {
+				if (strpos($f, 'procedure_' . $id) === 0 && strpos($f, '.pdf') !== false) {
+					$revFiles[] = $f;
+				}
+			}
+		}
+
+		$this->template->set([
+			'sts' => $this->sts,
+			'file' => $file,
+			'data' => $file,
+			'detail' => $flowDetail,
+			'type' => $type,
+			'history' => $history,
+			'revisions' => $revisions,
+			'view_data' => $view_data,
+			'users' => $users,
+			'jabatan' => $jabatan,
+			'ArrUsr' => $ArrUsr,
+			'ArrJab' => $ArrJab,
+			'ArrForms' => $ArrForms,
+			'ArrGuides' => $ArrGuides,
+			'Cross' => $Cross,
+			'ArrData' => $ArrData,
+			'ArrStd' => $ArrStd,
+			'company_name' => $company_name,
+			'revFiles' => $revFiles,
+		]);
 		$this->template->render('view');
+	}
+
+	public function view($id = null, $type = null)
+	{
+		$this->_prepare_view_data($id, $type, false);
 	}
 
 	public function view_data($id = null, $type = null)
 	{
-		$file = $this->Monitor_model->getProcedureById($id);
-		$history = $this->Monitor_model->getDirectoryLogs($id);
-		$this->template->set(['sts' => $this->sts, 'file' => $file, 'type' => $type, 'history' => $history, 'view_data' => true]);
-		$this->template->render('view');
+		$this->_prepare_view_data($id, $type, true);
 	}
 
 	public function review()
@@ -422,5 +496,47 @@ class Monitoring extends Admin_Controller
 
 		$this->template->set(['title' => 'NEED ACTION TO DELETE PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
 		$this->template->render('list');
+	}
+
+	public function view_form($id = null)
+	{
+		$this->load->model('documents_list/Documents_list_model', 'List');
+		$form = $this->List->getFormById($id);
+		$history = $this->List->getHistory($id);
+		$users = $this->List->getUsers();
+		$ArrUsr = [];
+		if ($users) {
+			foreach ($users as $user) {
+				$ArrUsr[$user->id_user] = $user;
+			}
+		}
+		$this->template->set([
+			'form' => $form,
+			'history' => $history,
+			'sts' => $this->sts,
+			'ArrUsr' => $ArrUsr
+		]);
+		$this->template->render('procedures/view-form');
+	}
+
+	public function view_guide($id = null)
+	{
+		$this->load->model('documents_list/Documents_list_model', 'List');
+		$guide = $this->List->getGuideById($id);
+		$history = $this->List->getHistory($id);
+		$users = $this->List->getUsers();
+		$ArrUsr = [];
+		if ($users) {
+			foreach ($users as $user) {
+				$ArrUsr[$user->id_user] = $user;
+			}
+		}
+		$this->template->set([
+			'guide' => $guide,
+			'history' => $history,
+			'sts' => $this->sts,
+			'ArrUsr' => $ArrUsr
+		]);
+		$this->template->render('procedures/view-guide');
 	}
 }
