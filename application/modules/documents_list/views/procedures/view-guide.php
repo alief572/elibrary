@@ -6,14 +6,30 @@
 	$fileUrl = base_url("directory/GUIDES/$guide->company_id/$guide->file_name");
 	?>
 	<?php if ($isExcel) : ?>
-		<!-- Excel file: show download button -->
-		<div class="text-center py-5">
-			<i class="fas fa-file-excel fa-5x text-success mb-4"></i>
-			<h5 class="mb-3"><?= $guide->name; ?></h5>
-			<p class="text-muted mb-4">File Excel tidak dapat ditampilkan di browser. Silakan download untuk melihat.</p>
+		<!-- Mobile View: technical explanation + download button -->
+		<div class="text-center py-4 px-3 d-block d-md-none">
+			<i class="fas fa-file-excel fa-4x text-success mb-3"></i>
+			<h5 class="mb-2"><?= $guide->name; ?></h5>
+			<div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
+				<div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
+				<ul class="pl-3 mb-0 small text-dark" style="line-height: 1.5;">
+					<li>Browser mobile (Android Chrome / Safari iOS) tidak mendukung ekstensi <em>Office Editing</em> untuk merender file Excel di dalam <code>iframe</code>.</li>
+					<li>Server ini berada di jaringan lokal (intranet), sehingga cloud viewer (seperti Google Docs/Office Online) tidak dapat mengunduh dan merender file secara internal.</li>
+				</ul>
+			</div>
 			<a href="<?= $fileUrl; ?>" download class="btn btn-success btn-lg">
-				<i class="fa fa-download mr-2"></i> Download Excel
+				<i class="fa fa-download mr-2"></i> Download File Excel
 			</a>
+		</div>
+		<!-- Desktop View: standard iframe for Office Editing extension -->
+		<div class="d-none d-md-block p-2">
+			<div class="mb-2 d-flex justify-content-between align-items-center bg-light p-2 rounded border">
+				<span class="small text-muted"><i class="fas fa-info-circle mr-1"></i> Preview Excel (Gunakan browser extension <strong>Office Editing</strong> jika iframe belum merender otomatis)</span>
+				<a href="<?= $fileUrl; ?>" download class="btn btn-sm btn-outline-success">
+					<i class="fa fa-download mr-1"></i> Download File
+				</a>
+			</div>
+			<iframe src="<?= $fileUrl; ?>" frameborder="0" width="100%" height="450px" style="min-height: 450px;"></iframe>
 		</div>
 	<?php else : ?>
 		<!-- PDF file: show in iframe -->

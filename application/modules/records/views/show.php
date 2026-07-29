@@ -65,12 +65,26 @@
                             }
                         ?>
                             <iframe src="<?= $src ?>" frameborder="0" width="100%" height="500px"></iframe>
-                        <?php elseif (in_array($ext, ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx'])) : 
-                            $src = $file_url . "#toolbar=0&navpanes=0";
-                        ?>
-                            <iframe src="<?= $src ?>" frameborder="0" width="100%" height="500px"></iframe>
-                            <div class="text-center mt-3">
-                                <a href="<?= $file_url ?>" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download File</a>
+                        <?php elseif (in_array($ext, ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx'])) : ?>
+                            <div class="d-none d-md-block">
+                                <iframe src="<?= $file_url; ?>" frameborder="0" width="100%" height="500px"></iframe>
+                                <div class="text-center mt-3">
+                                    <a href="<?= $file_url ?>" class="btn btn-primary" target="_blank"><i class="fa fa-download"></i> Download File</a>
+                                </div>
+                            </div>
+                            <div class="text-center py-4 px-3 d-block d-md-none">
+                                <i class="fas fa-file-excel fa-4x text-success mb-3"></i>
+                                <h5 class="mb-2"><?= isset($file->name) ? $file->name : ($file->file_name ?? 'Document'); ?></h5>
+                                <div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
+                                    <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
+                                    <ul class="pl-3 mb-0 small text-dark" style="line-height: 1.5;">
+                                        <li>Browser mobile (Android Chrome / Safari iOS) tidak mendukung ekstensi <em>Office Editing</em> untuk merender file Excel/Office di dalam <code>iframe</code>.</li>
+                                        <li>Server ini berada di jaringan lokal (intranet), sehingga cloud viewer pihak ketiga tidak dapat mengakses file ini.</li>
+                                    </ul>
+                                </div>
+                                <a href="<?= $file_url; ?>" download class="btn btn-success btn-lg">
+                                    <i class="fa fa-download mr-2"></i> Download File
+                                </a>
                             </div>
                         <?php else : ?>
                             <iframe src="<?= $file_url ?>" frameborder="0" width="100%" height="500px"></iframe>
