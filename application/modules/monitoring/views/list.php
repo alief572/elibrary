@@ -28,7 +28,7 @@
               <!-- <th width="180px" class="text-center">Created Date</th> -->
               <!-- <th width="150px" class="text-center">Created By</th> -->
               <th width="100px" class="text-center">Status</th>
-              <th width="60px" class="text-center">Action</th>
+              <th width="110px" class="text-center">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -37,7 +37,7 @@
               foreach ($procedures as $list) : $n++; ?>
                 <tr>
                   <td style="vertical-align: middle;" class="text-center"><?= $n; ?></td>
-                  <td style="vertical-align: middle;"><?= $list->nomor; ?></td>
+                  <td style="vertical-align: middle;"><?= (!empty($list->nomor)) ? $list->nomor : ((isset($list->number) && !empty($list->number)) ? $list->number : '-'); ?></td>
                   <td class="text-dark-75" style="vertical-align: middle; min-width: 180px; max-width: 280px;">
                     <div class="d-flex justify-content-start align-items-center">
                       <i class='text-success fa fa-file-alt mr-2 fa-2x py-0 flex-shrink-0' style='vertical-align:middle;'></i>
@@ -47,12 +47,16 @@
                   <td style="vertical-align: middle;"><?= (isset($ArrGroup[$list->group_procedure])) ? $ArrGroup[$list->group_procedure] : '-'; ?></td>
                   <td style="vertical-align: middle;" class="text-center">Rev. <?= $list->revision; ?></td>
                   <td class="text-center" style="vertical-align: middle;">
-                    <?php if ($list->status == 'REV') : ?>
+                    <?php if ($list->status == 'REV' && isset($ArrPosition[$list->reviewer_id])) : ?>
                       <?= $ArrPosition[$list->reviewer_id]; ?>
-                    <?php elseif ($list->status == 'APV') : ?>
+                    <?php elseif ($list->status == 'APV' && isset($ArrPosition[$list->approval_id])) : ?>
                       <?= $ArrPosition[$list->approval_id]; ?>
-                    <?php elseif ($list->status == 'RVI' || $list->status == 'COR') : ?>
-                      <?= $ArrUsers[$list->prepared_by]->full_name;; ?>
+                    <?php elseif ($list->status == 'PUB') : ?>
+                      <?= isset($ArrPosition[$list->approval_id]) ? $ArrPosition[$list->approval_id] : (isset($ArrUsers[$list->approved_by]) ? $ArrUsers[$list->approved_by]->full_name : (isset($ArrUsers[$list->prepared_by]) ? $ArrUsers[$list->prepared_by]->full_name : '-')); ?>
+                    <?php elseif (($list->status == 'RVI' || $list->status == 'COR') && isset($ArrUsers[$list->prepared_by])) : ?>
+                      <?= $ArrUsers[$list->prepared_by]->full_name; ?>
+                    <?php else : ?>
+                      <?= isset($ArrPosition[$list->approval_id]) ? $ArrPosition[$list->approval_id] : (isset($ArrUsers[$list->prepared_by]) ? $ArrUsers[$list->prepared_by]->full_name : '-'); ?>
                     <?php endif; ?>
                   </td>
                   <td class="text-center" style="vertical-align: middle;">
@@ -82,7 +86,8 @@
                           <button type="button" data-id="<?= $list->id; ?>" data-type="procedures" class="btn btn-info btn-icon approve btn-xs shadow-sm"><i class="fa fa-cog"></i></button>
                         <?php endif; ?>
                       <?php elseif ($list->status == 'PUB') : ?>
-                        <button type="button" data-id="<?= $list->id; ?>" data-type="procedures" class="btn btn-success btn-icon view btn-xs shadow-sm"><i class="fa fa-eye"></i></button>
+                        <button type="button" data-id="<?= $list->id; ?>" data-type="procedures" class="btn btn-warning btn-icon revision btn-xs shadow-sm" title="Submit Revision"><i class="fa fa-edit"></i></button>
+                        <button type="button" data-id="<?= $list->id; ?>" data-type="procedures" class="btn btn-danger btn-icon deletion btn-xs shadow-sm" title="Submit Deletion"><i class="fa fa-trash"></i></button>
                       <?php else : ?>
                       <?php endif; ?>
                     <?php endif; ?>
@@ -108,11 +113,17 @@
   </div>
 </div>
 
-<div class="modal fade" id="Modal2" data-backdrop="static" data-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content overflow-hidden" style="height:85vh; max-height:850px;">
-      <form class="form-horiontal h-100 d-flex flex-column" id="form-revision">
-        <div id="content-modal2" class="h-100 d-flex flex-column overflow-hidden"></div>
+<div class="modal fade" id="Modal2" data-backdrop="static" data-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true" style="z-index: 1070;">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header py-2 px-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="modal-title font-weight-bold text-dark mb-0" id="Modal2Title"><i class="fa fa-paper-plane text-primary mr-2"></i> Form Permohonan</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form class="form-horizontal mb-0" id="form-revision">
+        <div id="content-modal2" class="p-3"></div>
       </form>
     </div>
   </div>
@@ -172,6 +183,23 @@
 
 <script>
   $(document).ready(function() {
+    // Handle stacked modals z-index and body scroll state
+    $(document).on('show.bs.modal', '.modal', function() {
+      const zIndex = 1050 + (10 * $('.modal:visible').length);
+      $(this).css('z-index', zIndex);
+      setTimeout(function() {
+        $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+      }, 0);
+    });
+
+    $(document).on('hidden.bs.modal', '.modal', function() {
+      if ($('.modal:visible').length > 0) {
+        setTimeout(function() {
+          $(document.body).addClass('modal-open');
+        }, 0);
+      }
+    });
+
     table = $('.datatable').DataTable({
       lengthChange: false
     })
@@ -216,6 +244,7 @@
     $(document).on('click', '.revision', function() {
       const id = $(this).data('id')
       const type = $(this).data('type')
+      $('#Modal2Title').html('<i class="fa fa-edit text-warning mr-2"></i> Form Submit Revision')
       $('#Modal2').modal('show')
       $('#content-modal2').load(siteurl + active_controller + 'load_form_revision/' + id + "/" + type)
     })
@@ -223,6 +252,7 @@
     $(document).on('click', '.deletion', function() {
       const id = $(this).data('id')
       const type = $(this).data('type')
+      $('#Modal2Title').html('<i class="fa fa-trash text-danger mr-2"></i> Form Submit Deletion')
       $('#Modal2').modal('show')
       $('#content-modal2').load(siteurl + active_controller + 'load_form_deletion/' + id + "/" + type)
     })
