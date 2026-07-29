@@ -57,14 +57,29 @@
                         $file_url = base_url("directory/$dir/$file->company_id/$file->file_name");
                         $ext = strtolower($file->ext);
                         ?>
-                        <?php if ($ext == '.pdf') :
-                            if($isMobile){
-                                $src = "https://docs.google.com/gview?embedded=true&url=" . urlencode($file_url) . "&rm=minimal";
-                            } else {
-                                $src = $file_url . "#toolbar=0&navpanes=0";
-                            }
-                        ?>
-                            <iframe src="<?= $src ?>" frameborder="0" width="100%" height="500px"></iframe>
+                        <?php if ($ext == '.pdf') : ?>
+                            <!-- Mobile View PDF: technical explanation + download button -->
+                            <div class="text-center py-4 px-3 d-block d-md-none">
+                                <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                                <h5 class="mb-2"><?= isset($file->name) ? $file->name : ($file->file_name ?? 'Dokumen PDF'); ?></h5>
+                                <div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
+                                    <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
+                                    <ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">
+                                        <li>Browser di HP/Mobile (seperti Android Chrome) tidak memiliki fitur renderer bawaan untuk merender dokumen PDF di dalam frame browser.</li>
+                                        <li>Beberapa perangkat mobile memerlukan aplikasi pembaca PDF eksternal untuk membaca berkas PDF.</li>
+                                    </ul>
+                                    <div class="border-top pt-2 mt-2 small text-dark">
+                                        <i class="fas fa-lightbulb text-warning mr-1"></i> <strong>Saran:</strong> Tekan tombol di bawah untuk membuka / mengunduh PDF secara langsung di tab baru atau aplikasi PDF HP Anda.
+                                    </div>
+                                </div>
+                                <a href="<?= $file_url; ?>" target="_blank" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-external-link-alt mr-2"></i> Buka / Download PDF
+                                </a>
+                            </div>
+                            <!-- Desktop View PDF -->
+                            <div class="d-none d-md-block">
+                                <iframe src="<?= $file_url; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="500px"></iframe>
+                            </div>
                         <?php elseif (in_array($ext, ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx'])) : ?>
                             <div class="d-none d-md-block">
                                 <iframe src="<?= $file_url; ?>" frameborder="0" width="100%" height="500px"></iframe>
