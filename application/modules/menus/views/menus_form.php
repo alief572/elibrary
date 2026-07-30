@@ -1,235 +1,244 @@
 <link rel="stylesheet" href="<?= base_url('assets/css/fontawesome-iconpicker.css')?>">
 <script src="<?= base_url('assets/js/fontawesome-iconpicker.js')?>"></script>
 
-<div class="nav-tabs-menus">
-    <!-- /.tab-content -->
-    <div class="tab-content">
-        <div class="tab-pane active" id="menus">
-        <!-- Biodata Mitra -->
-            <div id='alert_edit' class="alert alert-success alert-dismissable" style="padding: 15px; display: none;">
+<div class="menus-form-container">
+    <?= form_open('menus/save_data_Menus', array('id' => 'frm_menus', 'name' => 'frm_menus', 'role' => 'form')) ?>
+
+        <?php if (isset($data->id)) { $type = 'edit'; } ?>
+        <input type="hidden" id="type" name="type" value="<?= isset($type) ? $type : 'add' ?>">
+        <input type="hidden" id="id" name="id" value="<?= set_value('id', isset($data->id) ? $data->id : ''); ?>">
+
+        <div class="row">
+            <!-- Menu Name -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="title" class="font-weight-bold text-dark">
+                    Nama Menu <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light-primary border-0"><i class="fa fa-font text-primary"></i></span>
+                    <input type="text" class="form-control" id="title" name="title" maxlength="100" 
+                        value="<?= set_value('title', isset($data->title) ? $data->title : ''); ?>" 
+                        placeholder="Contoh: Master Documents" required>
+                </div>
             </div>
-            <!-- form start-->
-            <div class="box box-primary">
-            <?= form_open($this->uri->uri_string(),array('id'=>'frm_menus','name'=>'frm_menus','role'=>'form','class'=>'form-horizontal')) ?>
-                <div class="box-body">
 
-                <div class="form-group ">
-                    <?php  if(isset($data->id)){$type='edit';}?>
-                    <input type="hidden" id="type" name="type" value="<?= isset($type) ? $type : 'add' ?>">
-                    <input type="hidden" id="id" name="id" value="<?php echo set_value('id', isset($data->id) ? $data->id : ''); ?>">
-
-                    <label for="id" class="col-sm-2 control-label">ID Menu<font size="4" color="red"><B>*</B></font></label>
-                    <div class="col-sm-3">
-                        <div class="input-group">
-                        <span class="input-group-addon"><i class="fa fa-user"></i></span>
-                        <input type="text" class="form-control" id="id" name="id" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');" maxlength="4" value="<?php echo set_value('id', isset($data->id) ? $data->id : ''); ?>" placeholder="ID menu" readonly>
-                        </div>
-                    </div>
-
-                    <label for="title" class="col-sm-2 control-label">Menu's Name <font size="4" color="red"><B>*</B></font></label>
-                    <div class="col-sm-3">
-                        <div class="input-group">
-                        <span class="input-group-addon"><i class="fa fa-user"></i></span>
-                        <input type="text" class="form-control" id="title" name="title" maxlength="45" value="<?php echo set_value('title', isset($data->title) ? $data->title : ''); ?>" placeholder="Menu's Name" required>
-                        </div>
-                    </div>
+            <!-- Path Menu / Link -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="link" class="font-weight-bold text-dark">
+                    Path / Link Menu <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light-primary border-0"><i class="fa fa-link text-primary"></i></span>
+                    <input type="text" class="form-control" id="link" name="link" 
+                        value="<?= set_value('link', isset($data->link) ? $data->link : ''); ?>" 
+                        placeholder="Contoh: docs atau #" required>
                 </div>
-
-                <div class="form-group ">
-                    <label for="link" class="col-sm-2 control-label">Path Menu<font size="4" color="red"><B>*</B></font></label>
-                    <div class="col-sm-3">
-                        <div class="input-group">
-                        <span class="input-group-addon"><i class="fa fa-user"></i></span>
-                        <input type="text" class="form-control" id="link" name="link" value="<?php echo set_value('link', isset($data->link) ? $data->link : ''); ?>" placeholder="Link" required>
-                        </div>
-                    </div>
-
-                    <label for="link" class="col-sm-2 control-label">Parent Menu<font size="4" color="red"><B>*</B></font></label>
-                    <div class="col-sm-3">
-                        <div class="input-group">
-                            <div class="input-group-btn">
-                            <a class="btn btn-info">
-                            <i class="fa fa-street-view">&nbsp;</i>
-                            </a>
-                            </div>
-                            <?php
-                              $parent[0]	= 'Select An Option(NONE)';
-                							echo form_dropdown('parent_id',$parent, set_value('parent_id', isset($data->parent_id) ? $data->parent_id : 'selected'), array('id'=>'parent_id','class'=>'form-control parent_id'));
-              							?>
-                        </div>
-                    </div>
-                </div>
-        				<div class="form-group ">
-        					<label for="link" class="col-sm-2 control-label">Show Status<font size="4" color="red"><B>*</B></font></label>
-                    <div class="col-sm-3">
-                        <div class="input-group">
-                            <div class="input-group-btn">
-                            <a class="btn btn-info">
-                            <i class="fa fa-street-view">&nbsp;</i>
-                            </a>
-                            </div>
-                            <select class="form-control input select2 group_menu" name="group_menu" id="group_menu">
-                              <option value="">Select An Option(NONE)</option>
-                              <?php for ($i=1; $i<=count($datgroupmenu); $i++){ ?>
-                                <option value="<?=$i?>" <?=(isset($data->group_menu)&&$i==$data->group_menu)?"selected":""?>><?=($datgroupmenu[$i]=="Back End")?"Show":"Hidden"?></option>
-                              <?php } ?>
-                            </select>
-                        </div>
-                    </div>
-                    <label for="parent_id" class="col-sm-2 control-label">Icon<font size="4" color="red"><B>*</B></font></label>
-                    <div class="col-sm-3">
-                        <div class="input-group">
-                        <span class="input-group-addon"><i class="fa fa-image"></i></span>
-                        <input type="text" class="form-control icp-auto" id="icon" name="icon" value="<?php echo set_value('icon', isset($data->icon) ? $data->icon : ''); ?>" placeholder="Icon menu" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group ">
-                  <label for="target" class="col-sm-2 control-label">Target</label>
-                  <div class="col-sm-3">
-                    <div class="input-group">
-                      <div class="input-group-btn">
-                        <a class="btn btn-info">
-                          <i class="fa fa-user">&nbsp;</i>
-                        </a>
-                      </div>
-                      <select id="target" name="target" class="form-control">
-                        <option value="_blank" <?= set_select('target', '_blank', isset($data->target) && $data->target == '_blank'); ?>>Blank
-                        </option>
-                        <option value="sametab" <?= set_select('target', 'sametab', isset($data->target) && $data->target == 'sametab'); ?>>Same Tab
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                  <label for="status" class="col-sm-2 control-label">Status</label>
-                  <div class="col-sm-2">
-                    <div class="input-group">
-                      <div class="input-group-btn">
-                        <a class="btn btn-info">
-                          <i class="fa fa-user">&nbsp;</i>
-                        </a>
-                      </div>
-                      <select id="status" name="status" class="form-control">
-                        <option value="1" <?= set_select('status', '1', isset($data->status) && $data->status == '1'); ?>>Active
-                        </option>
-                        <option value="0" <?= set_select('status', '0', isset($data->status) && $data->status == '0'); ?>>Inactive
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-        				<div class="form-group ">
-                  <label for="parent_id" class="col-sm-2 control-label">Order<font size="4" color="red"><B>*</B></font></label>
-                  <div class="col-sm-3">
-                    <div class="input-group">
-                      <span class="input-group-addon"><i class="fa fa-image"></i></span>
-                      <input type="text" class="form-control" id="order" name="order" value="<?php echo set_value('order', isset($data->order) ? $data->order : ''); ?>" placeholder="order menu" required>
-                    </div>
-                  </div>
-                  <?php if (isset($data->id)): ?>
-                  <label for="link" class="col-sm-2 control-label">Permission ID<font size="4" color="red"><B>*</B></font></label>
-                  <div class="col-sm-3">
-                      <div class="input-group">
-                        <div class="input-group-btn">
-                          <a class="btn btn-info">
-                            <i class="fa fa-street-view">&nbsp;</i>
-                          </a>
-                        </div>
-                        <?php
-                        $permission[0]	= 'Select An Option';
-                        echo form_dropdown('permission_id',$permission,set_value('permission_id', isset($data->permission_id) ? $data->permission_id : 'selected'), array('id'=>'permission_id','class'=>'form-control permission_id'));
-                        ?>
-                      </div>
-                  </div>
-                  <?php endif; ?>
-                </div>
-                <div class="box-footer">
-                  <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                      <button type="submit" name="save" class="btn btn-success" id="submit"><i class="fa fa-save">&nbsp;</i>Save</button>
-                      <a class="btn btn-danger" data-toggle="modal" onclick="cancel()"><i class="fa fa-minus-circle">&nbsp;</i>Cancel</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <?= form_close() ?>
             </div>
-            <!-- Biodata Mitra -->
-          </div>
+        </div>
 
-    </div>
-    <!-- /.tab-content -->
+        <div class="row">
+            <!-- Parent Menu -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="parent_id" class="font-weight-bold text-dark">
+                    Parent Menu <span class="text-danger">*</span>
+                </label>
+                <select id="parent_id" name="parent_id" class="form-control select2-modal" style="width: 100%;">
+                    <?php if (!empty($parent)) : ?>
+                        <?php foreach ($parent as $p_id => $p_name) : ?>
+                            <option value="<?= $p_id ?>" <?= (isset($data->parent_id) && $data->parent_id == $p_id) ? 'selected' : '' ?>>
+                                <?= str_replace('&nbsp;', ' ', strip_tags($p_name)) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+
+            <!-- Group Menu -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="group_menu" class="font-weight-bold text-dark">
+                    Group Menu <span class="text-danger">*</span>
+                </label>
+                <select id="group_menu" name="group_menu" class="form-control select2-modal" style="width: 100%;">
+                    <?php if (!empty($datgroupmenu)) : ?>
+                        <?php foreach ($datgroupmenu as $g_id => $g_name) : ?>
+                            <option value="<?= $g_id ?>" <?= (isset($data->group_menu) && $data->group_menu == $g_id) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($g_name) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Icon Menu -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="icon" class="font-weight-bold text-dark">
+                    Icon (FontAwesome) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light-primary border-0">
+                        <i id="icon-preview" class="<?= !empty($data->icon) ? $data->icon : 'fa fa-bars' ?> text-primary"></i>
+                    </span>
+                    <input type="text" class="form-control icp-auto" id="icon" name="icon" 
+                        value="<?= set_value('icon', isset($data->icon) ? $data->icon : 'fa fa-angle-right'); ?>" 
+                        placeholder="fa fa-folder" required>
+                </div>
+                <small class="form-text text-muted">Pilih icon dari picker atau ketik class FontAwesome.</small>
+            </div>
+
+            <!-- Target -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="target" class="font-weight-bold text-dark">Target Link</label>
+                <select id="target" name="target" class="form-control select2-modal" style="width: 100%;">
+                    <option value="sametab" <?= (isset($data->target) && $data->target == 'sametab') ? 'selected' : ''; ?>>Same Tab (Default)</option>
+                    <option value="_blank" <?= (isset($data->target) && $data->target == '_blank') ? 'selected' : ''; ?>>New Tab (_blank)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Order Number -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="order" class="font-weight-bold text-dark">
+                    Urutan (Order) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light-primary border-0"><i class="fa fa-sort-numeric-down text-primary"></i></span>
+                    <input type="number" min="1" class="form-control" id="order" name="order" 
+                        value="<?= set_value('order', isset($data->order) ? $data->order : '1'); ?>" 
+                        placeholder="Urutan tampilan (1, 2, 3...)" required>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6 form-group mb-4">
+                <label for="status" class="font-weight-bold text-dark">Status Menu</label>
+                <select id="status" name="status" class="form-control select2-modal" style="width: 100%;">
+                    <option value="1" <?= (!isset($data->status) || $data->status == '1') ? 'selected' : ''; ?>>Active (Aktif)</option>
+                    <option value="0" <?= (isset($data->status) && $data->status == '0') ? 'selected' : ''; ?>>Inactive (Non-Aktif)</option>
+                </select>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-light-danger font-weight-bold mr-2" data-dismiss="modal">
+                <i class="fa fa-times mr-1"></i> Batal
+            </button>
+            <button type="submit" id="btn-submit" class="btn btn-primary font-weight-bold">
+                <i class="fa fa-save mr-1"></i> Simpan Data
+            </button>
+        </div>
+
+    <?= form_close() ?>
 </div>
 
 <script type="text/javascript">
-  $(document).ready(function() {
-    console.log(base_url+active_controller);
-    $(document).on('click', '#add_permission', function(e){
-      e.preventDefault();
-      $("#head_title").html("<b>ADD PERMISSION</b>");
-      $("#view").load(base_url+active_controller+"/modalAdd_Permission");
-      $("#ModalView").modal();
-    });
-  });
-  $(document).ready(function() {
-    $(".parent_id").select2({
-    });
-    $(".group_menu").select2({
-    });
-    $(".permission_id").select2({
-    });
-	$('.icp-auto').iconpicker();
-  });
-  //Biodata
-  $('#frm_menus').on('submit', function(e){
-    e.preventDefault();
-    var formdata = $("#frm_menus").serialize();
-    $.ajax({
-      url: siteurl+"menus/save_data_menus",
-      dataType : "json",
-      type: 'POST',
-      data: formdata,
-      //alert(msg);
-      success: function(msg){
-        if(msg['save']=='1'){
-          swal({
-            title: "Sukses!",
-            text: "Data Berhasil Di Simpan",
-            type: "success",
-            timer: 1500,
-            showConfirmButton: false
-          });
-          cancel();
-          window.location.reload();
-        } else {
-          swal({
-            title: "Gagal!",
-            text: "Data Gagal Di Simpan",
-            type: "error",
-            timer: 1500,
-            showConfirmButton: false
-          });
-        };//alert(msg);
-      },
-      error: function(){
-        swal({
-          title: "Gagal!",
-          text: "Ajax Data Gagal Di Proses",
-          type: "error",
-          timer: 1500,
-          showConfirmButton: false
+    $(document).ready(function() {
+        // Initialize Select2 with modal context
+        if ($.fn.select2) {
+            $('.select2-modal').select2({
+                dropdownParent: $('#ModalView'),
+                width: '100%'
+            });
+        }
+
+        // Initialize FontAwesome IconPicker if library loaded
+        if ($.fn.iconpicker) {
+            $('.icp-auto').iconpicker({
+                placement: 'bottomRight',
+                hideOnSelect: true
+            }).on('iconpickerSelected', function(e) {
+                $('#icon-preview').attr('class', e.iconpickerValue + ' text-primary');
+            });
+        }
+
+        // Live icon preview update on manual typing
+        $('#icon').on('keyup change', function() {
+            var iconClass = $(this).val();
+            if (iconClass) {
+                $('#icon-preview').attr('class', iconClass + ' text-primary');
+            }
         });
-      }
+
+        // AJAX Form Submission
+        $('#frm_menus').on('submit', function(e) {
+            e.preventDefault();
+            
+            var btnSubmit = $('#btn-submit');
+            var originalBtnHtml = btnSubmit.html();
+            
+            btnSubmit.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Menyimpan...');
+
+            var formdata = $(this).serialize();
+            
+            $.ajax({
+                url: siteurl + "menus/save_data_Menus",
+                dataType: "json",
+                type: 'POST',
+                data: formdata,
+                success: function(msg) {
+                    btnSubmit.prop('disabled', false).html(originalBtnHtml);
+
+                    if (msg.status == 1 || msg.save == 1) {
+                        $("#ModalView").modal('hide');
+                        
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: msg.msg || 'Data Menu berhasil disimpan.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(function() {
+                                window.location.reload();
+                            });
+                        } else if (typeof swal !== 'undefined') {
+                            swal({
+                                title: "Berhasil!",
+                                text: msg.msg || "Data Menu berhasil disimpan.",
+                                type: "success",
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            setTimeout(function() { window.location.reload(); }, 1500);
+                        } else {
+                            alert(msg.msg || 'Data Menu berhasil disimpan.');
+                            window.location.reload();
+                        }
+                    } else {
+                        var errorText = msg.msg || 'Data Gagal Disimpan';
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: errorText
+                            });
+                        } else if (typeof swal !== 'undefined') {
+                            swal("Gagal!", errorText, "error");
+                        } else {
+                            alert(errorText);
+                        }
+                    }
+                },
+                error: function() {
+                    btnSubmit.prop('disabled', false).html(originalBtnHtml);
+                    var errorText = "Terjadi kesalahan saat memproses data ke server.";
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: errorText
+                        });
+                    } else if (typeof swal !== 'undefined') {
+                        swal("Error!", errorText, "error");
+                    } else {
+                        alert(errorText);
+                    }
+                }
+            });
+        });
     });
-  });
-  function cancel(){
-    $(".box").show();
-    $("#form-area").hide();
-    //window.location.reload();
-    //reload_table();
-  }
-  //function reload_table(){
-  //table.ajax.reload(null,false); //reload datatable ajax
-  //   table.ajax.reload();
-  // }
-  </script>
+</script>
