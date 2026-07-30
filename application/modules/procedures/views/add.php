@@ -221,28 +221,20 @@
 												<div class="mb-4">
 													<div class="preview-zone hidden">
 														<div class="box box-solid">
-															<div class="box-body d-flex justify-content-start align-items-center">
-																<div class="dropzone-wrapper mr-2 d-flex align-items-center" style="width: 150px;">
-																	<div class="dropzone-desc">
-																		<i class="fa fa-upload"></i>
-																		<p>Choose an image file or drag it here.</p>
+															<div class="box-body d-flex justify-content-start align-items-center flex-wrap" id="flow-images-container">
+																<?php for ($i = 1; $i <= 10; $i++) : ?>
+																	<div class="dropzone-wrapper mr-2 mb-2 align-items-center flow-img-slot <?= ($i <= 3) ? 'd-flex' : ''; ?>" data-slot="<?= $i; ?>" style="width: 150px; <?= ($i > 3) ? 'display: none;' : ''; ?>">
+																		<div class="dropzone-desc">
+																			<i class="fa fa-upload"></i>
+																			<p>Choose an image file or drag it here.</p>
+																		</div>
+																		<input type="file" name="img_flow[]" accept="image/*" data-index="<?= $i; ?>" class="dropzone dropzone-<?= $i; ?>">
+																		<div class="for-delete"></div>
 																	</div>
-																	<input type="file" name="img_flow[]" data-index="1" class="dropzone dropzone-1">
-																</div>
-																<div class="dropzone-wrapper mr-2 d-flex align-items-center" style="width: 150px;">
-																	<div class="dropzone-desc">
-																		<i class="fa fa-upload"></i>
-																		<p>Choose an image file or drag it here.</p>
-																	</div>
-
-																	<input type="file" name="img_flow[]" data-index="2" class="dropzone dropzone-2">
-																</div>
-																<div class="dropzone-wrapper mr-2 d-flex align-items-center" style="width: 150px;">
-																	<div class="dropzone-desc">
-																		<i class="fa fa-upload"></i>
-																		<p>Choose an image file or drag it here.</p>
-																	</div>
-																	<input type="file" name="img_flow[]" data-index="3" class="dropzone dropzone-3">
+																<?php endfor; ?>
+																<div class="dropzone-wrapper mr-2 mb-2 d-flex flex-column justify-content-center align-items-center text-center cursor-pointer" id="btn-add-image-flow" style="width: 150px;">
+																	<i class="fa fa-plus fa-2x mb-2 text-primary"></i>
+																	<p class="mb-0 font-weight-bold text-primary" style="font-size: 12px;">Tambah Gambar</p>
 																</div>
 															</div>
 														</div>
@@ -816,6 +808,20 @@
 			})
 		})
 	})
+
+	if ($('#flow-images-container .flow-img-slot:hidden').length === 0) {
+		$('#btn-add-image-flow').hide();
+	}
+
+	$(document).on('click', '#btn-add-image-flow', function() {
+		let hiddenSlot = $('#flow-images-container .flow-img-slot:hidden').first();
+		if (hiddenSlot.length > 0) {
+			hiddenSlot.addClass('d-flex').css('display', '');
+		}
+		if ($('#flow-images-container .flow-img-slot:hidden').length === 0) {
+			$(this).hide();
+		}
+	});
 
 	function readFile(input) {
 		if (input.files && input.files[0]) {

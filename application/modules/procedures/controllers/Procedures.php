@@ -577,13 +577,11 @@ class Procedures extends Admin_Controller
 					echo json_encode(['status' => 0, 'msg' => $images['error_msg'] . ' File gambar gagal diupload, silahkan coba lagi.']);
 					return false;
 				}
-				if (isset($images['image1']))
-					$Data['image_flow_1'] = $images['image1'];
-				if (isset($images['image2']))
-					$Data['image_flow_2'] = $images['image2'];
-				if (isset($images['image3']))
-					$Data['image_flow_3'] = $images['image3'];
-				if (isset($images['flow_file']))
+				for ($k = 1; $k <= 10; $k++) {
+					if (!empty($images['image' . $k]))
+						$Data['image_flow_' . $k] = $images['image' . $k];
+				}
+				if (!empty($images['flow_file']))
 					$Data['flow_file'] = $images['flow_file'];
 			}
 
@@ -1135,6 +1133,9 @@ class Procedures extends Admin_Controller
 	{
 		if (!$id) return;
 
+		$procedure = $this->ProModel->getProcedureById($id, $this->company);
+		if (!$procedure) return;
+
 		// Always generate on-the-fly from latest database data
 		$html = $this->_renderPrintoutHtml($id, $this->company);
 		if (!$html) return;
@@ -1149,7 +1150,10 @@ class Procedures extends Admin_Controller
 		$mpdf->curlAllowUnsafeSslRequests = true;
 
 		error_reporting(E_ALL & ~E_NOTICE);
-		$mpdf->WriteHTML($html);
+
+		$pdfFlowPath = FCPATH . 'directory/FLOW_FILE/' . $this->company . '/' . $procedure->flow_file;
+		$this->_writeHtmlAndMergeFlowPdf($mpdf, $html, $pdfFlowPath);
+
 		if (ob_get_length())
 			ob_clean();
 		$mpdf->Output();
@@ -1170,6 +1174,9 @@ class Procedures extends Admin_Controller
 			return;
 		}
 
+		$procedure = $this->ProModel->getProcedureById($id, $this->company);
+		if (!$procedure) return;
+
 		// Fallback: if PDF file doesn't exist, generate on-the-fly
 		$html = $this->_renderPrintoutHtml($id, $this->company);
 		if (!$html) return;
@@ -1184,7 +1191,10 @@ class Procedures extends Admin_Controller
 		$mpdf->curlAllowUnsafeSslRequests = true;
 
 		error_reporting(E_ALL & ~E_NOTICE);
-		$mpdf->WriteHTML($html);
+
+		$pdfFlowPath = FCPATH . 'directory/FLOW_FILE/' . $this->company . '/' . $procedure->flow_file;
+		$this->_writeHtmlAndMergeFlowPdf($mpdf, $html, $pdfFlowPath);
+
 		if (ob_get_length())
 			ob_clean();
 		$mpdf->Output();
@@ -1208,6 +1218,8 @@ class Procedures extends Admin_Controller
 		}
 
 		$companyId = $companyId ?: $this->company;
+		$procedure = $this->ProModel->getProcedureById($id, $companyId);
+		if (!$procedure) return false;
 
 		try {
 			$html = $this->_renderPrintoutHtml($id, $companyId);
@@ -1226,7 +1238,9 @@ class Procedures extends Admin_Controller
 			$mpdf->curlAllowUnsafeSslRequests = true;
 
 			error_reporting(E_ALL & ~E_NOTICE);
-			$mpdf->WriteHTML($html);
+
+			$pdfFlowPath = FCPATH . 'directory/FLOW_FILE/' . $companyId . '/' . $procedure->flow_file;
+			$this->_writeHtmlAndMergeFlowPdf($mpdf, $html, $pdfFlowPath);
 
 			// Ensure directory exists
 			$pdfDir = FCPATH . 'directory/PROCEDURES_PDF/' . $companyId . '/';
@@ -1243,6 +1257,32 @@ class Procedures extends Admin_Controller
 		} catch (\Exception $e) {
 			log_message('error', 'generatePdfFile error for ID ' . $id . ': ' . $e->getMessage());
 			return false;
+		}
+	}
+
+	private function _writeHtmlAndMergeFlowPdf($mpdf, $html, $flowFilePath)
+	{
+		if (!empty($flowFilePath) && file_exists($flowFilePath) && strpos($html, '<!-- FLOW_PDF_PLACEHOLDER -->') !== false) {
+			$parts = explode('<!-- FLOW_PDF_PLACEHOLDER -->', $html, 2);
+			$mpdf->WriteHTML($parts[0]);
+
+			try {
+				$pageCount = $mpdf->setSourceFile($flowFilePath);
+				for ($p = 1; $p <= $pageCount; $p++) {
+					$mpdf->AddPage();
+					$tplId = $mpdf->importPage($p);
+					$mpdf->useTemplate($tplId);
+				}
+			} catch (\Exception $e) {
+				log_message('error', 'Error importing flow PDF: ' . $e->getMessage());
+			}
+
+			if (isset($parts[1]) && trim($parts[1]) !== '') {
+				$mpdf->AddPage();
+				$mpdf->WriteHTML($parts[1]);
+			}
+		} else {
+			$mpdf->WriteHTML($html);
 		}
 	}
 
@@ -1491,6 +1531,12 @@ class Procedures extends Admin_Controller
 			$fileInfo = $this->upload->data();
 		}
 
-		return ['image1' => isset($dataInfo[0]['file_name']) ? $dataInfo[0]['file_name'] : '', 'image2' => isset($dataInfo[1]['file_name']) ? $dataInfo[1]['file_name'] : '', 'image3' => isset($dataInfo[2]['file_name']) ? $dataInfo[2]['file_name'] : '', 'flow_file' => $fileInfo['file_name']];
+		$result = ['flow_file' => $fileInfo['file_name']];
+		for ($k = 1; $k <= 10; $k++) {
+			$idx = $k - 1;
+			$result['image' . $k] = isset($dataInfo[$idx]['file_name']) ? $dataInfo[$idx]['file_name'] : '';
+		}
+
+		return $result;
 	}
 }

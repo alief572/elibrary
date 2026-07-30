@@ -178,20 +178,29 @@
     <br>
 
     <h4>FLOW PROCEDURE</h4>
-    <?php if ($procedure->image_flow_1 || $procedure->image_flow_2 || $procedure->image_flow_3) : ?>
-      <?php if ($procedure->image_flow_1) : ?>
-        <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_1"; ?>"
-          alt="image_flow_1" class="img-fluid">
-      <?php endif; ?>
-      <?php if ($procedure->image_flow_2) : ?>
-        <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_2"; ?>"
-          alt="image_flow_2" class="img-fluid">
-      <?php endif; ?>
-      <?php if ($procedure->image_flow_3) : ?>
-        <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/$procedure->image_flow_3"; ?>"
-          alt="image_flow_3" class="img-fluid">
-      <?php endif; ?>
-    <?php else : ?>
+    <?php
+    $hasFlowImg = false;
+    for ($i = 1; $i <= 10; $i++) {
+      $col = 'image_flow_' . $i;
+      if (!empty($procedure->$col)) {
+        $hasFlowImg = true;
+        break;
+      }
+    }
+    ?>
+    <?php if ($hasFlowImg) : ?>
+      <?php for ($i = 1; $i <= 10; $i++) :
+        $col = 'image_flow_' . $i;
+        if (!empty($procedure->$col)) : ?>
+          <img height="600" src="<?= FCPATH . "directory/FLOW_IMG/$procedure->company_id/" . $procedure->$col; ?>"
+            alt="<?= $col; ?>" class="img-fluid">
+        <?php endif;
+      endfor; ?>
+    <?php endif; ?>
+    <?php if (!empty($procedure->flow_file)) : ?>
+      <!-- FLOW_PDF_PLACEHOLDER -->
+    <?php endif; ?>
+    <?php if (!$hasFlowImg && empty($procedure->flow_file)) : ?>
       ~ Not available data ~
     <?php endif; ?>
 

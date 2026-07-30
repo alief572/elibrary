@@ -224,65 +224,35 @@
 												<div class="mb-4">
 													<div class="preview-zone hidden">
 														<div class="box box-solid">
-															<div class="box-body d-flex justify-content-start align-items-center">
-																<div class="dropzone-wrapper mr-2 d-flex align-items-center" style="width: 150px;">
-																	<div class="dropzone-desc">
-																		<?php if ($data->image_flow_1) : ?>
-																			<img width="150" src="<?= base_url("./directory/FLOW_IMG/$data->company_id/$data->image_flow_1"); ?>" />
-																		<?php else : ?>
-																			<i class="fa fa-upload"></i>
-																			<p>Choose an image file or drag it here.</p>
-																		<?php endif; ?>
-																	</div>
-																	<input type="file" name="img_flow[]" accept="image/*" data-index="1" class="dropzone dropzone-1">
-																	<?php if ($data->image_flow_1) : ?>
-																		<div class="middle d-flex justify-content-center align-items-center">
-																			<button type="button" onclick="$(this).parent().parent().find('.dropzone').click()" class="btn btn-sm mr-1 btn-icon btn-warning change-image rounded-circle"><i class="fa fa-edit"></i></button>
-																			<button type="button" onclick="remove_image(this)" data-id="<?= $data->id; ?>" data-img="image_flow_1" class="btn btn-sm mr-1 btn-icon btn-danger remove-image rounded-circle"><i class="fa fa-trash text-white"></i></button>
+															<div class="box-body d-flex justify-content-start align-items-center flex-wrap" id="flow-images-container">
+																<?php for ($i = 1; $i <= 10; $i++) :
+																	$imgField = 'image_flow_' . $i;
+																	$hasImg = !empty($data->$imgField);
+																	$isVisible = ($i <= 3) || $hasImg;
+																?>
+																	<div class="dropzone-wrapper mr-2 mb-2 align-items-center flow-img-slot <?= $isVisible ? 'd-flex' : ''; ?>" data-slot="<?= $i; ?>" style="width: 150px; <?= !$isVisible ? 'display: none;' : ''; ?>">
+																		<div class="dropzone-desc">
+																			<?php if ($hasImg) : ?>
+																				<img width="150" src="<?= base_url("./directory/FLOW_IMG/$data->company_id/" . $data->$imgField); ?>" />
+																			<?php else : ?>
+																				<i class="fa fa-upload"></i>
+																				<p>Choose an image file or drag it here.</p>
+																			<?php endif; ?>
 																		</div>
-																	<?php endif; ?>
-																	<div class="for-delete"></div>
-																</div>
-
-																<div class="dropzone-wrapper mr-2 d-flex align-items-center" style="width: 150px;">
-																	<div class="dropzone-desc">
-																		<?php if ($data->image_flow_2) : ?>
-																			<img width="150" src="<?= base_url("./directory/FLOW_IMG/$data->company_id/$data->image_flow_2"); ?>" />
-																		<?php else : ?>
-																			<i class="fa fa-upload"></i>
-																			<p>Choose an image file or drag it here.</p>
+																		<input type="file" name="img_flow[]" accept="image/*" data-index="<?= $i; ?>" class="dropzone dropzone-<?= $i; ?>">
+																		<?php if ($hasImg) : ?>
+																			<div class="middle d-flex justify-content-center align-items-center">
+																				<button type="button" onclick="$(this).parent().parent().find('.dropzone').click()" class="btn btn-sm mr-1 btn-icon btn-warning change-image rounded-circle"><i class="fa fa-edit"></i></button>
+																				<button type="button" onclick="remove_image(this)" data-id="<?= $data->id; ?>" data-img="<?= $imgField; ?>" class="btn btn-sm mr-1 btn-icon btn-danger remove-image rounded-circle"><i class="fa fa-trash text-white"></i></button>
+																			</div>
 																		<?php endif; ?>
+																		<div class="for-delete"></div>
 																	</div>
-
-																	<input type="file" name="img_flow[]" accept="image/*" data-index="2" class="dropzone dropzone-2">
-																	<?php if ($data->image_flow_2) : ?>
-																		<div class="middle d-flex justify-content-center align-items-center">
-																			<button type="button" onclick="$(this).parent().parent().find('.dropzone').click()" class="btn btn-sm mr-1 btn-icon btn-warning change-image rounded-circle"><i class="fa fa-edit"></i></button>
-																			<button type="button" onclick="remove_image(this)" data-id="<?= $data->id; ?>" data-img="image_flow_2" class="btn btn-sm mr-1 btn-icon btn-danger remove-image rounded-circle"><i class="fa fa-trash text-white"></i></button>
-																		</div>
-																	<?php endif; ?>
-																	<div class="for-delete"></div>
+																<?php endfor; ?>
+																<div class="dropzone-wrapper mr-2 mb-2 d-flex flex-column justify-content-center align-items-center text-center cursor-pointer" id="btn-add-image-flow" style="width: 150px;">
+																	<i class="fa fa-plus fa-2x mb-2 text-primary"></i>
+																	<p class="mb-0 font-weight-bold text-primary" style="font-size: 12px;">Tambah Gambar</p>
 																</div>
-
-																<div class="dropzone-wrapper mr-2 d-flex align-items-center" style="width: 150px;">
-																	<div class="dropzone-desc">
-																		<?php if ($data->image_flow_3) : ?>
-																			<img width="150" src="<?= base_url("./directory/FLOW_IMG/$data->company_id/$data->image_flow_3"); ?>" />
-																		<?php else : ?>
-																			<i class="fa fa-upload"></i>
-																			<p>Choose an image file or drag it here.</p>
-																		<?php endif; ?>
-																	</div>
-																	<input type="file" name="img_flow[]" accept="image/*" data-index="3" class="dropzone dropzone-3">
-																	<?php if ($data->image_flow_3) : ?>
-																		<div class="middle d-flex justify-content-center align-items-center">
-																			<button type="button" onclick="$(this).parent().parent().find('.dropzone').click()" class="btn btn-sm mr-1 btn-icon btn-warning change-image rounded-circle"><i class="fa fa-edit"></i></button>
-																			<button type="button" onclick="remove_image(this)" data-id="<?= $data->id; ?>" data-img="image_flow_3" class="btn btn-sm mr-1 btn-icon btn-danger remove-image rounded-circle"><i class="fa fa-trash"></i></button>
-																		</div>
-																	<?php endif; ?>
-																	<div class="for-delete"></div>
-																</div>
-
 															</div>
 														</div>
 													</div>
@@ -2009,6 +1979,20 @@
 	function reload_guides(pro_id) {
 		$('#guide-data-content').load(siteurl + active_controller + 'loadDataGuide/' + pro_id)
 	}
+
+	if ($('#flow-images-container .flow-img-slot:hidden').length === 0) {
+		$('#btn-add-image-flow').hide();
+	}
+
+	$(document).on('click', '#btn-add-image-flow', function() {
+		let hiddenSlot = $('#flow-images-container .flow-img-slot:hidden').first();
+		if (hiddenSlot.length > 0) {
+			hiddenSlot.addClass('d-flex').css('display', '');
+		}
+		if ($('#flow-images-container .flow-img-slot:hidden').length === 0) {
+			$(this).hide();
+		}
+	});
 
 	function readFile(input) {
 		if (input.files && input.files[0]) {
