@@ -39,9 +39,12 @@ class Procedures_model extends BF_Model
             ->result();
     }
 
-    public function getProcedureById($id, $companyId)
+    public function getProcedureById($id, $companyId = null)
     {
-        return $this->db->get_where('procedures', ['company_id' => $companyId, 'id' => $id])->row();
+        if ($companyId) {
+            return $this->db->get_where('procedures', ['company_id' => $companyId, 'id' => $id])->row();
+        }
+        return $this->db->get_where('procedures', ['id' => $id])->row();
     }
 
     public function getProcedureDetails($procedureId)
@@ -295,11 +298,14 @@ class Procedures_model extends BF_Model
 
     public function updateStatus($id, $status, $userId, $companyId, $extra = [])
     {
-        $data = array_merge([
+        $data = [
             'modified_by' => $userId,
-            'modified_at' => date('Y-m-d H:i:s'),
-            'status'      => $status
-        ], $extra);
+            'modified_at' => date('Y-m-d H:i:s')
+        ];
+        if ($status !== null) {
+            $data['status'] = $status;
+        }
+        $data = array_merge($data, $extra);
         return $this->db->update('procedures', $data, ['company_id' => $companyId, 'id' => $id]);
     }
 

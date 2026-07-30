@@ -1,4 +1,4 @@
-<div class="modal-header py-2 px-2">
+<div class="modal-header py-2 px-3 d-flex justify-content-between align-items-center">
     <ul class="nav nav-pills nav-light-success py-0" id="myTab" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" data-toggle="tab" href="#file">
@@ -17,6 +17,9 @@
             </a>
         </li>
     </ul>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
 </div>
 <div class="tab-content mt-5">
     <div class="tab-pane fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
@@ -78,4 +81,7 @@
 
 
     </div>
+</div>
+<div class="modal-footer py-2 px-3 border-top mt-3">
+    <button type="button" class="btn btn-secondary btn-sm px-4" data-dismiss="modal"><i class="fa fa-times mr-1"></i> Close</button>
 </div>

@@ -134,11 +134,11 @@ if (!isset($file) && isset($data)) {
 										<h4 class="font-weight-bolder text-dark mb-0"><?= strtoupper($file->name); ?></h4>
 									</td>
 									<td width="120" class="font-weight-bold small">Nomor</td>
-									<td class="small"><?= $file->nomor; ?></td>
+									<td class="small"><?= isset($file->nomor) ? $file->nomor : (isset($file->number) ? $file->number : '-'); ?></td>
 								</tr>
 								<tr>
 									<td class="font-weight-bold small">Tgl. Terbit</td>
-									<td class="small"><?= ($file->approved_at) ? date("d M Y", strtotime($file->approved_at)) : '~'; ?></td>
+									<td class="small"><?= (!empty($file->approved_at)) ? date("d M Y", strtotime($file->approved_at)) : '~'; ?></td>
 								</tr>
 								<tr>
 									<td class="font-weight-bold small">Revisi</td>
@@ -233,7 +233,17 @@ if (!isset($file) && isset($data)) {
 						</div>
 
 						<!-- Flow Image & File -->
-						<?php if ($file->image_flow_1 || $file->image_flow_2 || $file->image_flow_3 || $file->flow_file) : ?>
+						<?php
+						$hasAnyFlowImg = false;
+						for ($i = 1; $i <= 10; $i++) {
+							$col = 'image_flow_' . $i;
+							if (!empty($file->$col)) {
+								$hasAnyFlowImg = true;
+								break;
+							}
+						}
+						?>
+						<?php if ($hasAnyFlowImg || !empty($file->flow_file)) : ?>
 							<div class="table-responsive mb-3">
 								<table class="table table-bordered mb-0">
 									<thead>
@@ -247,25 +257,16 @@ if (!isset($file) && isset($data)) {
 										<tr>
 											<td>
 												<div class="d-flex justify-content-start align-items-center flex-wrap">
-													<?php if ($file->image_flow_1) : ?>
-														<div class="border rounded p-2 mr-3 mb-2 text-center" style="width:160px;">
-															<img src="<?= base_url("directory/FLOW_IMG/$file->company_id/$file->image_flow_1"); ?>" class="img-fluid rounded mb-2" style="max-height:120px;">
-															<a href="<?= base_url("directory/FLOW_IMG/$file->company_id/$file->image_flow_1"); ?>" target="_blank" class="btn btn-xs btn-outline-primary"><i class="fa fa-search"></i> View Image</a>
-														</div>
-													<?php endif; ?>
-													<?php if ($file->image_flow_2) : ?>
-														<div class="border rounded p-2 mr-3 mb-2 text-center" style="width:160px;">
-															<img src="<?= base_url("directory/FLOW_IMG/$file->company_id/$file->image_flow_2"); ?>" class="img-fluid rounded mb-2" style="max-height:120px;">
-															<a href="<?= base_url("directory/FLOW_IMG/$file->company_id/$file->image_flow_2"); ?>" target="_blank" class="btn btn-xs btn-outline-primary"><i class="fa fa-search"></i> View Image</a>
-														</div>
-													<?php endif; ?>
-													<?php if ($file->image_flow_3) : ?>
-														<div class="border rounded p-2 mr-3 mb-2 text-center" style="width:160px;">
-															<img src="<?= base_url("directory/FLOW_IMG/$file->company_id/$file->image_flow_3"); ?>" class="img-fluid rounded mb-2" style="max-height:120px;">
-															<a href="<?= base_url("directory/FLOW_IMG/$file->company_id/$file->image_flow_3"); ?>" target="_blank" class="btn btn-xs btn-outline-primary"><i class="fa fa-search"></i> View Image</a>
-														</div>
-													<?php endif; ?>
-													<?php if ($file->flow_file) : ?>
+													<?php for ($i = 1; $i <= 10; $i++) :
+														$col = 'image_flow_' . $i;
+														if (!empty($file->$col)) : ?>
+															<div class="border rounded p-2 mr-3 mb-2 text-center" style="width:160px;">
+																<img src="<?= base_url("directory/FLOW_IMG/$file->company_id/" . $file->$col); ?>" class="img-fluid rounded mb-2" style="max-height:120px;">
+																<a href="<?= base_url("directory/FLOW_IMG/$file->company_id/" . $file->$col); ?>" target="_blank" class="btn btn-xs btn-outline-primary"><i class="fa fa-search"></i> View Image</a>
+															</div>
+														<?php endif; ?>
+													<?php endfor; ?>
+													<?php if (!empty($file->flow_file)) : ?>
 														<div class="border rounded p-3 mb-2 text-center bg-light" style="width:160px;">
 															<i class="fa fa-file-pdf text-danger fa-3x mb-2"></i>
 															<div class="small font-weight-bold text-truncate mb-2"><?= $file->flow_file; ?></div>
@@ -281,7 +282,7 @@ if (!isset($file) && isset($data)) {
 						<?php endif; ?>
 
 						<!-- Video Link -->
-						<?php if ($file->link_video) : ?>
+						<?php if (!empty($file->link_video)) : ?>
 							<div class="table-responsive mb-3">
 								<table class="table table-bordered mb-0">
 									<thead>

@@ -323,7 +323,28 @@ class Monitoring extends Admin_Controller
 			$mpdf->curlAllowUnsafeSslRequests = true;
 
 			error_reporting(E_ALL & ~E_NOTICE);
-			$mpdf->WriteHTML($html);
+
+			$pdfFlowPath = FCPATH . 'directory/FLOW_FILE/' . $procedure->company_id . '/' . $procedure->flow_file;
+			if (!empty($procedure->flow_file) && file_exists($pdfFlowPath) && strpos($html, '<!-- FLOW_PDF_PLACEHOLDER -->') !== false) {
+				$parts = explode('<!-- FLOW_PDF_PLACEHOLDER -->', $html, 2);
+				$mpdf->WriteHTML($parts[0]);
+				try {
+					$pageCount = $mpdf->setSourceFile($pdfFlowPath);
+					for ($p = 1; $p <= $pageCount; $p++) {
+						$mpdf->AddPage();
+						$tplId = $mpdf->importPage($p);
+						$mpdf->useTemplate($tplId);
+					}
+				} catch (\Exception $e) {
+					log_message('error', 'Error importing flow PDF: ' . $e->getMessage());
+				}
+				if (isset($parts[1]) && trim($parts[1]) !== '') {
+					$mpdf->AddPage();
+					$mpdf->WriteHTML($parts[1]);
+				}
+			} else {
+				$mpdf->WriteHTML($html);
+			}
 
 			$pdfPath = $pdfDir . 'procedure_' . $procedureId . '.pdf';
 

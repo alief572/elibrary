@@ -141,13 +141,81 @@ class Documents_list extends Admin_Controller
 
 	public function view_procedure($id)
 	{
-		$docs = $this->List->getProcedureById($id);
+		$this->load->model('procedures/Procedures_model', 'ProModel');
 
-		$this->template->set([
-			'docs' => $docs,
-		]);
+		$Data = $this->ProModel->getProcedureById($id, $this->company);
+		if (!$Data) {
+			$Data = $this->ProModel->getProcedureById($id);
+		}
+		if (!$Data) {
+			$Data = $this->List->getProcedureById($id);
+		}
 
-		$this->template->render('procedures/view-docs');
+		if ($Data) {
+			$companyId = (isset($Data->company_id) && $Data->company_id) ? $Data->company_id : $this->company;
+			$Data_detail = $this->ProModel->getProcedureDetails($id);
+			$getForms = $this->ProModel->getFormsByProcedure($id, '');
+			$getGuides = $this->ProModel->getGuidesByProcedure($id, '');
+			$users = $this->ProModel->getAllActiveUsers();
+			$jabatan = $this->ProModel->getPositions();
+			$history = $this->ProModel->getDirectoryLogs($id);
+			$revisions = $this->ProModel->getProcedureRevisions($id);
+
+			$ArrUsr = $ArrJab = $ArrForms = $ArrGuides = [];
+			foreach ($getForms as $frm) {
+				$ArrForms[$frm->id] = $frm;
+			}
+			foreach ($getGuides as $gui) {
+				$ArrGuides[$gui->id] = $gui;
+			}
+			foreach ($users as $usr) {
+				$ArrUsr[$usr->id_user] = $usr;
+			}
+			foreach ($jabatan as $jab) {
+				$ArrJab[$jab->id] = $jab;
+			}
+
+			$Cross = $this->ProModel->getCrossReferences($id, $companyId);
+			$ArrData = $ArrStd = [];
+			if ($Cross) {
+				foreach ($Cross as $dt) {
+					$ArrData['id'][$dt->requirement_id] = $dt->requirement_id;
+					$ArrData['standards'][$dt->requirement_id][] = $dt;
+				}
+				foreach ($Cross as $dtstd) {
+					$ArrStd[$dtstd->requirement_id] = $dtstd;
+				}
+			}
+
+			$company = $this->ProModel->getCompany($companyId);
+			$company_name = (isset($company->nm_perusahaan) ? $company->nm_perusahaan : '');
+
+			$this->template->set([
+				'title' => 'Procedures',
+				'data' => $Data,
+				'file' => $Data,
+				'docs' => $Data,
+				'detail' => $Data_detail,
+				'users' => $users,
+				'jabatan' => $jabatan,
+				'ArrUsr' => $ArrUsr,
+				'ArrJab' => $ArrJab,
+				'ArrForms' => $ArrForms,
+				'ArrGuides' => $ArrGuides,
+				'history' => $history,
+				'revisions' => $revisions,
+				'sts' => $this->sts,
+				'Cross' => $Cross,
+				'ArrData' => $ArrData,
+				'ArrStd' => $ArrStd,
+				'company_name' => $company_name,
+				'view_data' => true,
+			]);
+
+			$this->template->render('procedures/view-docs');
+		} else {
+			echo '<div class="text-center py-5 text-muted"><h5>Data Prosedur Tidak Ditemukan</h5></div>';
+		}
 	}
 
 	public function view_record($id)

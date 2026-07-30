@@ -240,19 +240,10 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-xl modal-dialog-scrollable" role="document" style="height:95%;max-width: 97%;">
-		<div class="modal-content" style="height:100%;">
-			<div class="modal-header py-2">
-				<h5 class="modal-title">View Document</h5>
-				<button type="button" class="btn btn-xs btn-icon btn-light" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true"><i class="fa fa-times text-secondary" aria-hidden="true"></i></span>
-				</button>
-			</div>
-			<div class="modal-body p-2" id="data-file" style="overflow:hidden;">
-				<h3 class="text-center">File not found</h3>
-			</div>
-			<div class="modal-footer py-2">
-				<button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">Close</button>
+	<div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="height:85vh; max-height:850px;">
+		<div class="modal-content overflow-hidden" style="height:100%;">
+			<div class="modal-body p-0 overflow-hidden h-100" id="data-file">
+				<h3 class="text-center py-5">File not found</h3>
 			</div>
 		</div>
 	</div>

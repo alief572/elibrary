@@ -225,11 +225,14 @@ class Records_model extends BF_Model
 
     public function updateStatus($id, $status, $userId, $companyId, $extra = [])
     {
-        $data = array_merge([
+        $data = [
             'modified_by' => $userId,
-            'modified_at' => date('Y-m-d H:i:s'),
-            'status'      => $status
-        ], $extra);
+            'modified_at' => date('Y-m-d H:i:s')
+        ];
+        if ($status !== null) {
+            $data['status'] = $status;
+        }
+        $data = array_merge($data, $extra);
         return $this->db->update('procedures', $data, ['company_id' => $companyId, 'id' => $id]);
     }
 

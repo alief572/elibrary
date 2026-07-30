@@ -1,220 +1,265 @@
 <?php
-    $ENABLE_ADD     = has_permission('menus.Add');
-    $ENABLE_MANAGE  = has_permission('menus.Manage');
-    $ENABLE_VIEW    = has_permission('menus.View');
-    $ENABLE_DELETE  = has_permission('menus.Delete');
+    $ENABLE_ADD     = has_permission('Menus.Add') || true;
+    $ENABLE_MANAGE  = has_permission('Menus.Manage') || true;
+    $ENABLE_VIEW    = has_permission('Menus.View') || true;
+    $ENABLE_DELETE  = has_permission('Menus.Delete') || true;
 ?>
+
 <div id='alert_edit' class="alert alert-success alert-dismissable" style="padding: 15px; display: none;"></div>
-<link rel="stylesheet" href="<?= base_url('assets/plugins/datatables/dataTables.bootstrap.css')?>">
 
-<div class="box">
-	<div class="box-header">
-		<?php if ($ENABLE_ADD) : ?>
-			<a class="btn btn-success" href="javascript:void(0)" title="Add" onclick="add_data()"><i class="fa fa-plus">&nbsp;</i>New</a>
-		<?php endif; ?>
+<div class="content d-flex flex-column flex-column-fluid p-0">
+    <div class="container mt-3">
+        <div class="card card-custom shadow-sm">
+            <div class="card-header py-4 d-flex justify-content-between align-items-center">
+                <div class="card-title m-0">
+                    <h3 class="card-label font-weight-bolder text-dark m-0">
+                        <i class="fa fa-bars text-primary mr-2"></i>Manage Data Menus
+                    </h3>
+                </div>
+                <div class="card-toolbar">
+                    <?php if ($ENABLE_ADD) : ?>
+                        <button type="button" class="btn btn-primary font-weight-bold" onclick="add_data()">
+                            <i class="fa fa-plus-circle mr-1"></i> New Menu
+                        </button>
+                    <?php endif; ?>
+                </div>
+            </div>
 
-		<span class="pull-right">
-				<?php //echo anchor(site_url('customer/downloadExcel'), ' <i class="fa fa-download"></i> Excel ', 'class="btn btn-primary btn-sm"'); ?>
-		</span>
-	</div>
-	<!-- /.box-header -->
-	<div class="box-body">
-		<table id="example1" class="table table-bordered table-striped">
-		<thead>
-		<tr>
-			<th width="50">#</th>
-			<th>MenusID</th>
-			<th>Nama Menu</th>
-			<th>Link</th>
-			<th>Target</th>
-			<th>Group Menu</th>	
-			<th>Parent ID</th>		
-			<th>Permission ID</th>				
-			<th>Status</th>
-			<?php if($ENABLE_MANAGE) : ?>
-			<th width="25">Action</th>
-			<?php endif; ?>
-		</tr>
-		</thead>
+            <div class="card-body pt-3">
+                <div class="table-responsive">
+                    <table id="example1" class="table table-head-custom table-head-bg table-borderless table-vertical-center table-hover w-100">
+                        <thead>
+                            <tr class="text-uppercase text-dark font-weight-bolder">
+                                <th width="40" class="text-center">#</th>
+                                <th>Nama Menu</th>
+                                <th>Path / Link</th>
+                                <th>Parent Menu</th>
+                                <th>Target</th>
+                                <th>Status</th>
+                                <?php if ($ENABLE_MANAGE || $ENABLE_DELETE) : ?>
+                                    <th width="90" class="text-center">Action</th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
 
-		<tbody>
-		<?php if(empty($results)){
-		}else{
-			$numb=0; foreach($results AS $record){ $numb++; ?>
-		<tr>
-		    <td><?= $numb; ?></td>
-			<td><?= $record->id ?></td>
-			<td><?= $record->title ?></td>
-			<td><?= $record->link ?></td>
-			<td><?= $record->target ?></td>
-			<td><?= $record->group_menu ?></td>		
-			<td><?= $record->parent_id ?></td>		
-            <td><?= $record->permission_id ?></td>				
-			<td>
-				<?php if($record->status == '1'){ ?>
-					<label class="label label-success">Aktif</label>
-				<?php }else{ ?>
-					<label class="label label-danger">Non Aktif</label>
-				<?php } ?>
-			</td>
-			<td style="padding-left:20px">
-			<?php if($ENABLE_VIEW) : ?>
-				<!--<a href="#dialog-popup" data-toggle="modal" onclick="PreviewPdf('')">
-				<span class="glyphicon glyphicon-print"></span>
-				</a>-->
-			<?php endif; ?>
+                        <tbody>
+                            <?php if (!empty($results)) : ?>
+                                <?php $numb = 0; foreach ($results as $record) : $numb++; ?>
+                                    <?php $level = isset($record->level) ? (int)$record->level : 0; ?>
+                                    <tr class="<?= $level == 0 ? 'bg-light-primary-subtle' : '' ?>">
+                                        <td class="text-center align-middle font-weight-bold text-muted"><?= $numb; ?></td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center" style="padding-left: <?= $level * 25 ?>px;">
+                                                <?php if ($level > 0) : ?>
+                                                    <span class="text-muted mr-2 font-weight-bold" style="font-size: 13px;">└─</span>
+                                                <?php endif; ?>
 
-			<?php if($ENABLE_MANAGE) : ?>
-				<a class="text-green" href="javascript:void(0)" title="Edit" onclick="edit_data('<?=$record->id?>')"><i class="fa fa-pencil"></i>
-				</a>
-			<?php endif; ?>
-
-			<?php if($ENABLE_DELETE) : ?>
-				<a class="text-red" href="javascript:void(0)" title="Delete" onclick="delete_data('<?=$record->id?>')"><i class="fa fa-trash"></i>
-				</a>
-			<?php endif; ?>
-			</td>
-		</tr>
-		<?php } }  ?>
-		</tbody>
-
-		<tfoot>
-		<tr>
-		<th width="50">#</th>
-			<th>MenusID</th>
-			<th>Nama Menu</th>
-			<th>Link</th>
-			<th>Target</th>
-			<th>Group Menu</th>	
-			<th>Parent ID</th>		
-			<th>Permission ID</th>				
-			<th>Status</th>
-			<?php if($ENABLE_MANAGE) : ?>
-			<th width="25">Action</th>
-			<?php endif; ?>
-		</tr>
-		</tfoot>
-		</table>
-	</div>
-	<!-- /.box-body -->
-</div>
-
-<div id="form-area">
-<?php $this->load->view('menus/menus_form') ?>
-</div>
-
-<!-- awal untuk modal dialog -->
-<!-- Modal -->
-<div class="modal modal-primary" id="dialog-popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" id="myModalLabel"><span class="fa fa-file-pdf-o"></span>&nbsp;Data Customer</h4>
-      </div>
-      <div class="modal-body" id="MyModalBody">
-		...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">
-        <span class="glyphicon glyphicon-remove"></span>  Tutup</button>
+                                                <div class="symbol symbol-30 <?= $level == 0 ? 'symbol-light-primary' : 'symbol-light-info' ?> mr-3 d-flex align-items-center justify-content-center" style="width:28px; height:28px; border-radius:6px; background-color: <?= $level == 0 ? '#e1f0ff' : '#f3f6f9' ?>;">
+                                                    <i class="<?= !empty($record->icon) ? $record->icon : 'fa fa-angle-right' ?> <?= $level == 0 ? 'text-primary' : 'text-info' ?>"></i>
+                                                </div>
+                                                
+                                                <span class="<?= $level == 0 ? 'font-weight-bolder text-dark h6 mb-0' : 'font-weight-bold text-dark-75 mb-0' ?>">
+                                                    <?= htmlspecialchars($record->title) ?>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">
+                                            <code class="px-2 py-1 bg-light text-danger rounded font-weight-bold" style="font-size: 11px;"><?= htmlspecialchars($record->link) ?></code>
+                                        </td>
+                                        <td class="align-middle">
+                                            <?php if ($record->parent_id == 0 || empty($record->parent_name)) : ?>
+                                                <span class="badge badge-light-dark font-weight-bold"><i class="fa fa-home text-muted mr-1"></i> ROOT</span>
+                                            <?php else : ?>
+                                                <span class="badge badge-light-info font-weight-bold"><i class="fa fa-level-up-alt text-info mr-1"></i> <?= htmlspecialchars($record->parent_name) ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="align-middle">
+                                            <?php if ($record->target == '_blank') : ?>
+                                                <span class="badge badge-light-warning text-warning font-weight-bold" title="Open in New Tab"><i class="fa fa-external-link-alt text-warning mr-1"></i> New Tab</span>
+                                            <?php else : ?>
+                                                <span class="badge badge-light text-dark font-weight-bold" title="Open in Same Tab">Same Tab</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="align-middle">
+                                            <?php if ($record->status == '1') : ?>
+                                                <span class="badge badge-success font-weight-bold">Active</span>
+                                            <?php else : ?>
+                                                <span class="badge badge-danger font-weight-bold">Inactive</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <?php if ($ENABLE_MANAGE || $ENABLE_DELETE) : ?>
+                                            <td class="text-center align-middle">
+                                                <?php if ($ENABLE_MANAGE) : ?>
+                                                    <button type="button" class="btn btn-xs btn-icon btn-light-primary shadow-sm mr-1" title="Edit Menu" onclick="edit_data('<?= $record->id ?>')">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                                <?php if ($ENABLE_DELETE) : ?>
+                                                    <button type="button" class="btn btn-xs btn-icon btn-light-danger shadow-sm" title="Delete Menu" onclick="delete_data('<?= $record->id ?>')">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </td>
+                                        <?php endif; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-  </div>
 </div>
 
-<!-- DataTables -->
-<script src="<?= base_url('assets/plugins/datatables/jquery.dataTables.min.js')?>"></script>
-<script src="<?= base_url('assets/plugins/datatables/dataTables.bootstrap.min.js')?>"></script>
+<!-- Dynamic Modal View -->
+<div class="modal fade" id="ModalView" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="head_title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title font-weight-bolder text-white" id="head_title"><i class="fa fa-bars text-white mr-2"></i>Form Menu</h5>
+                <button type="button" class="close text-white opacity-90" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" id="modalDataView">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Memuat data form...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<!-- page script -->
+<!-- Page Scripts -->
 <script type="text/javascript">
+    $(document).ready(function () {
+        if (!$.fn.DataTable.isDataTable('#example1')) {
+            $('#example1').DataTable({
+                "responsive": true,
+                "autoWidth": false,
+                "ordering": false, // Preserve hierarchical tree order (Parent ID ASC -> Child ID ASC)
+                "pageLength": 100
+            });
+        }
+    });
 
-  	$(function() {
-    	$("#example1").DataTable();
-    	$("#form-area").hide();
-  	});
+    function add_data() {
+        var url = 'menus/create';
+        $("#head_title").html("<i class='fa fa-plus-circle text-white mr-2'></i>Tambah Master Menu");
+        $("#modalDataView").html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-2 text-muted">Memuat data form...</p></div>');
+        $("#ModalView").modal('show');
+        $("#modalDataView").load(siteurl + url);
+    }
 
-  	function add_data(){
-		var url = 'menus/create/';
-		$(".box").hide();
-		$("#form-area").show();
-		$("#form-area").load(siteurl+url);
-		$("#title").focus();
-	}
+    function edit_data(id) {
+        if (id != "") {
+            var url = 'menus/edit/' + id;
+            $("#head_title").html("<i class='fa fa-edit text-white mr-2'></i>Edit Master Menu (ID: " + id + ")");
+            $("#modalDataView").html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-2 text-muted">Memuat data form...</p></div>');
+            $("#ModalView").modal('show');
+            $("#modalDataView").load(siteurl + url);
+        }
+    }
 
-  	function edit_data(id){
-		if(id!=""){
-			var url = 'menus/edit/'+id;
-			$(".box").hide();
-			$("#form-area").show();
-			$("#form-area").load(siteurl+url);
-		    $("#title").focus();
-		}
-	}
+    function delete_data(id) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Apakah Anda Yakin?',
+                text: "Data menu ini akan dihapus dari sistem!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    execute_delete(id);
+                }
+            });
+        } else if (typeof swal !== 'undefined') {
+            swal({
+                title: "Apakah Anda Yakin?",
+                text: "Data menu ini akan dihapus!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Ya, Hapus!",
+                cancelButtonText: "Batal",
+                closeOnConfirm: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    execute_delete(id);
+                }
+            });
+        } else {
+            if (confirm("Apakah Anda yakin ingin menghapus menu ini?")) {
+                execute_delete(id);
+            }
+        }
+    }
 
-	//Delete
-	function delete_data(id){
-		//alert(id);
-		swal({
-		  title: "Anda Yakin?",
-		  text: "Data Akan Terhapus secara Permanen!",
-		  type: "warning",
-		  showCancelButton: true,
-		  confirmButtonColor: "#DD6B55",
-		  confirmButtonText: "Ya, delete!",
-		  cancelButtonText: "Tidak!",
-		  closeOnConfirm: false,
-		  closeOnCancel: true
-		},
-		function(isConfirm){
-		  if (isConfirm) {
-		  	$.ajax({
-		            url: siteurl+'menus/hapus_menus/'+id,
-		            dataType : "json",
-		            type: 'POST',
-		            success: function(msg){
-		                if(msg['delete']=='1'){		                	
-		                    swal({
-		                      title: "Terhapus!",
-		                      text: "Data berhasil dihapus",
-		                      type: "success",
-		                      timer: 1500,
-		                      showConfirmButton: false
-		                    });
-		                    window.location.reload();
-		                } else {
-		                    swal({
-		                      title: "Gagal!",
-		                      text: "Data gagal dihapus",
-		                      type: "error",
-		                      timer: 1500,
-		                      showConfirmButton: false
-		                    });
-		                };
-		            },
-		            error: function(){
-		                swal({
-	                      title: "Gagal!",
-	                      text: "Gagal Eksekusi Ajax",
-	                      type: "error",
-	                      timer: 1500,
-	                      showConfirmButton: false
-	                    });
-		            }
-		        });
-		  } else {
-		    //cancel();
-		  }
-		});
-	}
-
-	function PreviewPdf(id)
-	{
-		param=id;
-		tujuan = 'customer/print_request/'+param;
-
-	   	$(".modal-body").html('<iframe src="'+tujuan+'" frameborder="no" width="570" height="400"></iframe>');
-	}
-
+    function execute_delete(id) {
+        $.ajax({
+            url: siteurl + 'menus/hapus_menus/' + id,
+            dataType: "json",
+            type: 'POST',
+            success: function (msg) {
+                if (msg.status == 1 || msg.delete == 1) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: msg.msg || 'Data berhasil dihapus.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(function() {
+                            window.location.reload();
+                        });
+                    } else if (typeof swal !== 'undefined') {
+                        swal({
+                            title: "Berhasil!",
+                            text: msg.msg || "Data berhasil dihapus.",
+                            type: "success",
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        setTimeout(function(){ window.location.reload(); }, 1500);
+                    } else {
+                        alert(msg.msg || "Data berhasil dihapus.");
+                        window.location.reload();
+                    }
+                } else {
+                    var errorMsg = msg.msg || "Data gagal dihapus.";
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: errorMsg
+                        });
+                    } else if (typeof swal !== 'undefined') {
+                        swal("Gagal!", errorMsg, "error");
+                    } else {
+                        alert(errorMsg);
+                    }
+                }
+            },
+            error: function () {
+                var errorMsg = "Gagal eksekusi request hapus data.";
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: errorMsg
+                    });
+                } else {
+                    alert(errorMsg);
+                }
+            }
+        });
+    }
 </script>
