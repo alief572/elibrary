@@ -1,5 +1,7 @@
-<!-- VIEW PROCEDURE PDF -->
-<div class="text-center mb-3">
-    <h4 class="font-weight-bold"><?= $docs->name; ?></h4>
-</div>
-<iframe src="<?= base_url('procedures/viewPdf/' . $docs->id); ?>#toolbar=0&navpanes=0" style="width:100%; height:75vh; border:none;" frameborder="0"></iframe>
+<?php
+/**
+ * Single source of truth view for procedure detail modal in Documents_list.
+ * Delegates 100% directly to procedures module view: application/modules/procedures/views/view.php
+ */
+$this->load->view('procedures/view');
+

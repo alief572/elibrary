@@ -38,3 +38,6 @@ tests/Compliances/simple_preservation_test.php
 .kiro/specs/compliance-review-save-fix/bugfix.md
 .kiro/specs/compliance-review-save-fix/design.md
 .kiro/specs/compliance-review-save-fix/tasks.md
+create_table.php
+deploy_database.sql
+query.php

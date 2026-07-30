@@ -204,18 +204,11 @@ class Auth
 
         $id = $this->user_id();
 
-        $group_permissions = $this->ci->users_model->join('user_groups', 'users.id_user = user_groups.id_user')
+        $group_permissions = $this->ci->users_model->join('user_groups', 'users.id_user = user_groups.user_id')
             ->join('group_permissions', 'user_groups.id_group = group_permissions.id_group')
             ->join('permissions', 'group_permissions.id_permission = permissions.id_permission')
             ->find_by(array('nm_permission' => $nm_permission, 'users.id_user' => $id));
         if ($group_permissions) {
-            return TRUE;
-        }
-
-        $user_permissions = $this->ci->users_model->join('user_permissions', 'users.id_user = user_permissions.id_user')
-            ->join('permissions', 'user_permissions.id_permission = permissions.id_permission')
-            ->find_by(array('nm_permission' => $nm_permission, 'users.id_user' => $id));
-        if ($user_permissions) {
             return TRUE;
         }
 
