@@ -203,13 +203,25 @@ class Auth
         }
 
         $id = $this->user_id();
+        if (empty($id)) {
+            return FALSE;
+        }
 
-        $group_permissions = $this->ci->users_model->join('user_groups', 'users.id_user = user_groups.user_id')
-            ->join('group_permissions', 'user_groups.id_group = group_permissions.id_group')
-            ->join('permissions', 'group_permissions.id_permission = permissions.id_permission')
-            ->find_by(array('nm_permission' => $nm_permission, 'users.id_user' => $id));
-        if ($group_permissions) {
-            return TRUE;
+        try {
+            $this->ci->db->select('permissions.id_permission');
+            $this->ci->db->from('users');
+            $this->ci->db->join('user_groups', 'users.id_user = user_groups.user_id');
+            $this->ci->db->join('group_permissions', 'user_groups.id_group = group_permissions.id_group');
+            $this->ci->db->join('permissions', 'group_permissions.id_permission = permissions.id_permission');
+            $this->ci->db->where('permissions.nm_permission', $nm_permission);
+            $this->ci->db->where('users.id_user', $id);
+            $query = $this->ci->db->get();
+
+            if ($query && is_object($query) && $query->num_rows() > 0) {
+                return TRUE;
+            }
+        } catch (Exception $e) {
+            return FALSE;
         }
 
         return FALSE;

@@ -1,8 +1,8 @@
 <?php
-    $ENABLE_ADD     = has_permission('Menus.Add') || true;
-    $ENABLE_MANAGE  = has_permission('Menus.Manage') || true;
-    $ENABLE_VIEW    = has_permission('Menus.View') || true;
-    $ENABLE_DELETE  = has_permission('Menus.Delete') || true;
+    $ENABLE_ADD     = true;
+    $ENABLE_MANAGE  = true;
+    $ENABLE_VIEW    = true;
+    $ENABLE_DELETE  = true;
 ?>
 
 <div id='alert_edit' class="alert alert-success alert-dismissable" style="padding: 15px; display: none;"></div>
@@ -141,7 +141,7 @@
             $('#example1').DataTable({
                 "responsive": true,
                 "autoWidth": false,
-                "ordering": false, // Preserve hierarchical tree order (Parent ID ASC -> Child ID ASC)
+                "ordering": false,
                 "pageLength": 100
             });
         }
