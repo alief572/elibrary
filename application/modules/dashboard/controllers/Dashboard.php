@@ -37,7 +37,7 @@ class Dashboard extends Admin_Controller
 		$this->template->render('index');
 	}
 
-	public function v1()
+	public function navigation()
 	{
 		$Data = array();
 		if ($this->db->table_exists('directory')) {
@@ -45,7 +45,7 @@ class Dashboard extends Admin_Controller
 		}
 
 		$this->template->set([
-			'title' => 'Dashboard V1',
+			'title' => 'Navigation',
 			'Data' => $Data,
 			'is_admin' => $this->auth->is_admin(),
 		]);

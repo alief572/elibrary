@@ -78,20 +78,18 @@
 							</div>
 						</div>
 
-						<?php if (!empty($Data)) : foreach ($Data as $dt) : ?>
-							<div class="col-md-2 col-md-3 mb-5">
-								<div class="card border-0 shadow-lg " style="border-radius: 30px 5px 30px 5px;background-color: rgba(255, 255, 255, 0.50);">
-									<div class="card-body pb-1 d-flex justify-content-center align-items-center" style="min-height: 120px;">
-										<img src="<?= base_url('assets/images/dashboard/' . $dt->picture); ?>" alt="<?= $dt->name; ?>" class="img-fluid" style="height: 150px;">
-									</div>
-									<h6 class="card-title text-center d-flex align-items-center m-auto" style="min-height: 60px;">
-										<a href="<?= base_url('/list/' . $dt->id); ?>" class="text-hover-primary" title="<?= $dt->name; ?>">
-											<span class="card-label m-0 text-dark text-center font-weight-bolder"><?= $dt->name; ?></span>
-										</a>
-									</h6>
+						<div class="col-md-2 col-md-3 mb-5">
+							<div class="card border-0 shadow-lg " style="border-radius: 30px 5px 30px 5px;background-color: rgba(255, 255, 255, 0.50);">
+								<div class="card-body pb-1 d-flex justify-content-center align-items-center" style="min-height: 120px;">
+									<img src="<?= base_url('assets/images/dashboard/standard.png'); ?>" alt="STANDARD DAN PERATURAN" class="img-fluid" style="height: 150px;">
 								</div>
+								<h6 class="card-title text-center d-flex align-items-center m-auto" style="min-height: 60px;">
+									<a href="<?= base_url('/list/2'); ?>" class="text-hover-primary" title="STANDARD DAN PERATURAN">
+										<span class="card-label m-0 text-dark text-center font-weight-bolder">STANDARD DAN PERATURAN</span>
+									</a>
+								</h6>
 							</div>
-						<?php endforeach; endif; ?>
+						</div>
 
 						<div class="col-md-2 col-md-3 mb-5">
 							<div class="card border-0 shadow-lg " style="border-radius: 30px 5px 30px 5px;background-color: rgba(255, 255, 255, 0.50);">
