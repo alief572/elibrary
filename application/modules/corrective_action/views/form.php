@@ -207,6 +207,35 @@ $(document).ready(function() {
 		var formData = new FormData($('#form-ca')[0]);
 		var btn = $('#btn-save');
 
+		// Helper to process successful save result
+		function handleSaveSuccess(result) {
+			if (result.status == 1) {
+				// Set ca_id for subsequent operations
+				if (result.ca_id && !$('#ca_id').length) {
+					$('#form-ca').append('<input type="hidden" name="ca_id" id="ca_id" value="' + result.ca_id + '">');
+				} else if (result.ca_id) {
+					$('#ca_id').val(result.ca_id);
+				}
+
+				if (typeof callback === 'function') {
+					callback(result);
+				} else {
+					Swal.fire({
+						title: 'Success!',
+						icon: 'success',
+						text: result.msg,
+						timer: 2000
+					});
+				}
+			} else {
+				Swal.fire({
+					title: 'Warning!',
+					icon: 'warning',
+					text: result.msg
+				});
+			}
+		}
+
 		$.ajax({
 			url: '<?= site_url("corrective_action/save"); ?>',
 			data: formData,
@@ -226,33 +255,19 @@ $(document).ready(function() {
 				$('#btn-submit').attr('disabled', false);
 			},
 			success: function(result) {
-				if (result.status == 1) {
-					// Set ca_id for subsequent operations
-					if (result.ca_id && !$('#ca_id').length) {
-						$('#form-ca').append('<input type="hidden" name="ca_id" id="ca_id" value="' + result.ca_id + '">');
-					} else if (result.ca_id) {
-						$('#ca_id').val(result.ca_id);
-					}
-
-					if (typeof callback === 'function') {
-						callback(result);
-					} else {
-						Swal.fire({
-							title: 'Success!',
-							icon: 'success',
-							text: result.msg,
-							timer: 2000
-						});
-					}
-				} else {
-					Swal.fire({
-						title: 'Warning!',
-						icon: 'warning',
-						text: result.msg
-					});
-				}
+				handleSaveSuccess(result);
 			},
 			error: function(xhr) {
+				// Server may return HTTP 500 but with valid JSON body (due to PHP notices)
+				// Try to parse and recover if the data was actually saved
+				try {
+					var result = JSON.parse(xhr.responseText);
+					if (result && result.status == 1) {
+						handleSaveSuccess(result);
+						return;
+					}
+				} catch(e) {}
+
 				var errMsg = 'Server error. Please try again.';
 				if (xhr && xhr.responseText) {
 					errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
@@ -318,10 +333,27 @@ $(document).ready(function() {
 							}
 						},
 						error: function(xhr) {
+							// Try to recover from HTTP 500 with valid JSON body
+							try {
+								var result = JSON.parse(xhr.responseText);
+								if (result && result.status == 1) {
+									Swal.fire({
+										title: 'Success!',
+										icon: 'success',
+										text: result.msg,
+										timer: 2000
+									}).then(function() {
+										window.location.href = '<?= site_url("corrective_action"); ?>';
+									});
+									return;
+								} else if (result && result.msg) {
+									Swal.fire({ title: 'Warning!', icon: 'warning', text: result.msg });
+									return;
+								}
+							} catch(e) {}
+
 							var errMsg = 'Server error. Please try again.';
-							if (xhr && xhr.responseJSON && xhr.responseJSON.msg) {
-								errMsg = xhr.responseJSON.msg;
-							} else if (xhr && xhr.responseText) {
+							if (xhr && xhr.responseText) {
 								errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
 							}
 							Swal.fire({

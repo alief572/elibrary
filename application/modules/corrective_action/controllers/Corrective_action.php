@@ -83,8 +83,13 @@ class Corrective_action extends Admin_Controller
      */
     public function save()
     {
+        // Capture any stray PHP output (warnings/notices) that could corrupt response
+        ob_start();
+
         $data = $this->input->post();
         if (!$data || empty($data['pelaksanaan_id'])) {
+            ob_end_clean();
+            header('Content-Type: application/json');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
             return;
         }
@@ -100,10 +105,15 @@ class Corrective_action extends Admin_Controller
             if (!empty($warnings)) {
                 $msg .= ' Warning: ' . implode(', ', $warnings);
             }
-            echo json_encode(['status' => 1, 'msg' => $msg, 'ca_id' => $result['ca_id']]);
+            $response = ['status' => 1, 'msg' => $msg, 'ca_id' => $result['ca_id']];
         } else {
-            echo json_encode($result);
+            $response = $result;
         }
+
+        // Discard any stray output and send clean JSON
+        ob_end_clean();
+        header('Content-Type: application/json');
+        echo json_encode($response);
     }
 
     /**
