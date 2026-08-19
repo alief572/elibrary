@@ -18,7 +18,7 @@ class Approval_corrective_internal extends Admin_Controller
     {
         $data = $this->db->select('ci.*, d.name as department_name, u.full_name as pic_name')
             ->from('corrective_internal ci')
-            ->join('departements d', 'd.id = ci.department_pic_car_id', 'left')
+            ->join('audit_department d', 'd.id = ci.department_pic_car_id', 'left')
             ->join('users u', 'u.id_user = ci.pic_car_id', 'left')
             ->where('ci.company_id', $this->company)
             ->where('ci.deleted_at', null)
@@ -40,8 +40,8 @@ class Approval_corrective_internal extends Admin_Controller
             return;
         }
         $details = $this->db->order_by('urutan', 'ASC')->get_where('corrective_internal_detail', ['corrective_internal_id' => $id])->result();
-        $dept_pembuat = $this->db->get_where('departements', ['id' => $data->department_pembuat_id])->row();
-        $dept_pic = $this->db->get_where('departements', ['id' => $data->department_pic_car_id])->row();
+        $dept_pembuat = $this->db->get_where('audit_department', ['id' => $data->department_pembuat_id])->row();
+        $dept_pic = $this->db->get_where('audit_department', ['id' => $data->department_pic_car_id])->row();
         $pic_pembuat = $this->db->get_where('view_users', ['id_user' => $data->pic_pembuat_id])->row();
         $pic_car = $this->db->get_where('view_users', ['id_user' => $data->pic_car_id])->row();
 
@@ -65,8 +65,8 @@ class Approval_corrective_internal extends Admin_Controller
             return;
         }
         $details = $this->db->order_by('urutan', 'ASC')->get_where('corrective_internal_detail', ['corrective_internal_id' => $id])->result();
-        $dept_pembuat = $this->db->get_where('departements', ['id' => $data->department_pembuat_id])->row();
-        $dept_pic = $this->db->get_where('departements', ['id' => $data->department_pic_car_id])->row();
+        $dept_pembuat = $this->db->get_where('audit_department', ['id' => $data->department_pembuat_id])->row();
+        $dept_pic = $this->db->get_where('audit_department', ['id' => $data->department_pic_car_id])->row();
         $pic_pembuat = $this->db->get_where('view_users', ['id_user' => $data->pic_pembuat_id])->row();
         $pic_car = $this->db->get_where('view_users', ['id_user' => $data->pic_car_id])->row();
 
