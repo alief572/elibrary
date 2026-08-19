@@ -16,7 +16,7 @@ class Approval_corrective_internal extends Admin_Controller
 
     public function index()
     {
-        $data = $this->db->select('ci.*, d.name as department_name, u.full_name as pic_name')
+        $data = $this->db->select('ci.*, d.department_name, u.full_name as pic_name')
             ->from('corrective_internal ci')
             ->join('audit_department d', 'd.id = ci.department_pic_car_id', 'left')
             ->join('users u', 'u.id_user = ci.pic_car_id', 'left')
