@@ -466,11 +466,12 @@ class Dashboard extends Admin_Controller
 					$this->db->where('r.status', 'PUB');
 				}
 				$total_count = $this->db->count_all_results('', FALSE);
-				$this->db->select('r.id, r.name, r.number, d.name as departement_name, r.status');
+				$this->db->select('r.id, r.name, r.number, p.name as procedure_name, d.name as departement_name, r.status');
 				$this->db->order_by('r.created_at', 'DESC')->limit(10);
 				$data = $this->db->get()->result();
 			} else {
 				$this->db->from('records r');
+				$this->db->join('procedures p', 'p.id = r.procedure_id', 'left');
 				$this->db->where('r.deletion_status !=', 'DEL');
 				if (!empty($status)) {
 					if ($status === 'PUB') {
@@ -484,7 +485,7 @@ class Dashboard extends Admin_Controller
 					}
 				}
 				$total_count = $this->db->count_all_results('', FALSE);
-				$this->db->select('r.id, r.name, r.number, r.status');
+				$this->db->select('r.id, r.name, r.number, p.name as procedure_name, r.status');
 				$this->db->order_by('r.id', 'DESC')->limit(10);
 				$data = $this->db->get()->result();
 			}
@@ -538,9 +539,9 @@ class Dashboard extends Admin_Controller
 			$redirect_url = base_url('corrective_internal');
 			$title = 'CAR Internal Open';
 			$data = $this->db->query(
-				"SELECT ci.id, ci.nomor_car, ci.tanggal_car, ci.deadline_car, ci.status, d.name as department_name
+				"SELECT ci.id, ci.nomor_car, ci.tanggal_car, ci.deadline_car, ci.status, d.department_name as department_name
 				FROM corrective_internal ci
-				LEFT JOIN departements d ON d.id = ci.department_pic_car_id
+				LEFT JOIN audit_department d ON d.id = ci.department_pic_car_id
 				WHERE ci.company_id = ? AND ci.deleted_at IS NULL AND ci.status IN ('draft', 'reject')
 				ORDER BY ci.id DESC LIMIT 10",
 				[$this->company]
@@ -688,6 +689,8 @@ class Dashboard extends Admin_Controller
 				} elseif ($status === 'RVI') {
 					$this->db->where('p.status', 'RVI');
 				}
+			} else {
+				$this->db->where_in('p.status', array('PUB', 'REV', 'COR', 'REJ', 'RVI'));
 			}
 			$total_count = $this->db->count_all_results('', FALSE);
 			$this->db->select('p.id, p.nomor as number, p.name, d.name as departement_name, p.group_procedure as group_name, p.status');

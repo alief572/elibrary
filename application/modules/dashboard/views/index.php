@@ -320,8 +320,8 @@ if (!function_exists('render_compliance_donut')) {
 							</div>
 						</div>
 						<div>
-							<span class="card-number-huge" onclick="openDocModal('records', 'PUB')" title="Klik untuk lihat daftar Records Published"><?= number_format($doc_control['records']['total']); ?></span>
-							<div class="d-flex align-items-center mt-2" onclick="openDocModal('records', 'PUB')" style="cursor: pointer;">
+							<span class="card-number-huge" onclick="openDocModal('records')" title="Klik untuk lihat daftar Records"><?= number_format($doc_control['records']['total']); ?></span>
+							<div class="d-flex align-items-center mt-2" onclick="openDocModal('records')" style="cursor: pointer;">
 								<span class="legend-dot dot-teal"></span>
 								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Status: Active (Non-DEL)</span>
 							</div>
@@ -601,11 +601,11 @@ function openDocModal(type, status) {
 	var headHtml = '<tr class="text-uppercase text-muted font-weight-bolder">';
 	headHtml += '<th width="40" class="text-center">No.</th>';
 	if (type === 'wi') {
-		headHtml += '<th>Name</th><th>Number</th><th>Procedure Name</th><th>Departement</th><th>Status</th>';
+		headHtml += '<th>Name</th><th>Procedure Name</th><th>Status</th>';
 	} else if (type === 'records') {
-		headHtml += '<th>Name</th><th>Number</th><th>Departement</th><th>Status</th>';
+		headHtml += '<th>Name</th><th>Procedure</th><th>Status</th>';
 	} else if (type === 'form') {
-		headHtml += '<th>Name</th><th>Number</th><th>Procedure</th><th>Effective Date</th><th class="text-center">Rev. Number</th><th>Status</th>';
+		headHtml += '<th>Name</th><th>Procedure</th><th>Effective Date</th><th class="text-center">Rev. Number</th><th>Status</th>';
 	} else if (type === 'car') {
 		headHtml += '<th>ID Audit</th><th>Deskripsi Temuan</th><th>Departemen</th><th>Tanggal</th><th>Status</th>';
 	} else if (type === 'car_internal') {
@@ -621,7 +621,7 @@ function openDocModal(type, status) {
 	} else if (type === 'action_plan') {
 		headHtml += '<th>ID Action Plan</th><th>Rencana Aksi</th><th>PIC</th><th>Status</th>';
 	} else {
-		headHtml += '<th>Nama</th><th>Nomor</th><th>Departement</th><th>Kelompok</th><th>Status</th>';
+		headHtml += '<th>Nama</th><th>Nomor</th><th>Kelompok</th><th>Status</th>';
 	}
 	headHtml += '</tr>';
 	$('#modalTableHead').html(headHtml);
@@ -672,24 +672,20 @@ function openDocModal(type, status) {
 						html += '<tr>' +
 							'<td class="text-center">' + no + '</td>' +
 							'<td>' + nameBold + '</td>' +
-							'<td>' + numBold + '</td>' +
 							'<td>' + (item.procedure_name || '-') + '</td>' +
-							'<td>' + (item.departement_name || '-') + '</td>' +
 							'<td>' + stsBadge + '</td>' +
 							'</tr>';
 					} else if (type === 'records') {
 						html += '<tr>' +
 							'<td class="text-center">' + no + '</td>' +
 							'<td>' + nameBold + '</td>' +
-							'<td>' + numBold + '</td>' +
-							'<td>' + (item.departement_name || '-') + '</td>' +
+							'<td>' + (item.procedure_name || '-') + '</td>' +
 							'<td>' + stsBadge + '</td>' +
 							'</tr>';
 					} else if (type === 'form') {
 						html += '<tr>' +
 							'<td class="text-center">' + no + '</td>' +
 							'<td>' + nameBold + '</td>' +
-							'<td>' + numBold + '</td>' +
 							'<td>' + (item.procedure_name || '-') + '</td>' +
 							'<td>' + (item.effective_date || '-') + '</td>' +
 							'<td class="text-center">' + (item.revision_number || '00') + '</td>' +
@@ -781,7 +777,6 @@ function openDocModal(type, status) {
 							'<td class="text-center">' + no + '</td>' +
 							'<td>' + nameBold + '</td>' +
 							'<td>' + numBold + '</td>' +
-							'<td>' + (item.departement_name || '-') + '</td>' +
 							'<td>' + (item.group_name || '-') + '</td>' +
 							'<td>' + stsBadge + '</td>' +
 							'</tr>';
