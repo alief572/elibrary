@@ -112,8 +112,9 @@ class Corrective_action extends Admin_Controller
 
         // Discard any stray output and send clean JSON
         ob_end_clean();
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($response);
+        exit;
     }
 
     /**
@@ -122,45 +123,32 @@ class Corrective_action extends Admin_Controller
      */
     public function submit()
     {
-        // Start capturing any stray output from the entire process
         ob_start();
 
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
             ob_end_clean();
-            header('Content-Type: application/json');
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
-            return;
+            exit;
         }
 
         $userId = $this->auth->user_id();
         $result = $this->model->submitCorrective($data['ca_id'], $userId);
 
-        // Discard any stray output from model operations
-        ob_end_clean();
-
-        // Send clean JSON response FIRST, before attempting email
-        header('Content-Type: application/json');
-        echo json_encode($result);
-
-        // Flush response to client immediately
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
-        } else {
-            if (ob_get_level() > 0) ob_end_flush();
-            flush();
-        }
-
-        // Now attempt email notification (client already received response)
+        // Send email notification to auditor if submit was successful
         if (isset($result['status']) && $result['status'] == 1) {
-            ob_start();
             try {
                 $this->_sendEmailToAuditor($data['ca_id']);
             } catch (Exception $e) {
                 log_message('error', 'CA Email error: ' . $e->getMessage());
             }
-            ob_end_clean();
         }
+
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($result);
+        exit;
     }
 
     /**
@@ -260,13 +248,16 @@ class Corrective_action extends Admin_Controller
     {
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
-            return;
+            exit;
         }
 
         $userId = $this->auth->user_id();
         $result = $this->model->approveCorrective($data['ca_id'], $userId);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($result);
+        exit;
     }
 
     /**
@@ -277,23 +268,28 @@ class Corrective_action extends Admin_Controller
     {
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
-            return;
+            exit;
         }
 
         $alasan = isset($data['alasan_reject']) ? trim($data['alasan_reject']) : '';
         if ($alasan === '') {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Alasan reject wajib diisi.']);
-            return;
+            exit;
         }
         if (strlen($alasan) > 2000) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Alasan reject maksimal 2000 karakter.']);
-            return;
+            exit;
         }
 
         $userId = $this->auth->user_id();
         $result = $this->model->rejectCorrective($data['ca_id'], $alasan, $userId);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($result);
+        exit;
     }
 
     // =========================================================================

@@ -202,6 +202,27 @@ $(document).ready(function() {
 		autoResizeTextarea(this);
 	});
 
+	// Helper to extract JSON from any response text
+	function parseResponse(xhr) {
+		if (xhr && xhr.responseJSON && typeof xhr.responseJSON === 'object') {
+			return xhr.responseJSON;
+		}
+		if (xhr && xhr.responseText) {
+			var raw = xhr.responseText.trim();
+			try {
+				return JSON.parse(raw);
+			} catch(e1) {
+				var match = raw.match(/\{[\s\S]*\}/);
+				if (match) {
+					try {
+						return (new Function("return " + match[0]))();
+					} catch(e2) {}
+				}
+			}
+		}
+		return null;
+	}
+
 	// Save function (AJAX with FormData)
 	function saveCA(callback) {
 		var formData = new FormData($('#form-ca')[0]);
@@ -209,7 +230,7 @@ $(document).ready(function() {
 
 		// Helper to process successful save result
 		function handleSaveSuccess(result) {
-			if (result.status == 1) {
+			if (result && (result.status == 1 || result.status === '1')) {
 				// Set ca_id for subsequent operations
 				if (result.ca_id && !$('#ca_id').length) {
 					$('#form-ca').append('<input type="hidden" name="ca_id" id="ca_id" value="' + result.ca_id + '">');
@@ -223,7 +244,7 @@ $(document).ready(function() {
 					Swal.fire({
 						title: 'Success!',
 						icon: 'success',
-						text: result.msg,
+						text: result.msg || 'Data Corrective Action berhasil disimpan.',
 						timer: 2000
 					});
 				}
@@ -231,7 +252,7 @@ $(document).ready(function() {
 				Swal.fire({
 					title: 'Warning!',
 					icon: 'warning',
-					text: result.msg
+					text: (result && result.msg) ? result.msg : 'Gagal menyimpan data.'
 				});
 			}
 		}
@@ -258,18 +279,16 @@ $(document).ready(function() {
 				handleSaveSuccess(result);
 			},
 			error: function(xhr) {
-				// Server may return HTTP 500 but with valid JSON body (due to PHP notices)
-				// Try to parse and recover if the data was actually saved
-				try {
-					var result = xhr.responseJSON || (xhr.responseText ? JSON.parse(xhr.responseText) : null);
-					if (result && result.status == 1) {
-						handleSaveSuccess(result);
-						return;
-					}
-				} catch(e) {}
+				var result = parseResponse(xhr);
+				if (result && (result.status == 1 || result.status === '1')) {
+					handleSaveSuccess(result);
+					return;
+				}
 
 				var errMsg = 'Server error. Please try again.';
-				if (xhr && xhr.responseText) {
+				if (result && result.msg) {
+					errMsg = result.msg;
+				} else if (xhr && xhr.responseText) {
 					errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
 				}
 				Swal.fire({
@@ -315,11 +334,11 @@ $(document).ready(function() {
 						type: 'POST',
 						dataType: 'JSON',
 						success: function(result) {
-							if (result.status == 1) {
+							if (result && (result.status == 1 || result.status === '1')) {
 								Swal.fire({
 									title: 'Success!',
 									icon: 'success',
-									text: result.msg,
+									text: result.msg || 'Corrective Action berhasil diajukan untuk approval.',
 									timer: 2000
 								}).then(function() {
 									window.location.href = '<?= site_url("corrective_action"); ?>';
@@ -328,29 +347,26 @@ $(document).ready(function() {
 								Swal.fire({
 									title: 'Warning!',
 									icon: 'warning',
-									text: result.msg
+									text: (result && result.msg) ? result.msg : 'Gagal mengajukan.'
 								});
 							}
 						},
 						error: function(xhr) {
-							// Try to recover from HTTP 500 with valid JSON body
-							try {
-								var result = xhr.responseJSON || (xhr.responseText ? JSON.parse(xhr.responseText) : null);
-								if (result && result.status == 1) {
-									Swal.fire({
-										title: 'Success!',
-										icon: 'success',
-										text: result.msg,
-										timer: 2000
-									}).then(function() {
-										window.location.href = '<?= site_url("corrective_action"); ?>';
-									});
-									return;
-								} else if (result && result.msg) {
-									Swal.fire({ title: 'Warning!', icon: 'warning', text: result.msg });
-									return;
-								}
-							} catch(e) {}
+							var result = parseResponse(xhr);
+							if (result && (result.status == 1 || result.status === '1')) {
+								Swal.fire({
+									title: 'Success!',
+									icon: 'success',
+									text: result.msg || 'Corrective Action berhasil diajukan untuk approval.',
+									timer: 2000
+								}).then(function() {
+									window.location.href = '<?= site_url("corrective_action"); ?>';
+								});
+								return;
+							} else if (result && result.msg) {
+								Swal.fire({ title: 'Warning!', icon: 'warning', text: result.msg });
+								return;
+							}
 
 							var errMsg = 'Server error. Please try again.';
 							if (xhr && xhr.responseText) {
