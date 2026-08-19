@@ -261,7 +261,7 @@ $(document).ready(function() {
 				// Server may return HTTP 500 but with valid JSON body (due to PHP notices)
 				// Try to parse and recover if the data was actually saved
 				try {
-					var result = JSON.parse(xhr.responseText);
+					var result = xhr.responseJSON || (xhr.responseText ? JSON.parse(xhr.responseText) : null);
 					if (result && result.status == 1) {
 						handleSaveSuccess(result);
 						return;
@@ -335,7 +335,7 @@ $(document).ready(function() {
 						error: function(xhr) {
 							// Try to recover from HTTP 500 with valid JSON body
 							try {
-								var result = JSON.parse(xhr.responseText);
+								var result = xhr.responseJSON || (xhr.responseText ? JSON.parse(xhr.responseText) : null);
 								if (result && result.status == 1) {
 									Swal.fire({
 										title: 'Success!',
