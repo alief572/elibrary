@@ -12,7 +12,7 @@
 					<div class="row mb-4">
 						<div class="col-md-6">
 							<label class="font-weight-bold text-dark mb-0">Department Pembuat</label>
-							<p class="font-size-lg"><?= isset($dept_pembuat->name) ? $dept_pembuat->name : '-'; ?></p>
+							<p class="font-size-lg"><?= isset($dept_pembuat->department_name) ? $dept_pembuat->department_name : '-'; ?></p>
 						</div>
 						<div class="col-md-6">
 							<label class="font-weight-bold text-dark mb-0">PIC Pembuat</label>
@@ -36,7 +36,7 @@
 						</div>
 						<div class="col-md-6">
 							<label class="font-weight-bold text-dark mb-0">Department PIC CAR</label>
-							<p class="font-size-lg"><?= isset($dept_pic->name) ? $dept_pic->name : '-'; ?></p>
+							<p class="font-size-lg"><?= isset($dept_pic->department_name) ? $dept_pic->department_name : '-'; ?></p>
 						</div>
 					</div>
 					<div class="row mb-4">

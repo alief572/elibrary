@@ -45,12 +45,12 @@
 								<div class="form-group">
 									<label class="font-weight-bold text-dark">Department Pembuat <span class="text-danger">*</span></label>
 									<?php if ($is_edit) : ?>
-										<input type="text" class="form-control" value="<?php foreach ($depts as $d) { if ($d->id == $data->department_pembuat_id) echo $d->name; } ?>" readonly>
+										<input type="text" class="form-control" value="<?php foreach ($depts as $d) { if ($d->id == $data->department_pembuat_id) echo $d->department_name; } ?>" readonly>
 									<?php else : ?>
 									<select name="department_pembuat_id" id="department_pembuat_id" class="form-control select2" required>
 										<option value="">Pilih Department Pembuat</option>
 										<?php foreach ($depts as $dept) : ?>
-											<option value="<?= $dept->id; ?>"><?= $dept->name; ?></option>
+											<option value="<?= $dept->id; ?>"><?= $dept->department_name; ?></option>
 										<?php endforeach; ?>
 									</select>
 									<?php endif; ?>
@@ -87,12 +87,12 @@
 								<div class="form-group">
 									<label class="font-weight-bold text-dark">Department PIC CAR <span class="text-danger">*</span></label>
 									<?php if ($is_edit) : ?>
-										<input type="text" class="form-control" value="<?php foreach ($depts as $d) { if ($d->id == $data->department_pic_car_id) echo $d->name; } ?>" readonly>
+										<input type="text" class="form-control" value="<?php foreach ($depts as $d) { if ($d->id == $data->department_pic_car_id) echo $d->department_name; } ?>" readonly>
 									<?php else : ?>
 									<select name="department_pic_car_id" id="department_pic_car_id" class="form-control select2" required>
 										<option value="">Pilih Department</option>
 										<?php foreach ($depts as $dept) : ?>
-											<option value="<?= $dept->id; ?>"><?= $dept->name; ?></option>
+											<option value="<?= $dept->id; ?>"><?= $dept->department_name; ?></option>
 										<?php endforeach; ?>
 									</select>
 									<?php endif; ?>
