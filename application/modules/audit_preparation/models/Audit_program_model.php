@@ -140,16 +140,18 @@ class Audit_program_model extends BF_Model
     }
 
     /**
-     * Get active/published procedures (status = 'PUB')
+     * Get all procedures (exclude deleted)
      *
      * @return array
      */
     public function getActiveProcedures($company_id = null)
     {
-        $this->db->where('status', 'PUB');
+        $this->db->where_not_in('status', ['DEL', '0']);
+        $this->db->where('deleted_at IS NULL', null, false);
         if ($company_id) {
             $this->db->where('company_id', $company_id);
         }
+        $this->db->order_by('name', 'ASC');
         return $this->db->get('procedures')->result();
     }
 
