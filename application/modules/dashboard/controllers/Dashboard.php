@@ -67,10 +67,10 @@ class Dashboard extends Admin_Controller
 		$procedur_rvi = 0;
 		$has_proc_table = true;
 
-		$procedur_pub = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'PUB' AND company_id = ?", [$this->company])->row()->cnt;
-		$procedur_rev = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('REV','OPN','APV','DFT') AND company_id = ?", [$this->company])->row()->cnt;
-		$procedur_cor = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('COR','REJ') AND company_id = ?", [$this->company])->row()->cnt;
-		$procedur_rvi = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'RVI' AND company_id = ?", [$this->company])->row()->cnt;
+		$procedur_pub = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'PUB' AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
+		$procedur_rev = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('REV','OPN','APV','DFT') AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
+		$procedur_cor = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('COR','REJ') AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
+		$procedur_rvi = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'RVI' AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
 
 		// 2. WORK INSTRUCTION (dir_guides / work_instructions)
 		$wi_pub = 0;
@@ -216,34 +216,45 @@ class Dashboard extends Admin_Controller
 			$total_subject_regulations = $this->db->count_all_results('compliance_subjects');
 		}
 
-		// 3. Get compliance rates and complying items sum
-		if ($reference && $has_rev_table) {
-			$comp_summary = $this->db->select('SUM(total_compliance) as total_c, SUM(total_not_compliance) as total_nc')
-				->get_where('compilation_reviews', ['reference_id' => $reference->id])->row();
-			if ($comp_summary && ($comp_summary->total_c > 0 || $comp_summary->total_nc > 0)) {
-				$total_c = intval($comp_summary->total_c);
-				$total_nc = intval($comp_summary->total_nc);
-				$total_compliance_items = $total_c;
-				if (($total_c + $total_nc) > 0) {
-					$compliance_rate = round(($total_c / ($total_c + $total_nc)) * 100);
-				}
-			}
-		}
-
-		if ($has_reg_table) {
-			$this->db->select('SUM(total_compliance) as total_c, SUM(total_not_compliance) as total_nc, COUNT(id) as total_regs');
+		// 3. Get compliance rates - average percentage per subject (same logic as modal)
+		if ($has_sub_table && $has_reg_table) {
+			// Get subjects first (same as modal)
 			if ($reference) {
-				$this->db->where('reference_id', $reference->id);
+				$subjects = $this->db->get_where('view_compliance_subjects', ['reference_id' => $reference->id])->result();
+			} else {
+				$subjects = $this->db->get('view_compliance_subjects')->result();
 			}
-			$reg_summary = $this->db->get('view_ref_regulations')->row();
-			if ($reg_summary && $reg_summary->total_regs > 0) {
-				$total_c = intval($reg_summary->total_c);
-				$total_nc = intval($reg_summary->total_nc);
-				$total_regs = intval($reg_summary->total_regs);
-				$total_compliance_items = $total_c;
-				$total_subject_regulations = $total_regs;
-				if ($total_regs > 0) {
-					$compliance_rate = round(($total_c / $total_regs) * 100);
+
+			if ($subjects && count($subjects) > 0) {
+				// Get regulation data grouped by subject
+				$this->db->select('subject, SUM(total_compliance) as total_c, SUM(total_not_compliance) as total_nc');
+				if ($reference) {
+					$this->db->where('reference_id', $reference->id);
+				}
+				$this->db->group_by('subject');
+				$regSummaries = $this->db->get('view_ref_regulations')->result();
+				$regMap = [];
+				foreach ($regSummaries as $rs) {
+					$regMap[$rs->subject] = $rs;
+				}
+
+				$sum_pct = 0;
+				$sum_c = 0;
+				$count_subjects = count($subjects);
+				foreach ($subjects as $sub) {
+					if (isset($regMap[$sub->id])) {
+						$c = intval($regMap[$sub->id]->total_c);
+						$nc = intval($regMap[$sub->id]->total_nc);
+						$sum_c += $c;
+						if (($c + $nc) > 0) {
+							$sum_pct += round(($c / ($c + $nc)) * 100);
+						}
+					}
+				}
+				$total_compliance_items = $sum_c;
+				$total_subject_regulations = $count_subjects;
+				if ($count_subjects > 0) {
+					$compliance_rate = round($sum_pct / $count_subjects);
 				}
 			}
 		}

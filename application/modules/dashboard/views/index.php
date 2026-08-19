@@ -289,7 +289,7 @@ if (!function_exists('render_compliance_donut')) {
 							<span class="card-number-huge" onclick="openDocModal('wi')" title="Klik untuk lihat daftar Work Instruction"><?= number_format($doc_control['wi']['total']); ?></span>
 							<div class="d-flex align-items-center mt-2" onclick="openDocModal('wi')" style="cursor: pointer;">
 								<span class="legend-dot dot-teal"></span>
-								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Total Dokumen</span>
+								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Status: Active (Non-DEL)</span>
 							</div>
 						</div>
 					</div>
@@ -306,7 +306,7 @@ if (!function_exists('render_compliance_donut')) {
 							<span class="card-number-huge" onclick="openDocModal('form')" title="Klik untuk lihat daftar Form"><?= number_format($doc_control['form']['total']); ?></span>
 							<div class="d-flex align-items-center mt-2" onclick="openDocModal('form')" style="cursor: pointer;">
 								<span class="legend-dot dot-teal"></span>
-								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Total Dokumen</span>
+								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Status: Active (Non-DEL)</span>
 							</div>
 						</div>
 					</div>
@@ -425,26 +425,21 @@ if (!function_exists('render_compliance_donut')) {
 					<div class="dash-card">
 						<span class="card-label-top mb-3">WORK INSTRUCTION</span>
 						<div class="d-flex align-items-center justify-content-around">
-							<div onclick="openDocModal('wi')" style="cursor: pointer;">
-								<?= render_doc_status_donut($doc_control['wi']['pub'], $doc_control['wi']['rev'], $doc_control['wi']['cor'], $doc_control['wi']['rvi']); ?>
+							<div onclick="openDocModal('wi')" style="cursor: pointer;" title="Klik untuk lihat daftar Work Instruction">
+								<svg width="85" height="85" viewBox="0 0 85 85">
+									<circle cx="42.5" cy="42.5" r="32" fill="transparent" stroke="rgba(0,0,0,0.15)" stroke-width="10"></circle>
+									<circle cx="42.5" cy="42.5" r="32" fill="transparent" stroke="#3699ff" stroke-width="10" stroke-dasharray="201 201"></circle>
+									<text x="42.5" y="47" text-anchor="middle" fill="#000000" font-size="15" font-weight="800"><?= number_format($doc_control['wi']['total']); ?></text>
+								</svg>
 							</div>
 							<div style="min-width: 120px;">
 								<table class="status-legend-table">
 									<tr>
-										<td><span class="legend-dot dot-teal"></span><span class="status-label-text">Published</span></td>
-										<td class="status-val-text" onclick="openDocModal('wi', 'PUB')" title="Filter Published"><?= $doc_control['wi']['pub']; ?></td>
+										<td><span class="legend-dot dot-teal"></span><span class="status-label-text">Active Files</span></td>
+										<td class="status-val-text" onclick="openDocModal('wi')" title="Lihat Semua WI"><?= $doc_control['wi']['total']; ?></td>
 									</tr>
 									<tr>
-										<td><span class="legend-dot dot-yellow"></span><span class="status-label-text">Review</span></td>
-										<td class="status-val-text" onclick="openDocModal('wi', 'REV')" title="Filter Under Review"><?= $doc_control['wi']['rev']; ?></td>
-									</tr>
-									<tr>
-										<td><span class="legend-dot dot-red"></span><span class="status-label-text">Koreksi</span></td>
-										<td class="status-val-text" onclick="openDocModal('wi', 'COR')" title="Filter Perlu Revisi"><?= $doc_control['wi']['cor']; ?></td>
-									</tr>
-									<tr>
-										<td><span class="legend-dot dot-purple"></span><span class="status-label-text">Revision</span></td>
-										<td class="status-val-text" onclick="openDocModal('wi', 'RVI')" title="Filter Revision"><?= $doc_control['wi']['rvi']; ?></td>
+										<td colspan="2" class="text-muted pt-2" style="font-size: 11px;"><i>Status: Non-DEL</i></td>
 									</tr>
 								</table>
 							</div>
@@ -457,26 +452,21 @@ if (!function_exists('render_compliance_donut')) {
 					<div class="dash-card">
 						<span class="card-label-top mb-3">FORM</span>
 						<div class="d-flex align-items-center justify-content-around">
-							<div onclick="openDocModal('form')" style="cursor: pointer;">
-								<?= render_doc_status_donut($doc_control['form']['pub'], $doc_control['form']['rev'], $doc_control['form']['cor'], $doc_control['form']['rvi']); ?>
+							<div onclick="openDocModal('form')" style="cursor: pointer;" title="Klik untuk lihat daftar Form">
+								<svg width="85" height="85" viewBox="0 0 85 85">
+									<circle cx="42.5" cy="42.5" r="32" fill="transparent" stroke="rgba(0,0,0,0.15)" stroke-width="10"></circle>
+									<circle cx="42.5" cy="42.5" r="32" fill="transparent" stroke="#3699ff" stroke-width="10" stroke-dasharray="201 201"></circle>
+									<text x="42.5" y="47" text-anchor="middle" fill="#000000" font-size="15" font-weight="800"><?= number_format($doc_control['form']['total']); ?></text>
+								</svg>
 							</div>
 							<div style="min-width: 120px;">
 								<table class="status-legend-table">
 									<tr>
-										<td><span class="legend-dot dot-teal"></span><span class="status-label-text">Published</span></td>
-										<td class="status-val-text" onclick="openDocModal('form', 'PUB')" title="Filter Published"><?= $doc_control['form']['pub']; ?></td>
+										<td><span class="legend-dot dot-teal"></span><span class="status-label-text">Active Files</span></td>
+										<td class="status-val-text" onclick="openDocModal('form')" title="Lihat Semua Form"><?= $doc_control['form']['total']; ?></td>
 									</tr>
 									<tr>
-										<td><span class="legend-dot dot-yellow"></span><span class="status-label-text">Review</span></td>
-										<td class="status-val-text" onclick="openDocModal('form', 'REV')" title="Filter Under Review"><?= $doc_control['form']['rev']; ?></td>
-									</tr>
-									<tr>
-										<td><span class="legend-dot dot-red"></span><span class="status-label-text">Koreksi</span></td>
-										<td class="status-val-text" onclick="openDocModal('form', 'COR')" title="Filter Perlu Revisi"><?= $doc_control['form']['cor']; ?></td>
-									</tr>
-									<tr>
-										<td><span class="legend-dot dot-purple"></span><span class="status-label-text">Revision</span></td>
-										<td class="status-val-text" onclick="openDocModal('form', 'RVI')" title="Filter Revision"><?= $doc_control['form']['rvi']; ?></td>
+										<td colspan="2" class="text-muted pt-2" style="font-size: 11px;"><i>Status: Non-DEL</i></td>
 									</tr>
 								</table>
 							</div>
