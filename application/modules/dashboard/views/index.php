@@ -286,10 +286,10 @@ if (!function_exists('render_compliance_donut')) {
 							</div>
 						</div>
 						<div>
-							<span class="card-number-huge" onclick="openDocModal('wi', 'PUB')" title="Klik untuk lihat daftar Work Instruction Published"><?= number_format($doc_control['wi']['total']); ?></span>
-							<div class="d-flex align-items-center mt-2" onclick="openDocModal('wi', 'PUB')" style="cursor: pointer;">
+							<span class="card-number-huge" onclick="openDocModal('wi')" title="Klik untuk lihat daftar Work Instruction"><?= number_format($doc_control['wi']['total']); ?></span>
+							<div class="d-flex align-items-center mt-2" onclick="openDocModal('wi')" style="cursor: pointer;">
 								<span class="legend-dot dot-teal"></span>
-								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Status: Published</span>
+								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Total Dokumen</span>
 							</div>
 						</div>
 					</div>
@@ -303,10 +303,10 @@ if (!function_exists('render_compliance_donut')) {
 							</div>
 						</div>
 						<div>
-							<span class="card-number-huge" onclick="openDocModal('form', 'PUB')" title="Klik untuk lihat daftar Form Published"><?= number_format($doc_control['form']['total']); ?></span>
-							<div class="d-flex align-items-center mt-2" onclick="openDocModal('form', 'PUB')" style="cursor: pointer;">
+							<span class="card-number-huge" onclick="openDocModal('form')" title="Klik untuk lihat daftar Form"><?= number_format($doc_control['form']['total']); ?></span>
+							<div class="d-flex align-items-center mt-2" onclick="openDocModal('form')" style="cursor: pointer;">
 								<span class="legend-dot dot-teal"></span>
-								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Status: Published</span>
+								<span class="font-weight-bolder" style="font-size: 12px; color: #111111;">Total Dokumen</span>
 							</div>
 						</div>
 					</div>

@@ -49,6 +49,14 @@
 							<h5 class="font-weight-bold mb-3">Corrective Action Internal #<?= $idx + 1; ?></h5>
 
 							<p class="mb-3"><strong>Deskripsi Masalah:</strong> <?= $dtl->deskripsi_masalah; ?></p>
+							<?php if (isset($dtl->evidence_masalah_original_name) && $dtl->evidence_masalah_original_name) : ?>
+							<div class="mb-3">
+								<strong>Evidence Masalah:</strong>
+								<a href="<?= base_url('directory/CAR/' . $data->company_id . '/' . $data->id . '/' . $dtl->evidence_masalah_file); ?>" class="btn btn-outline-info btn-sm ml-2" target="_blank">
+									<i class="fa fa-download mr-1"></i><?= $dtl->evidence_masalah_original_name; ?>
+								</a>
+							</div>
+							<?php endif; ?>
 
 							<div class="form-group mt-4">
 								<label class="font-weight-bold text-dark">Fakta</label>
@@ -68,7 +76,7 @@
 							</div>
 							<?php if ($dtl->evidence_original_name) : ?>
 							<div class="form-group mt-4">
-								<label class="font-weight-bold text-dark">Evidence</label>
+								<label class="font-weight-bold text-dark">Evidence Penyelesaian</label>
 								<div>
 									<a href="<?= base_url('directory/CAR/' . $data->company_id . '/' . $data->id . '/' . $dtl->evidence_file); ?>" class="btn btn-outline-primary btn-sm" target="_blank">
 										<i class="fa fa-download mr-1"></i><?= $dtl->evidence_original_name; ?>

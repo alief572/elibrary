@@ -133,14 +133,14 @@ class Dashboard extends Admin_Controller
 				'rvi'   => $has_proc_table ? $procedur_rvi : 18,
 			),
 			'wi' => array(
-				'total' => $has_wi_table ? $wi_pub : 415,
+				'total' => $has_wi_table ? ($wi_pub + $wi_rev + $wi_cor + $wi_rvi) : 415,
 				'pub'   => $has_wi_table ? $wi_pub : 415,
 				'rev'   => $has_wi_table ? $wi_rev : 80,
 				'cor'   => $has_wi_table ? $wi_cor : 43,
 				'rvi'   => $has_wi_table ? $wi_rvi : 25,
 			),
 			'form' => array(
-				'total' => $has_form_table ? $form_pub : 222,
+				'total' => $has_form_table ? ($form_pub + $form_rev + $form_cor + $form_rvi) : 222,
 				'pub'   => $has_form_table ? $form_pub : 222,
 				'rev'   => $has_form_table ? $form_rev : 56,
 				'cor'   => $has_form_table ? $form_cor : 28,

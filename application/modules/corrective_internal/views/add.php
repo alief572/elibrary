@@ -146,6 +146,16 @@
 										<textarea name="items[<?= $idx; ?>][deskripsi_masalah]" class="form-control bg-light" rows="4" maxlength="2000" placeholder="Jelaskan masalah yang ditemukan..." readonly required><?= $dtl->deskripsi_masalah; ?></textarea>
 										<small class="text-muted float-right"><span class="char-count"><?= strlen($dtl->deskripsi_masalah); ?></span>/2000</small>
 									</div>
+									<?php if (isset($dtl->evidence_masalah_original_name) && $dtl->evidence_masalah_original_name) : ?>
+									<div class="form-group mt-3">
+										<label class="font-weight-bold text-dark">Evidence Masalah</label>
+										<div>
+											<a href="<?= base_url('directory/CAR/' . $data->company_id . '/' . $data->id . '/' . $dtl->evidence_masalah_file); ?>" class="btn btn-outline-info btn-sm" target="_blank">
+												<i class="fa fa-download mr-1"></i><?= $dtl->evidence_masalah_original_name; ?>
+											</a>
+										</div>
+									</div>
+									<?php endif; ?>
 									<div class="form-group mt-4">
 										<label class="font-weight-bold text-dark">Fakta <span class="text-danger">*</span></label>
 										<textarea name="items[<?= $idx; ?>][fakta]" class="form-control" rows="4" maxlength="2000" placeholder="1. ...&#10;2. ...&#10;3. ..." required><?= $dtl->fakta; ?></textarea>
@@ -167,7 +177,7 @@
 										<small class="text-muted float-right"><span class="char-count"><?= strlen($dtl->corrective_action); ?></span>/2000</small>
 									</div>
 									<div class="form-group mt-4">
-										<label class="font-weight-bold text-dark">Upload Evidence</label>
+										<label class="font-weight-bold text-dark">Upload Evidence Penyelesaian <span class="text-danger">*</span></label>
 										<?php if ($dtl->evidence_original_name) : ?>
 											<p class="mb-1"><i class="fa fa-file mr-1"></i><?= $dtl->evidence_original_name; ?></p>
 										<?php endif; ?>
@@ -180,7 +190,7 @@
 											</button>
 											<span class="ml-3 file-name-display" id="fname_evidence_<?= $idx; ?>"></span>
 										</div>
-										<input type="file" name="evidence_<?= $idx; ?>" id="evidence_<?= $idx; ?>" class="d-none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx">
+										<input type="file" name="evidence_<?= $idx; ?>" id="evidence_<?= $idx; ?>" class="d-none evidence-penyelesaian" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" <?= $dtl->evidence_original_name ? '' : 'required'; ?>>
 																				<small class="text-muted d-block mt-1">Format: PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX (Max 10MB)</small>
 									</div>
 								</div>
@@ -192,6 +202,20 @@
 									<label class="font-weight-bold text-dark">Deskripsi Masalah <span class="text-danger">*</span></label>
 									<textarea name="items[0][deskripsi_masalah]" class="form-control" rows="4" maxlength="2000" placeholder="Jelaskan masalah yang ditemukan..." required></textarea>
 									<small class="text-muted float-right"><span class="char-count">0</span>/2000</small>
+								</div>
+								<div class="form-group mt-4">
+									<label class="font-weight-bold text-dark">Upload Evidence Masalah</label>
+									<div class="d-flex align-items-center mt-2">
+										<button type="button" class="btn btn-outline-primary btn-sm mr-2 btn-camera" data-target="evidence_masalah_0">
+											<i class="fa fa-camera mr-1"></i> Ambil Foto
+										</button>
+										<button type="button" class="btn btn-outline-secondary btn-sm btn-file-pick" data-target="evidence_masalah_0">
+											<i class="fa fa-folder-open mr-1"></i> Pilih File
+										</button>
+										<span class="ml-3 file-name-display" id="fname_evidence_masalah_0"></span>
+									</div>
+									<input type="file" name="evidence_masalah_0" id="evidence_masalah_0" class="d-none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx">
+									<small class="text-muted d-block mt-1">Format: PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX (Max 10MB)</small>
 								</div>
 							</div>
 							<?php endif; ?>
@@ -429,9 +453,16 @@ $(document).ready(function() {
 						$(this).removeClass('is-invalid');
 					}
 				});
+				// Check evidence penyelesaian (mandatory on submit)
+				$(this).find('.evidence-penyelesaian').each(function() {
+					if (!$(this).val() && !$(this).closest('.form-group').find('p.mb-1').length) {
+						hasEmpty = true;
+						$(this).closest('.form-group').find('label').addClass('text-danger');
+					}
+				});
 			});
 			if (hasEmpty) {
-				Swal.fire({ title: 'Warning!', text: 'Semua field yang bertanda * harus diisi.', icon: 'warning' });
+				Swal.fire({ title: 'Warning!', text: 'Semua field yang bertanda * harus diisi, termasuk Evidence Penyelesaian.', icon: 'warning' });
 				return;
 			}
 		}

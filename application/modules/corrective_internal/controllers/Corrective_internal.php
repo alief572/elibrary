@@ -91,6 +91,8 @@ class Corrective_internal extends Admin_Controller
                 $old_evidence[$od->urutan] = [
                     'evidence_file' => $od->evidence_file,
                     'evidence_original_name' => $od->evidence_original_name,
+                    'evidence_masalah_file' => isset($od->evidence_masalah_file) ? $od->evidence_masalah_file : null,
+                    'evidence_masalah_original_name' => isset($od->evidence_masalah_original_name) ? $od->evidence_masalah_original_name : null,
                 ];
             }
 
@@ -125,7 +127,7 @@ class Corrective_internal extends Admin_Controller
                     'created_by'             => $this->auth->user_id(),
                 ];
 
-                // Handle file upload
+                // Handle file upload - Evidence Penyelesaian
                 $file_key = "evidence_$index";
                 if (isset($_FILES[$file_key]) && $_FILES[$file_key]['size'] > 0) {
                     $upload = $this->_uploadEvidence($file_key, $car_id);
@@ -137,6 +139,19 @@ class Corrective_internal extends Admin_Controller
                     // Preserve old evidence if no new file uploaded
                     $detail['evidence_file'] = $old_evidence[$urutan]['evidence_file'];
                     $detail['evidence_original_name'] = $old_evidence[$urutan]['evidence_original_name'];
+                }
+
+                // Handle file upload - Evidence Masalah
+                $file_key_masalah = "evidence_masalah_$index";
+                if (isset($_FILES[$file_key_masalah]) && $_FILES[$file_key_masalah]['size'] > 0) {
+                    $upload = $this->_uploadEvidence($file_key_masalah, $car_id);
+                    if ($upload['status']) {
+                        $detail['evidence_masalah_file'] = $upload['file_name'];
+                        $detail['evidence_masalah_original_name'] = $upload['original_name'];
+                    }
+                } elseif (isset($old_evidence[$urutan])) {
+                    $detail['evidence_masalah_file'] = $old_evidence[$urutan]['evidence_masalah_file'];
+                    $detail['evidence_masalah_original_name'] = $old_evidence[$urutan]['evidence_masalah_original_name'];
                 }
 
                 $this->db->insert('corrective_internal_detail', $detail);
