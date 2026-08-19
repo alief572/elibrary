@@ -68,7 +68,7 @@ class Dashboard extends Admin_Controller
 		$has_proc_table = true;
 
 		$procedur_pub = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'PUB' AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
-		$procedur_rev = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('REV','OPN','APV','DFT') AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
+		$procedur_rev = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'REV' AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
 		$procedur_cor = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('COR','REJ') AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
 		$procedur_rvi = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'RVI' AND company_id = ? AND deleted_at IS NULL", [$this->company])->row()->cnt;
 
@@ -181,9 +181,10 @@ class Dashboard extends Admin_Controller
 			if (!empty($this->company)) {
 				$this->db->where('company_id', $this->company);
 			}
+			$this->db->where('status', 'OPN');
 			$action_plan_count = $this->db->count_all_results('compliance_opports');
 		} else {
-			$action_plan_count = 11;
+			$action_plan_count = 0;
 		}
 
 		// Calculate Compliance to Regulation dynamically from database
@@ -590,6 +591,7 @@ class Dashboard extends Admin_Controller
 			if (!empty($this->company)) {
 				$this->db->where('company_id', $this->company);
 			}
+			$this->db->where('status', 'OPN');
 			$total_count = $this->db->count_all_results('', FALSE);
 			$this->db->select('id as number, description as name, pic, status');
 			$this->db->order_by('id', 'DESC')->limit(10);
@@ -680,7 +682,7 @@ class Dashboard extends Admin_Controller
 				if ($status === 'PUB') {
 					$this->db->where('p.status', 'PUB');
 				} elseif ($status === 'REV') {
-					$this->db->where_in('p.status', array('REV', 'OPN', 'APV', 'DFT'));
+					$this->db->where('p.status', 'REV');
 				} elseif ($status === 'COR') {
 					$this->db->where_in('p.status', array('COR', 'REJ'));
 				} elseif ($status === 'RVI') {

@@ -646,7 +646,9 @@ function openDocModal(type, status) {
 			if (res.data && res.data.length > 0) {
 				$.each(res.data, function(idx, item) {
 					var stsBadge = '<span class="badge badge-primary">Published</span>';
-					if (item.status === 'REV' || item.status === 'OPN' || item.status === 'APV') {
+					if (type === 'action_plan' && item.status === 'OPN') {
+						stsBadge = '<span class="badge badge-success">Open</span>';
+					} else if (item.status === 'REV' || item.status === 'OPN' || item.status === 'APV') {
 						stsBadge = '<span class="badge badge-warning">Under Review</span>';
 					} else if (item.status === 'COR' || item.status === 'REJ') {
 						stsBadge = '<span class="badge badge-danger">Perlu Koreksi</span>';
