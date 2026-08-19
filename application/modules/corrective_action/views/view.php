@@ -65,7 +65,7 @@ foreach ($files as $f) {
                                     if (isset($ca->status_ca)) {
                                         switch ($ca->status_ca) {
                                             case 'draft':
-                                                $status_label = 'Draft';
+                                                $status_label = 'Open';
                                                 $status_class = 'warning';
                                                 break;
                                             case 'waiting_approval':

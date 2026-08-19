@@ -65,32 +65,12 @@ class Dashboard extends Admin_Controller
 		$procedur_rev = 0;
 		$procedur_cor = 0;
 		$procedur_rvi = 0;
-		$has_proc_table = $this->db->table_exists('procedures') || $this->db->table_exists('view_procedures');
+		$has_proc_table = true;
 
-		if ($this->db->table_exists('procedures')) {
-			$has_del_at = $this->db->field_exists('deleted_at', 'procedures');
-			$has_del_sts = $this->db->field_exists('deletion_status', 'procedures');
-
-			$this->db->where('status', 'PUB');
-			if ($has_del_at) $this->db->where('deleted_at IS NULL', NULL, FALSE);
-			if ($has_del_sts) $this->db->where('deletion_status !=', 'DEL');
-			$procedur_pub = $this->db->count_all_results('procedures');
-
-			$this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'));
-			if ($has_del_at) $this->db->where('deleted_at IS NULL', NULL, FALSE);
-			if ($has_del_sts) $this->db->where('deletion_status !=', 'DEL');
-			$procedur_rev = $this->db->count_all_results('procedures');
-
-			$this->db->where_in('status', array('COR', 'REJ'));
-			if ($has_del_at) $this->db->where('deleted_at IS NULL', NULL, FALSE);
-			if ($has_del_sts) $this->db->where('deletion_status !=', 'DEL');
-			$procedur_cor = $this->db->count_all_results('procedures');
-
-			$this->db->where('status', 'RVI');
-			if ($has_del_at) $this->db->where('deleted_at IS NULL', NULL, FALSE);
-			if ($has_del_sts) $this->db->where('deletion_status !=', 'DEL');
-			$procedur_rvi = $this->db->count_all_results('procedures');
-		}
+		$procedur_pub = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'PUB' AND company_id = ?", [$this->company])->row()->cnt;
+		$procedur_rev = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('REV','OPN','APV','DFT') AND company_id = ?", [$this->company])->row()->cnt;
+		$procedur_cor = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status IN ('COR','REJ') AND company_id = ?", [$this->company])->row()->cnt;
+		$procedur_rvi = $this->db->query("SELECT COUNT(*) as cnt FROM procedures WHERE status = 'RVI' AND company_id = ?", [$this->company])->row()->cnt;
 
 		// 2. WORK INSTRUCTION (dir_guides / work_instructions)
 		$wi_pub = 0;
@@ -100,15 +80,17 @@ class Dashboard extends Admin_Controller
 		$has_wi_table = $this->db->table_exists('dir_guides') || $this->db->table_exists('work_instructions');
 
 		if ($this->db->table_exists('dir_guides')) {
-			$wi_pub = $this->db->where('status', 'PUB')->count_all_results('dir_guides');
-			$wi_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->count_all_results('dir_guides');
-			$wi_cor = $this->db->where_in('status', array('COR', 'REJ'))->count_all_results('dir_guides');
-			$wi_rvi = $this->db->where('status', 'RVI')->count_all_results('dir_guides');
+			$this->db->reset_query();
+			$wi_pub = $this->db->where('status', 'PUB')->where('company_id', $this->company)->count_all_results('dir_guides');
+			$wi_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->where('company_id', $this->company)->count_all_results('dir_guides');
+			$wi_cor = $this->db->where_in('status', array('COR', 'REJ'))->where('company_id', $this->company)->count_all_results('dir_guides');
+			$wi_rvi = $this->db->where('status', 'RVI')->where('company_id', $this->company)->count_all_results('dir_guides');
 		} elseif ($this->db->table_exists('work_instructions')) {
-			$wi_pub = $this->db->where('status', 'PUB')->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
-			$wi_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
-			$wi_cor = $this->db->where_in('status', array('COR', 'REJ'))->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
-			$wi_rvi = $this->db->where('status', 'RVI')->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
+			$this->db->reset_query();
+			$wi_pub = $this->db->where('status', 'PUB')->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
+			$wi_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
+			$wi_cor = $this->db->where_in('status', array('COR', 'REJ'))->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
+			$wi_rvi = $this->db->where('status', 'RVI')->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('work_instructions');
 		}
 
 		// 3. FORM (dir_forms / forms)
@@ -119,15 +101,17 @@ class Dashboard extends Admin_Controller
 		$has_form_table = $this->db->table_exists('dir_forms') || $this->db->table_exists('forms');
 
 		if ($this->db->table_exists('dir_forms')) {
-			$form_pub = $this->db->where('status', 'PUB')->count_all_results('dir_forms');
-			$form_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->count_all_results('dir_forms');
-			$form_cor = $this->db->where_in('status', array('COR', 'REJ'))->count_all_results('dir_forms');
-			$form_rvi = $this->db->where('status', 'RVI')->count_all_results('dir_forms');
+			$this->db->reset_query();
+			$form_pub = $this->db->where('status', 'PUB')->where('company_id', $this->company)->count_all_results('dir_forms');
+			$form_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->where('company_id', $this->company)->count_all_results('dir_forms');
+			$form_cor = $this->db->where_in('status', array('COR', 'REJ'))->where('company_id', $this->company)->count_all_results('dir_forms');
+			$form_rvi = $this->db->where('status', 'RVI')->where('company_id', $this->company)->count_all_results('dir_forms');
 		} elseif ($this->db->table_exists('forms')) {
-			$form_pub = $this->db->where('status', 'PUB')->where('deletion_status !=', 'DEL')->count_all_results('forms');
-			$form_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->where('deletion_status !=', 'DEL')->count_all_results('forms');
-			$form_cor = $this->db->where_in('status', array('COR', 'REJ'))->where('deletion_status !=', 'DEL')->count_all_results('forms');
-			$form_rvi = $this->db->where('status', 'RVI')->where('deletion_status !=', 'DEL')->count_all_results('forms');
+			$this->db->reset_query();
+			$form_pub = $this->db->where('status', 'PUB')->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('forms');
+			$form_rev = $this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'))->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('forms');
+			$form_cor = $this->db->where_in('status', array('COR', 'REJ'))->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('forms');
+			$form_rvi = $this->db->where('status', 'RVI')->where('company_id', $this->company)->where('deletion_status !=', 'DEL')->count_all_results('forms');
 		}
 
 		// 4. RECORDS (dir_records / records: semua file kecuali status DEL)
@@ -177,11 +161,18 @@ class Dashboard extends Admin_Controller
 		$has_at_table = $this->db->table_exists('audit_temuan');
 
 		if ($has_ca_table) {
-			$car_open = $this->db->where_in('LOWER(status_ca)', array('draft', 'dft', '0'))->where('deleted', '0')->count_all_results('corrective_action');
+			$car_open = $this->db->query(
+				"SELECT COUNT(DISTINCT pa.id) as cnt
+				FROM pelaksanaan_audit pa
+				INNER JOIN pelaksanaan_audit_temuan pat ON pat.audit_id = pa.id AND pat.status = '1'
+				LEFT JOIN corrective_action ca ON ca.pelaksanaan_id = pa.id AND ca.deleted = '0'
+				WHERE pa.status = '1'
+				AND (ca.id IS NULL OR ca.status_ca NOT IN ('approved', 'closed'))"
+			)->row()->cnt;
 		} elseif ($has_at_table) {
 			$car_open = $this->db->where_in('status', array('OPN', 'OPEN', 'PRO', 'DFT', 'Draft'))->count_all_results('audit_temuan');
 		} else {
-			$car_open = 5;
+			$car_open = 0;
 		}
 
 		$action_plan_count = 0;
@@ -264,8 +255,18 @@ class Dashboard extends Admin_Controller
 			$total_subject_regulations = 85;
 		}
 
+		// CAR Internal Open (status = draft/reject with overdue deadline)
+		$car_internal_open = 0;
+		if ($this->db->table_exists('corrective_internal')) {
+			$car_internal_open = $this->db->query(
+				"SELECT COUNT(*) as cnt FROM corrective_internal WHERE company_id = ? AND deleted_at IS NULL AND status IN ('draft', 'reject')",
+				[$this->company]
+			)->row()->cnt;
+		}
+
 		$audit_compliance = array(
 			'car_open' => $car_open,
+			'car_internal_open' => $car_internal_open,
 			'action_plan' => $action_plan_count,
 			'compliance_rate' => $compliance_rate,
 			'total_compliance_items' => $total_compliance_items,
@@ -332,6 +333,7 @@ class Dashboard extends Admin_Controller
 			'doc_control' => $doc_control,
 			'audit_compliance' => array(
 				'car_open' => $car_open,
+				'car_internal_open' => $car_internal_open,
 				'compliance_rate' => $compliance_rate,
 				'action_plan' => $action_plan_count,
 				'total_compliance_items' => $total_compliance_items,
@@ -362,6 +364,9 @@ class Dashboard extends Admin_Controller
 		} elseif ($type === 'car') {
 			$redirect_url = base_url('corrective_action');
 			$title = 'CAR Internal Audit Open';
+		} elseif ($type === 'car_internal') {
+			$redirect_url = base_url('corrective_internal');
+			$title = 'CAR Internal Open';
 		} elseif ($type === 'compliance') {
 			$redirect_url = base_url('compliances');
 			$title = 'Compliance to Regulation';
@@ -382,6 +387,7 @@ class Dashboard extends Admin_Controller
 				$this->db->join('procedures p', 'p.id = g.procedure_id', 'left');
 				$this->db->join('departements d', 'd.id = p.departement_id', 'left');
 				$this->db->where('g.status !=', 'DEL');
+				$this->db->where('g.company_id', $this->company);
 				if (!empty($status)) {
 					if ($status === 'PUB') {
 						$this->db->where('g.status', 'PUB');
@@ -477,6 +483,7 @@ class Dashboard extends Admin_Controller
 				$this->db->join('procedures p', 'p.id = f.procedure_id', 'left');
 				$this->db->join('departements d', 'd.id = p.departement_id', 'left');
 				$this->db->where('f.status !=', 'DEL');
+				$this->db->where('f.company_id', $this->company);
 				if (!empty($status)) {
 					if ($status === 'PUB') {
 						$this->db->where('f.status', 'PUB');
@@ -514,24 +521,58 @@ class Dashboard extends Admin_Controller
 				$this->db->order_by('f.id', 'DESC')->limit(10);
 				$data = $this->db->get()->result();
 			}
-		} elseif ($type === 'car' && $this->db->table_exists('corrective_action')) {
+		} elseif ($type === 'car_internal') {
 			$table_exists = true;
-			$this->db->from('corrective_action ca');
-			$this->db->where('ca.deleted', '0');
-			$this->db->where_in('LOWER(ca.status_ca)', array('draft', 'dft', '0'));
-			$total_count = $this->db->count_all_results('', FALSE);
-			$this->db->select('ca.id as number, ca.ca_number as name, "Internal Audit" as departement_name, ca.created_at as date, ca.status_ca as status');
-			$this->db->order_by('ca.id', 'DESC')->limit(10);
-			$data = $this->db->get()->result();
-		} elseif ($type === 'car' && $this->db->table_exists('audit_temuan')) {
+			$redirect_url = base_url('corrective_internal');
+			$title = 'CAR Internal Open';
+			$data = $this->db->query(
+				"SELECT ci.id, ci.nomor_car, ci.tanggal_car, ci.deadline_car, ci.status, d.name as department_name
+				FROM corrective_internal ci
+				LEFT JOIN departements d ON d.id = ci.department_pic_car_id
+				WHERE ci.company_id = ? AND ci.deleted_at IS NULL AND ci.status IN ('draft', 'reject')
+				ORDER BY ci.id DESC LIMIT 10",
+				[$this->company]
+			)->result();
+			$total_count = $this->db->query(
+				"SELECT COUNT(*) as cnt FROM corrective_internal WHERE company_id = ? AND deleted_at IS NULL AND status IN ('draft', 'reject')",
+				[$this->company]
+			)->row()->cnt;
+		} elseif ($type === 'car') {
 			$table_exists = true;
-			$this->db->from('audit_temuan');
-			$this->db->where('status !=', 'DEL');
-			$this->db->where_in('status', array('OPN', 'OPEN', 'PRO', 'DFT', 'Draft'));
-			$total_count = $this->db->count_all_results('', FALSE);
-			$this->db->select('id as number, description as name, "Internal Audit" as departement_name, date, status');
-			$this->db->order_by('id', 'DESC')->limit(10);
-			$data = $this->db->get()->result();
+			$redirect_url = base_url('corrective_action');
+			$title = 'CAR Internal Audit Open';
+			if ($this->db->table_exists('pelaksanaan_audit')) {
+				$data = $this->db->query(
+					"SELECT pa.id as number,
+						COALESCE(p.name, aps.process_name_free) as name,
+						COALESCE(ad.department_name, aps.auditee_name_free) as departement_name,
+						aps.audit_date as date,
+						CASE WHEN ca.id IS NULL THEN 'draft' ELSE ca.status_ca END as status
+					FROM pelaksanaan_audit pa
+					INNER JOIN pelaksanaan_audit_temuan pat ON pat.audit_id = pa.id AND pat.status = '1'
+					LEFT JOIN audit_program_schedule aps ON aps.id = pa.schedule_id
+					LEFT JOIN procedures p ON p.id = aps.process_id
+					LEFT JOIN audit_program_schedule_auditee apsa ON apsa.schedule_id = aps.id
+					LEFT JOIN audit_department ad ON ad.id = apsa.department_id
+					LEFT JOIN corrective_action ca ON ca.pelaksanaan_id = pa.id AND ca.deleted = '0'
+					WHERE pa.status = '1'
+					AND (ca.id IS NULL OR ca.status_ca NOT IN ('approved', 'closed'))
+					GROUP BY pa.id
+					ORDER BY aps.audit_date DESC
+					LIMIT 10"
+				)->result();
+				$total_count = $this->db->query(
+					"SELECT COUNT(DISTINCT pa.id) as cnt
+					FROM pelaksanaan_audit pa
+					INNER JOIN pelaksanaan_audit_temuan pat ON pat.audit_id = pa.id AND pat.status = '1'
+					LEFT JOIN corrective_action ca ON ca.pelaksanaan_id = pa.id AND ca.deleted = '0'
+					WHERE pa.status = '1'
+					AND (ca.id IS NULL OR ca.status_ca NOT IN ('approved', 'closed'))"
+				)->row()->cnt;
+			} else {
+				$data = array();
+				$total_count = 0;
+			}
 		} elseif ($type === 'action_plan' && $this->db->table_exists('compliance_opports')) {
 			$table_exists = true;
 			$this->db->from('compliance_opports');
@@ -616,39 +657,14 @@ class Dashboard extends Admin_Controller
 				$this->db->order_by('id', 'DESC')->limit(10);
 				$data = $this->db->get()->result();
 			}
-		} elseif ($this->db->table_exists('view_procedures')) {
-			$table_exists = true;
-			$this->db->from('view_procedures');
-			$has_del_at = $this->db->field_exists('deleted_at', 'view_procedures');
-			$has_del_sts = $this->db->field_exists('deletion_status', 'view_procedures');
-			if ($has_del_at) $this->db->where('deleted_at IS NULL', NULL, FALSE);
-			if ($has_del_sts) $this->db->where('deletion_status !=', 'DEL');
-			$this->db->where('status !=', 'DEL');
-			if (!empty($status)) {
-				if ($status === 'PUB') {
-					$this->db->where('status', 'PUB');
-				} elseif ($status === 'REV') {
-					$this->db->where_in('status', array('REV', 'OPN', 'APV', 'DFT'));
-				} elseif ($status === 'COR') {
-					$this->db->where_in('status', array('COR', 'REJ'));
-				} elseif ($status === 'RVI') {
-					$this->db->where('status', 'RVI');
-				}
-			}
-			$total_count = $this->db->count_all_results('', FALSE);
-			$this->db->select('id, nomor as number, name, departement_name, group_name, status');
-			$this->db->order_by('id', 'DESC')->limit(10);
-			$data = $this->db->get()->result();
 		} elseif ($this->db->table_exists('procedures')) {
 			$table_exists = true;
+			$this->db->reset_query();
 			$this->db->from('procedures p');
 			$this->db->join('departements d', 'd.id = p.departement_id', 'left');
-			$this->db->join('group_procedure g', 'g.id = p.group_procedure', 'left');
-			$has_del_at = $this->db->field_exists('deleted_at', 'procedures');
-			$has_del_sts = $this->db->field_exists('deletion_status', 'procedures');
-			if ($has_del_at) $this->db->where('p.deleted_at IS NULL', NULL, FALSE);
-			if ($has_del_sts) $this->db->where('p.deletion_status !=', 'DEL');
 			$this->db->where('p.status !=', 'DEL');
+			$this->db->where('p.deleted_at IS NULL', NULL, FALSE);
+			$this->db->where('p.company_id', $this->company);
 			if (!empty($status)) {
 				if ($status === 'PUB') {
 					$this->db->where('p.status', 'PUB');
@@ -661,7 +677,7 @@ class Dashboard extends Admin_Controller
 				}
 			}
 			$total_count = $this->db->count_all_results('', FALSE);
-			$this->db->select('p.id, p.nomor as number, p.name, d.name as departement_name, g.name as group_name, p.status');
+			$this->db->select('p.id, p.nomor as number, p.name, d.name as departement_name, p.group_procedure as group_name, p.status');
 			$this->db->order_by('p.id', 'DESC')->limit(10);
 			$data = $this->db->get()->result();
 		}

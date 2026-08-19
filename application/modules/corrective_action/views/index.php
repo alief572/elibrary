@@ -37,9 +37,9 @@
 												<td><?= $dt->kategori; ?></td>
 												<td class="text-center">
 													<?php if (empty($dt->ca_id)) : ?>
-														<span class="label label-lg label-light-warning label-inline">Draft</span>
+														<span class="label label-lg label-light-warning label-inline">Open</span>
 													<?php elseif ($dt->status_ca == 'draft') : ?>
-														<span class="label label-lg label-light-warning label-inline">Draft</span>
+														<span class="label label-lg label-light-warning label-inline">Open</span>
 													<?php elseif ($dt->status_ca == 'waiting_approval') : ?>
 														<span class="label label-lg label-light-info label-inline">Waiting Approval</span>
 													<?php elseif ($dt->status_ca == 'approved') : ?>

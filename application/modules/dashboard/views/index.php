@@ -330,10 +330,10 @@ if (!function_exists('render_compliance_donut')) {
 				</div>
 			</div>
 
-			<!-- SECTION 2: AUDIT & COMPLIANCE -->
-			<div class="section-header">AUDIT & COMPLIANCE</div>
+			<!-- SECTION 2: AUDIT, CAR, & COMPLIANCE -->
+			<div class="section-header">AUDIT, CAR, & COMPLIANCE</div>
 			<div class="row mb-5">
-				<div class="col-md-4 mb-4 mb-md-0">
+				<div class="col-md-3 mb-4 mb-md-0">
 					<div class="dash-card">
 						<div class="d-flex justify-content-between align-items-start">
 							<span class="card-label-top">CAR INTERNAL AUDIT OPEN</span>
@@ -346,7 +346,20 @@ if (!function_exists('render_compliance_donut')) {
 						</div>
 					</div>
 				</div>
-				<div class="col-md-4 mb-4 mb-md-0">
+				<div class="col-md-3 mb-4 mb-md-0">
+					<div class="dash-card">
+						<div class="d-flex justify-content-between align-items-start">
+							<span class="card-label-top">CAR INTERNAL OPEN</span>
+							<div class="card-icon-badge badge-red">
+								<i class="fa fa-check-double text-white"></i>
+							</div>
+						</div>
+						<div>
+							<span class="card-number-huge" onclick="openDocModal('car_internal')" title="Klik untuk lihat daftar CAR Internal Open"><?= number_format($audit_compliance['car_internal_open']); ?></span>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3 mb-4 mb-md-0">
 					<div class="dash-card justify-content-center text-center py-4">
 						<div onclick="openDocModal('compliance')" style="cursor: pointer;" title="Klik untuk lihat daftar Compliance & Regulasi">
 							<?= render_compliance_donut($audit_compliance['compliance_rate']); ?>
@@ -357,7 +370,7 @@ if (!function_exists('render_compliance_donut')) {
 						</div>
 					</div>
 				</div>
-				<div class="col-md-4">
+				<div class="col-md-3">
 					<div class="dash-card">
 						<div class="d-flex justify-content-between align-items-start">
 							<span class="card-label-top">ACTION PLAN COMPLIANCE</span>
@@ -583,6 +596,7 @@ function openDocModal(type, status) {
 	if (type === 'records') typeName = 'Records';
 	if (type === 'form') typeName = 'Form';
 	if (type === 'car') typeName = 'CAR Internal Audit Open';
+	if (type === 'car_internal') typeName = 'CAR Internal Open';
 	if (type === 'compliance') typeName = 'Compliance to Regulation';
 	if (type === 'action_plan') typeName = 'Action Plan Compliance';
 
@@ -604,6 +618,8 @@ function openDocModal(type, status) {
 		headHtml += '<th>Name</th><th>Number</th><th>Procedure</th><th>Effective Date</th><th class="text-center">Rev. Number</th><th>Status</th>';
 	} else if (type === 'car') {
 		headHtml += '<th>ID Audit</th><th>Deskripsi Temuan</th><th>Departemen</th><th>Tanggal</th><th>Status</th>';
+	} else if (type === 'car_internal') {
+		headHtml += '<th>Nomor CAR</th><th>Tanggal CAR</th><th>Deadline</th><th>Department</th><th>Status</th>';
 	} else if (type === 'compliance') {
 		headHtml += '<th width="100">Kode</th>' +
 			'<th>Subjek Regulasi</th>' +
@@ -686,13 +702,44 @@ function openDocModal(type, status) {
 							'<td>' + stsBadge + '</td>' +
 							'</tr>';
 					} else if (type === 'car') {
+						var carAuditSts = '<span class="badge badge-primary">Open</span>';
+						if (item.status === 'draft' || item.status === 'Draft' || item.status === 'DFT') {
+							carAuditSts = '<span class="badge badge-primary">Open</span>';
+						} else if (item.status === 'waiting_approval') {
+							carAuditSts = '<span class="badge badge-info">Waiting Approval</span>';
+						} else if (item.status === 'approved' || item.status === 'Approved') {
+							carAuditSts = '<span class="badge badge-success">Approved</span>';
+						} else if (item.status === 'closed' || item.status === 'Closed') {
+							carAuditSts = '<span class="badge badge-success">Closed</span>';
+						}
 						html += '<tr>' +
 							'<td class="text-center">' + no + '</td>' +
 							'<td>' + numBold + '</td>' +
 							'<td>' + nameBold + '</td>' +
 							'<td>' + (item.departement_name || '-') + '</td>' +
 							'<td>' + (item.date || '-') + '</td>' +
-							'<td>' + stsBadge + '</td>' +
+							'<td>' + carAuditSts + '</td>' +
+							'</tr>';
+					} else if (type === 'car_internal') {
+						var carSts = '<span class="badge badge-primary">Open</span>';
+						if (item.status === 'reject') {
+							carSts = '<span class="badge badge-danger">Reject</span>';
+						} else if (item.status === 'draft') {
+							var today = new Date();
+							var deadline = item.deadline_car ? new Date(item.deadline_car) : null;
+							if (deadline && deadline < today) {
+								carSts = '<span class="badge badge-danger">Overdue</span>';
+							} else {
+								carSts = '<span class="badge badge-primary">Open</span>';
+							}
+						}
+						html += '<tr>' +
+							'<td class="text-center">' + no + '</td>' +
+							'<td><span class="font-weight-bold">' + (item.nomor_car || '-') + '</span></td>' +
+							'<td>' + (item.tanggal_car || '-') + '</td>' +
+							'<td>' + (item.deadline_car || '-') + '</td>' +
+							'<td>' + (item.department_name || '-') + '</td>' +
+							'<td>' + carSts + '</td>' +
 							'</tr>';
 					} else if (type === 'compliance') {
 						var pct = item.percentage !== undefined ? item.percentage : 0;
