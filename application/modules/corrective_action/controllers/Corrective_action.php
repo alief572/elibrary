@@ -122,10 +122,11 @@ class Corrective_action extends Admin_Controller
         $result = $this->model->submitCorrective($data['ca_id'], $userId);
 
         // Send email notification to auditor if submit was successful
-        if ($result['status'] == 1) {
+        if (isset($result['status']) && $result['status'] == 1) {
             $this->_sendEmailToAuditor($data['ca_id']);
         }
 
+        if (ob_get_length()) ob_clean();
         echo json_encode($result);
     }
 
@@ -549,9 +550,12 @@ class Corrective_action extends Admin_Controller
             $body .= '</body></html>';
 
             // Send email
-            $this->load->library('email');
-
             $config = get_smtp_config();
+            if (empty($config['smtp_user']) || empty($config['smtp_pass']) || empty($config['smtp_host'])) {
+                return;
+            }
+
+            $this->load->library('email');
             $smtp_user = $config['smtp_user'];
 
             $this->email->initialize($config);
@@ -560,7 +564,7 @@ class Corrective_action extends Admin_Controller
             $this->email->subject('Segera Approve Corrective Action');
             $this->email->message($body);
 
-            if (!$this->email->send()) {
+            if (!@$this->email->send()) {
                 log_message('error', 'CA Email send failed: ' . $this->email->print_debugger(['headers']));
             }
         } catch (Exception $e) {

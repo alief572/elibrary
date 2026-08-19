@@ -52,9 +52,14 @@ class Setting_email extends Admin_Controller
         foreach ($fields as $field) {
             $value = isset($data[$field]) ? trim($data[$field]) : '';
 
-            // Encrypt password before storing
-            if ($field === 'smtp_pass' && $value !== '') {
-                $value = $this->_encrypt($value);
+            // Encrypt password before storing (skip if empty so existing password is not wiped out)
+            if ($field === 'smtp_pass') {
+                if ($value !== '') {
+                    $value = str_replace(' ', '', $value);
+                    $value = $this->_encrypt($value);
+                } else {
+                    continue; // Keep existing password
+                }
             }
 
             $exists = $this->db->get_where('settings', ['setting_name' => $field])->row();
@@ -98,6 +103,7 @@ class Setting_email extends Admin_Controller
         $port = isset($settings['smtp_port']) ? $settings['smtp_port'] : '465';
         $user = isset($settings['smtp_user']) ? $settings['smtp_user'] : '';
         $pass = isset($settings['smtp_pass']) ? $this->_decrypt($settings['smtp_pass']) : '';
+        $pass = str_replace(' ', '', $pass);
         $crypto = isset($settings['smtp_crypto']) ? $settings['smtp_crypto'] : 'ssl';
 
         if (empty($host) || empty($user) || empty($pass)) {
@@ -135,7 +141,14 @@ class Setting_email extends Admin_Controller
         } else {
             $error = $this->email->print_debugger(['headers']);
             log_message('error', 'Test email failed: ' . $error);
-            echo json_encode(['status' => 0, 'msg' => 'Gagal mengirim test email. Periksa konfigurasi SMTP.']);
+            
+            $msg = 'Gagal mengirim test email.';
+            if (strpos($error, '535') !== false || strpos($error, 'BadCredentials') !== false) {
+                $msg .= ' (Error 535: Username/Password App Gmail ditolak oleh Google. Periksa kembali App Password dan akun yang digunakan).';
+            } else {
+                $msg .= ' Periksa koneksi/konfigurasi SMTP.';
+            }
+            echo json_encode(['status' => 0, 'msg' => $msg]);
         }
     }
 

@@ -590,6 +590,7 @@ if (!function_exists('get_smtp_config')) {
         $key = 'sentral_sistem_2024';
         $pass = openssl_decrypt(base64_decode($pass_encrypted), 'AES-256-CBC', $key, 0, str_pad(substr($key, 0, 16), 16, '0'));
         if ($pass === false) $pass = $pass_encrypted; // fallback if not encrypted
+        $pass = str_replace(' ', '', $pass);
 
         // Build smtp_host with protocol prefix if not present
         $smtp_host = $host;

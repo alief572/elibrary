@@ -314,11 +314,15 @@ $(document).ready(function() {
 								});
 							}
 						},
-						error: function() {
+						error: function(xhr) {
+							var errMsg = 'Server error. Please try again.';
+							if (xhr && xhr.responseJSON && xhr.responseJSON.msg) {
+								errMsg = xhr.responseJSON.msg;
+							}
 							Swal.fire({
 								title: 'Error!',
 								icon: 'error',
-								text: 'Server error. Please try again.',
+								text: errMsg,
 								timer: 4000
 							});
 						}
