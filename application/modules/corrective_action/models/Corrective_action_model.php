@@ -423,8 +423,12 @@ class Corrective_action_model extends BF_Model
         // Validate all details are filled
         $details = $this->getCADetails($ca_id);
         foreach ($details as $detail) {
-            if (trim($detail->fakta) === '' || trim($detail->kesimpulan_penyebab) === '' ||
-                trim($detail->correction) === '' || trim($detail->corrective_action) === '') {
+            $fakta = isset($detail->fakta) ? trim($detail->fakta) : '';
+            $penyebab = isset($detail->kesimpulan_penyebab) ? trim($detail->kesimpulan_penyebab) : '';
+            $correction = isset($detail->correction) ? trim($detail->correction) : '';
+            $ca_action = isset($detail->corrective_action) ? trim($detail->corrective_action) : '';
+
+            if ($fakta === '' || $penyebab === '' || $correction === '' || $ca_action === '') {
                 return ['status' => 0, 'msg' => 'Semua field wajib diisi untuk setiap temuan sebelum diajukan.'];
             }
         }
@@ -438,13 +442,20 @@ class Corrective_action_model extends BF_Model
         $this->db->trans_begin();
         $now = date('Y-m-d H:i:s');
 
-        $this->db->update('corrective_action', [
-            'status_ca'    => 'waiting_approval',
-            'submitted_at' => $now,
-            'submitted_by' => $userId,
-            'modified_at'  => $now,
-            'modified_by'  => $userId,
-        ], ['id' => $ca_id]);
+        // Build update data - only include columns that exist
+        $updateData = [
+            'status_ca'   => 'waiting_approval',
+            'modified_at' => $now,
+            'modified_by' => $userId,
+        ];
+
+        // Check if submitted_at column exists
+        if ($this->db->field_exists('submitted_at', 'corrective_action')) {
+            $updateData['submitted_at'] = $now;
+            $updateData['submitted_by'] = $userId;
+        }
+
+        $this->db->update('corrective_action', $updateData, ['id' => $ca_id]);
 
         if ($this->db->trans_status() === FALSE) {
             $this->db->trans_rollback();

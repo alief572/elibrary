@@ -512,55 +512,59 @@ class Corrective_action extends Admin_Controller
      */
     private function _sendEmailToAuditor($ca_id)
     {
-        // Get CA data with auditor info
-        $ca = $this->db->get_where('corrective_action', ['id' => $ca_id, 'deleted' => '0'])->row();
-        if (!$ca) return;
+        try {
+            // Get CA data with auditor info
+            $ca = $this->db->get_where('corrective_action', ['id' => $ca_id, 'deleted' => '0'])->row();
+            if (!$ca) return;
 
-        // Get auditor email from schedule
-        $auditor = $this->db->select('aac.name, aac.email')
-            ->from('pelaksanaan_audit pa')
-            ->join('audit_program_schedule aps', 'aps.id = pa.schedule_id', 'left')
-            ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
-            ->where('pa.id', $ca->pelaksanaan_id)
-            ->get()
-            ->row();
+            // Get auditor email from schedule
+            $auditor = $this->db->select('aac.name, aac.email')
+                ->from('pelaksanaan_audit pa')
+                ->join('audit_program_schedule aps', 'aps.id = pa.schedule_id', 'left')
+                ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
+                ->where('pa.id', $ca->pelaksanaan_id)
+                ->get()
+                ->row();
 
-        if (!$auditor || empty($auditor->email)) return;
+            if (!$auditor || empty($auditor->email)) return;
 
-        // Get header info for email content
-        $header = $this->_getAuditHeader($ca->pelaksanaan_id);
+            // Get header info for email content
+            $header = $this->_getAuditHeader($ca->pelaksanaan_id);
 
-        // Build email body
-        $body = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">';
-        $body .= '<h2 style="color: #2c3e50;">Reminder: Approval Corrective Action</h2>';
-        $body .= '<p>Yth. <strong>' . htmlspecialchars($auditor->name) . '</strong>,</p>';
-        $body .= '<p>Corrective Action telah diajukan dan menunggu approval Anda. Mohon segera ditindaklanjuti.</p>';
-        $body .= '<table style="border-collapse: collapse; width: 100%; margin: 15px 0;" border="1" cellpadding="8">';
-        $body .= '<tr><th style="text-align:left; background:#f8f9fa; width:200px;">ID Corrective Action</th><td>' . htmlspecialchars($ca->id) . '</td></tr>';
-        if ($header) {
-            $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Prosedur</th><td>' . htmlspecialchars($header->process_name) . '</td></tr>';
-            $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Tanggal Audit</th><td>' . date('d-m-Y', strtotime($header->audit_date)) . '</td></tr>';
-            $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Department</th><td>' . htmlspecialchars($header->department_name) . '</td></tr>';
-        }
-        $body .= '</table>';
-        $body .= '<p>Silakan login ke sistem untuk melakukan approval.</p>';
-        $body .= '<br><p style="color: #7f8c8d; font-size: 12px;">Email ini dikirim otomatis dari Sentral Sistem - Audit Module.</p>';
-        $body .= '</body></html>';
+            // Build email body
+            $body = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">';
+            $body .= '<h2 style="color: #2c3e50;">Reminder: Approval Corrective Action</h2>';
+            $body .= '<p>Yth. <strong>' . htmlspecialchars($auditor->name) . '</strong>,</p>';
+            $body .= '<p>Corrective Action telah diajukan dan menunggu approval Anda. Mohon segera ditindaklanjuti.</p>';
+            $body .= '<table style="border-collapse: collapse; width: 100%; margin: 15px 0;" border="1" cellpadding="8">';
+            $body .= '<tr><th style="text-align:left; background:#f8f9fa; width:200px;">ID Corrective Action</th><td>' . htmlspecialchars($ca->id) . '</td></tr>';
+            if ($header) {
+                $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Prosedur</th><td>' . htmlspecialchars($header->process_name) . '</td></tr>';
+                $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Tanggal Audit</th><td>' . date('d-m-Y', strtotime($header->audit_date)) . '</td></tr>';
+                $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Department</th><td>' . htmlspecialchars($header->department_name) . '</td></tr>';
+            }
+            $body .= '</table>';
+            $body .= '<p>Silakan login ke sistem untuk melakukan approval.</p>';
+            $body .= '<br><p style="color: #7f8c8d; font-size: 12px;">Email ini dikirim otomatis dari Sentral Sistem - Audit Module.</p>';
+            $body .= '</body></html>';
 
-        // Send email
-        $this->load->library('email');
+            // Send email
+            $this->load->library('email');
 
-        $config = get_smtp_config();
-        $smtp_user = $config['smtp_user'];
+            $config = get_smtp_config();
+            $smtp_user = $config['smtp_user'];
 
-        $this->email->initialize($config);
-        $this->email->from($smtp_user, 'Sentral Sistem - Audit');
-        $this->email->to($auditor->email);
-        $this->email->subject('Segera Approve Corrective Action');
-        $this->email->message($body);
+            $this->email->initialize($config);
+            $this->email->from($smtp_user, 'Sentral Sistem - Audit');
+            $this->email->to($auditor->email);
+            $this->email->subject('Segera Approve Corrective Action');
+            $this->email->message($body);
 
-        if (!$this->email->send()) {
-            log_message('error', 'CA Email send failed: ' . $this->email->print_debugger(['headers']));
+            if (!$this->email->send()) {
+                log_message('error', 'CA Email send failed: ' . $this->email->print_debugger(['headers']));
+            }
+        } catch (Exception $e) {
+            log_message('error', 'CA Email exception: ' . $e->getMessage());
         }
     }
 }
