@@ -23,11 +23,22 @@
 </div>
 <div class="tab-content mt-5">
 	<div class="tab-pane fade show active" id="file" role="tabpanel" aria-labelledby="file-tab">
+		<?php if (isset($record->link_url) && $record->link_url) : ?>
+			<div class="text-center py-5">
+				<i class="fa fa-link fa-3x text-info mb-3"></i>
+				<h5>Document Link</h5>
+				<a href="<?= $record->link_url; ?>" target="_blank" class="btn btn-info mt-3">
+					<i class="fa fa-external-link-alt mr-2"></i> Open Link
+				</a>
+				<p class="text-muted mt-2"><?= $record->link_url; ?></p>
+			</div>
+		<?php else : ?>
 		<div style="width:92%;height:400px;background-color: red;position: absolute;opacity: 0;"></div>
 		<?php if ($record->ext == '.pdf' || $record->ext == '.PDF') : ?>
 			<iframe src="<?= base_url("directory/RECORDS/$record->company_id/$record->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
 		<?php else : ?>
 			<iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/RECORDS/$record->company_id/$record->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+		<?php endif; ?>
 		<?php endif; ?>
 		<hr>
 	</div>

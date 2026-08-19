@@ -92,7 +92,11 @@
 					</td>
 					<td class="h6 text-center pt-1" style="vertical-align: middle;">
 						<?php if ($lsRec->flag_type == 'FILE') : ?>
-							<button type="button" class="btn btn-icon btn-xs shadow-xs btn-info view-record" data-id="<?= $lsRec->id; ?>" data-toggle="tooltip" data-theme="dark" title="View Document"><i class="fa fa-eye"></i></button>
+							<?php if (isset($lsRec->link_url) && $lsRec->link_url) : ?>
+								<a href="<?= $lsRec->link_url; ?>" target="_blank" class="btn btn-icon btn-xs shadow-xs btn-info" data-toggle="tooltip" data-theme="dark" title="Open Link"><i class="fa fa-external-link-alt"></i></a>
+							<?php else : ?>
+								<button type="button" class="btn btn-icon btn-xs shadow-xs btn-info view-record" data-id="<?= $lsRec->id; ?>" data-toggle="tooltip" data-theme="dark" title="View Document"><i class="fa fa-eye"></i></button>
+							<?php endif; ?>
 						<?php endif; ?>
 					</td>
 					<td style="vertical-align: middle;" class="text-right pt-1"><?= ($lsRec->modified_at) ?: $lsRec->created_at; ?></td>
