@@ -648,6 +648,8 @@ function openDocModal(type, status) {
 					var stsBadge = '<span class="badge badge-primary">Published</span>';
 					if (type === 'action_plan' && item.status === 'OPN') {
 						stsBadge = '<span class="badge badge-success">Open</span>';
+					} else if (type === 'wi' || type === 'form') {
+						stsBadge = '<span class="badge badge-primary">Published</span>';
 					} else if (item.status === 'REV' || item.status === 'OPN' || item.status === 'APV') {
 						stsBadge = '<span class="badge badge-warning">Under Review</span>';
 					} else if (item.status === 'COR' || item.status === 'REJ') {
