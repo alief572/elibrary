@@ -112,8 +112,13 @@ class Corrective_action extends Admin_Controller
      */
     public function submit()
     {
+        // Start capturing any stray output from the entire process
+        ob_start();
+
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
+            ob_end_clean();
+            header('Content-Type: application/json');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
             return;
         }
@@ -121,13 +126,31 @@ class Corrective_action extends Admin_Controller
         $userId = $this->auth->user_id();
         $result = $this->model->submitCorrective($data['ca_id'], $userId);
 
-        // Send email notification to auditor if submit was successful
-        if (isset($result['status']) && $result['status'] == 1) {
-            $this->_sendEmailToAuditor($data['ca_id']);
+        // Discard any stray output from model operations
+        ob_end_clean();
+
+        // Send clean JSON response FIRST, before attempting email
+        header('Content-Type: application/json');
+        echo json_encode($result);
+
+        // Flush response to client immediately
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } else {
+            if (ob_get_level() > 0) ob_end_flush();
+            flush();
         }
 
-        if (ob_get_length()) ob_clean();
-        echo json_encode($result);
+        // Now attempt email notification (client already received response)
+        if (isset($result['status']) && $result['status'] == 1) {
+            ob_start();
+            try {
+                $this->_sendEmailToAuditor($data['ca_id']);
+            } catch (Exception $e) {
+                log_message('error', 'CA Email error: ' . $e->getMessage());
+            }
+            ob_end_clean();
+        }
     }
 
     /**

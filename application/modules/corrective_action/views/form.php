@@ -252,12 +252,15 @@ $(document).ready(function() {
 					});
 				}
 			},
-			error: function() {
+			error: function(xhr) {
+				var errMsg = 'Server error. Please try again.';
+				if (xhr && xhr.responseText) {
+					errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
+				}
 				Swal.fire({
 					title: 'Error!',
 					icon: 'error',
-					text: 'Server error. Please try again.',
-					timer: 4000
+					text: errMsg
 				});
 			}
 		});
@@ -318,12 +321,13 @@ $(document).ready(function() {
 							var errMsg = 'Server error. Please try again.';
 							if (xhr && xhr.responseJSON && xhr.responseJSON.msg) {
 								errMsg = xhr.responseJSON.msg;
+							} else if (xhr && xhr.responseText) {
+								errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
 							}
 							Swal.fire({
 								title: 'Error!',
 								icon: 'error',
-								text: errMsg,
-								timer: 4000
+								text: errMsg
 							});
 						}
 					});
