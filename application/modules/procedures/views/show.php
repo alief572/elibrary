@@ -39,7 +39,14 @@
                         ?>
                             <iframe src="<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
                         <?php else : ?>
-                            <iframe src="https://docs.google.com/gview?embedded=true&url=<?= base_url("directory/$dir/$file->company_id/$file->file_name"); ?>&rm=minimal#toolbar=0&navpanes=0" frameborder="0" width="100%" height="400px"></iframe>
+                            <?php $fileUrl = base_url("directory/$dir/$file->company_id/$file->file_name"); ?>
+                            <div class="mb-2 d-flex justify-content-between align-items-center bg-light p-2 rounded border">
+                                <span class="small text-muted"><i class="fas fa-info-circle mr-1 text-primary"></i> <strong>Catatan:</strong> Untuk membuka/melihat file di dalam preview browser, pastikan telah terinstall ekstensi/plugin <strong>Office Editing for Docs, Sheets & Slides</strong> pada Google Chrome.</span>
+                                <a href="<?= $fileUrl; ?>" download class="btn btn-sm btn-outline-success">
+                                    <i class="fa fa-download mr-1"></i> Download File
+                                </a>
+                            </div>
+                            <iframe src="<?= $fileUrl; ?>" frameborder="0" width="100%" height="400px"></iframe>
                         <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>

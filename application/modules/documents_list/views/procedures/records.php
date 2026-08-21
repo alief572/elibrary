@@ -85,8 +85,20 @@
 					<td class="h4 text-dark d-flex align-items-center my-0 pt-1">
 						<?php if ($lsRec->flag_type == 'FOLDER') : ?>
 							<i class="fa fa-folder text-warning fa-2x mr-4"></i>
-						<?php else : ?>
-							<i class="fa fa-file-alt text-info fa-2x mr-4"></i>
+						<?php elseif (isset($lsRec->link_url) && $lsRec->link_url) : ?>
+							<i class="fas fa-link text-info fa-2x mr-4"></i>
+						<?php else : 
+							$recExt = isset($lsRec->ext) && $lsRec->ext ? strtolower(str_replace('.', '', $lsRec->ext)) : (isset($lsRec->file_name) ? strtolower(pathinfo($lsRec->file_name, PATHINFO_EXTENSION)) : '');
+							if ($recExt == 'pdf') { $recIcon = 'fas fa-file-pdf text-danger'; }
+							elseif (in_array($recExt, ['xls', 'xlsx', 'csv'])) { $recIcon = 'fas fa-file-excel text-success'; }
+							elseif (in_array($recExt, ['doc', 'docx'])) { $recIcon = 'fas fa-file-word text-primary'; }
+							elseif (in_array($recExt, ['ppt', 'pptx'])) { $recIcon = 'fas fa-file-powerpoint text-warning'; }
+							elseif (in_array($recExt, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) { $recIcon = 'fas fa-file-image text-info'; }
+							elseif (in_array($recExt, ['mp4', 'avi', 'mkv', 'mov', 'wmv'])) { $recIcon = 'fas fa-file-video text-danger'; }
+							elseif (in_array($recExt, ['zip', 'rar', '7z'])) { $recIcon = 'fas fa-file-archive text-warning'; }
+							else { $recIcon = 'fas fa-file-alt text-secondary'; }
+						?>
+							<i class="<?= $recIcon; ?> fa-2x mr-4"></i>
 						<?php endif; ?>
 						<span class="mt-2"><?= $lsRec->name; ?></span>
 					</td>

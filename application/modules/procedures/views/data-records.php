@@ -35,8 +35,20 @@
               <div class="d-flex justify-content-start align-items-center">
                 <?php if ($form->flag_type == 'FOLDER') : ?>
                   <i class="fa fa-folder text-warning fa-3x mr-3"></i>
-                <?php else : ?>
-                  <i class="fa fa-file-alt text-success fa-3x mr-3"></i>
+                <?php elseif (isset($form->link_url) && $form->link_url) : ?>
+                  <i class="fas fa-link text-info fa-3x mr-3"></i>
+                <?php else : 
+                  $recExt = isset($form->ext) && $form->ext ? strtolower(str_replace('.', '', $form->ext)) : (isset($form->file_name) ? strtolower(pathinfo($form->file_name, PATHINFO_EXTENSION)) : '');
+                  if ($recExt == 'pdf') { $recIcon = 'fas fa-file-pdf text-danger'; }
+                  elseif (in_array($recExt, ['xls', 'xlsx', 'csv'])) { $recIcon = 'fas fa-file-excel text-success'; }
+                  elseif (in_array($recExt, ['doc', 'docx'])) { $recIcon = 'fas fa-file-word text-primary'; }
+                  elseif (in_array($recExt, ['ppt', 'pptx'])) { $recIcon = 'fas fa-file-powerpoint text-warning'; }
+                  elseif (in_array($recExt, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) { $recIcon = 'fas fa-file-image text-info'; }
+                  elseif (in_array($recExt, ['mp4', 'avi', 'mkv', 'mov', 'wmv'])) { $recIcon = 'fas fa-file-video text-danger'; }
+                  elseif (in_array($recExt, ['zip', 'rar', '7z'])) { $recIcon = 'fas fa-file-archive text-warning'; }
+                  else { $recIcon = 'fas fa-file-alt text-secondary'; }
+                ?>
+                  <i class="<?= $recIcon; ?> fa-3x mr-3"></i>
                 <?php endif; ?>
                 <span class="text-name mt-3 h5"><?= $form->name; ?></span>
               </div>

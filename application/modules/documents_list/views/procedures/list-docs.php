@@ -119,10 +119,19 @@
 										<tbody>
 											<?php if (isset($procedure)) :
 												$no = 0;
-												foreach ($procedure as $lsPro) : $no++; ?>
+												foreach ($procedure as $lsPro) : $no++; 
+													$proExt = isset($lsPro->ext) && $lsPro->ext ? strtolower(str_replace('.', '', $lsPro->ext)) : (isset($lsPro->file_name) ? strtolower(pathinfo($lsPro->file_name, PATHINFO_EXTENSION)) : '');
+													if ($proExt == 'pdf') { $proIcon = 'fas fa-file-pdf text-danger'; }
+													elseif (in_array($proExt, ['xls', 'xlsx', 'csv'])) { $proIcon = 'fas fa-file-excel text-success'; }
+													elseif (in_array($proExt, ['doc', 'docx'])) { $proIcon = 'fas fa-file-word text-primary'; }
+													elseif (in_array($proExt, ['ppt', 'pptx'])) { $proIcon = 'fas fa-file-powerpoint text-warning'; }
+													elseif (in_array($proExt, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) { $proIcon = 'fas fa-file-image text-info'; }
+													elseif (in_array($proExt, ['mp4', 'avi', 'mkv', 'mov'])) { $proIcon = 'fas fa-file-video text-danger'; }
+													else { $proIcon = 'fas fa-file-alt text-success'; }
+												?>
 													<tr class="cursor-pointer">
 														<td class="h6 text-dark"><?= $no; ?></td>
-														<td class="h4 text-dark d-flex align-items-center my-0"><i class="fa fa-file-alt text-success fa-2x mr-4"></i>
+														<td class="h4 text-dark d-flex align-items-center my-0"><i class="<?= $proIcon; ?> fa-2x mr-4"></i>
 															<span class="mt-2"><?= $lsPro->name; ?></span>
 															<?php if ($lsPro->status != 'PUB') : ?>
 																<?php
@@ -174,10 +183,24 @@
 										<tbody>
 											<?php if (isset($forms)) :
 												$no = 0;
-												foreach ($forms as $lsFrm) : $no++; ?>
+												foreach ($forms as $lsFrm) : $no++; 
+													if (!empty($lsFrm->link_form)) {
+														$frmIcon = 'fas fa-link text-primary';
+													} else {
+														$ext = isset($lsFrm->ext) && $lsFrm->ext ? strtolower(str_replace('.', '', $lsFrm->ext)) : (isset($lsFrm->file_name) ? strtolower(pathinfo($lsFrm->file_name, PATHINFO_EXTENSION)) : '');
+														if ($ext == 'pdf') { $frmIcon = 'fas fa-file-pdf text-danger'; }
+														elseif (in_array($ext, ['xls', 'xlsx', 'csv'])) { $frmIcon = 'fas fa-file-excel text-success'; }
+														elseif (in_array($ext, ['doc', 'docx'])) { $frmIcon = 'fas fa-file-word text-primary'; }
+														elseif (in_array($ext, ['ppt', 'pptx'])) { $frmIcon = 'fas fa-file-powerpoint text-warning'; }
+														elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) { $frmIcon = 'fas fa-file-image text-info'; }
+														elseif (in_array($ext, ['mp4', 'avi', 'mkv', 'mov'])) { $frmIcon = 'fas fa-file-video text-danger'; }
+														elseif (in_array($ext, ['zip', 'rar', '7z'])) { $frmIcon = 'fas fa-file-archive text-warning'; }
+														else { $frmIcon = 'fas fa-file-alt text-primary'; }
+													}
+												?>
 													<tr class="cursor-pointer">
 														<td class="h6 text-dark"><?= $no; ?></td>
-														<td class="h4 text-dark d-flex align-items-center my-0"><i class="fa fa-file-alt text-primary fa-2x mr-4"></i>
+														<td class="h4 text-dark d-flex align-items-center my-0"><i class="<?= $frmIcon; ?> fa-2x mr-4"></i>
 															<span class="mt-2"><?= $lsFrm->name; ?></span>
 														</td>
 														<td class="h6 text-center" style="vertical-align: middle;">
@@ -205,10 +228,26 @@
 										<tbody>
 											<?php if (isset($guides)) :
 												$no = 0;
-												foreach ($guides as $lsGui) : $no++; ?>
+												foreach ($guides as $lsGui) : $no++; 
+													if (!empty($lsGui->link_video) || !empty($lsGui->video)) {
+														$guiIcon = 'fas fa-file-video text-danger';
+													} elseif (!empty($lsGui->link_form)) {
+														$guiIcon = 'fas fa-link text-primary';
+													} else {
+														$ext = isset($lsGui->ext) && $lsGui->ext ? strtolower(str_replace('.', '', $lsGui->ext)) : (isset($lsGui->file_name) ? strtolower(pathinfo($lsGui->file_name, PATHINFO_EXTENSION)) : '');
+														if ($ext == 'pdf') { $guiIcon = 'fas fa-file-pdf text-danger'; }
+														elseif (in_array($ext, ['xls', 'xlsx', 'csv'])) { $guiIcon = 'fas fa-file-excel text-success'; }
+														elseif (in_array($ext, ['doc', 'docx'])) { $guiIcon = 'fas fa-file-word text-primary'; }
+														elseif (in_array($ext, ['ppt', 'pptx'])) { $guiIcon = 'fas fa-file-powerpoint text-warning'; }
+														elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'])) { $guiIcon = 'fas fa-file-image text-info'; }
+														elseif (in_array($ext, ['mp4', 'avi', 'mkv', 'mov'])) { $guiIcon = 'fas fa-file-video text-danger'; }
+														elseif (in_array($ext, ['zip', 'rar', '7z'])) { $guiIcon = 'fas fa-file-archive text-warning'; }
+														else { $guiIcon = 'fas fa-file-alt text-info'; }
+													}
+												?>
 													<tr class="cursor-pointer">
 														<td class="h6 text-dark"><?= $no; ?></td>
-														<td class="h4 text-dark d-flex align-items-center my-0"><i class="fa fa-file-alt text-info fa-2x mr-4"></i>
+														<td class="h4 text-dark d-flex align-items-center my-0"><i class="<?= $guiIcon; ?> fa-2x mr-4"></i>
 															<span class="mt-2"><?= $lsGui->name; ?></span>
 														</td>
 														<td class="h6 text-center" style="vertical-align: middle;">
