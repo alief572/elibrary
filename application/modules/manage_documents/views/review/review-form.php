@@ -80,17 +80,17 @@
                             </div>
                         </div> -->
                         <?php if (isset($history)) :
-
-
-                            foreach ($history as $his) : ?>
+                            foreach ($history as $his) :
+                                $hisStatus = isset($his->new_status) ? $his->new_status : (isset($his->status) ? $his->status : '');
+                        ?>
                                 <div class="timeline-item">
-                                    <div class="timeline-media <?= ($his->status == 'OPN') ? 'bg-light-success' : 'bg-light-danger'; ?>">
-                                        <span class="<?= ($his->status == 'OPN') ? 'fa fa-upload text-success' : 'fa fa-circle text-danger'; ?>"></span>
+                                    <div class="timeline-media <?= ($hisStatus == 'OPN') ? 'bg-light-success' : 'bg-light-danger'; ?>">
+                                        <span class="<?= ($hisStatus == 'OPN') ? 'fa fa-upload text-success' : 'fa fa-circle text-danger'; ?>"></span>
                                     </div>
 
                                     <div class="timeline-desc timeline-desc-light-danger">
                                         <span class="font-weight-bolder text-danger"> <?= $his->updated_at; ?></span>
-                                        <?= $sts[$his->status]; ?>
+                                        <?= isset($sts[$hisStatus]) ? $sts[$hisStatus] : ''; ?>
                                         <p class="font-weight-normal text-dark-50 pt-1">
                                             <strong for="">Processed by <?= $his->updated_by; ?></strong>
                                         </p>
