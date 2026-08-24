@@ -95,6 +95,21 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 														<span class="badge badge-light font-weight-bold text-dark mr-2 mb-1">
 															<i class="fa fa-calendar-alt mr-1 text-muted"></i><?= $dt->periode; ?>
 														</span>
+														<?php if (!empty($dt->checker_status)) : ?>
+															<?php if ($dt->checker_status == 'Approved') : ?>
+																<span class="badge badge-light-success font-weight-bold text-success mr-2 mb-1">
+																	<i class="fa fa-check-circle mr-1 text-success"></i>Approved
+																</span>
+															<?php elseif ($dt->checker_status == 'Needs Improvement') : ?>
+																<span class="badge badge-light-warning font-weight-bold text-warning mr-2 mb-1">
+																	<i class="fa fa-exclamation-triangle mr-1 text-warning"></i>Needs Improvement
+																</span>
+															<?php elseif ($dt->checker_status == 'Revision') : ?>
+																<span class="badge badge-light-danger font-weight-bold text-danger mr-2 mb-1">
+																	<i class="fa fa-times-circle mr-1 text-danger"></i>Revision
+																</span>
+															<?php endif; ?>
+														<?php endif; ?>
 														<span class="text-muted mb-1">
 															<i class="fa fa-clock mr-1 text-muted"></i><?= ($dt->updated_at) ?: $dt->created_at; ?>
 														</span>
@@ -111,7 +126,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 												<?php endif; ?>
 												<?php if ($period_active == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
 													<a href="<?= base_url($this->uri->segment(1) . '/checking/?sheet=' . $dt->id); ?>" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-info exec" title="Eksekusi Checksheet"><i class="fas fa-arrow-right"></i></a>
-													<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-success check" title="Checker / Verifikasi"><i class="fas fa-clipboard-check"></i></button>
+													<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-success check" title="Checker / Verifikasi"><i class="fas fa-user-check"></i></button>
 												<?php endif; ?>
 												<?php if ($menus_perm['delete'] == '1' && $period_active == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
 													<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-danger delete" title="Hapus"><i class="fa fa-trash"></i></button>

@@ -525,6 +525,8 @@ class Process_checksheets extends Admin_Controller
 
 			$checkers		= $this->db->get_where('checksheet_checkers', ['data_id' => $data->id])->result();
 			$checking_date	= $this->db->get_where('checksheet_checking_date', ['data_id' => $data->id])->result();
+			$checking_note	= $this->db->get_where('checksheet_checker_note', ['data_id' => $data->id])->result();
+			$checking_val	= $this->db->get_where('checksheet_checker_values', ['data_id' => $data->id])->result();
 
 			$ArrNotes 		= $this->_makeArray($notes, 'item_id');
 			$ArrUsers 		= $this->_makeArray($users, 'id_user', 'full_name');
@@ -533,6 +535,13 @@ class Process_checksheets extends Admin_Controller
 
 			$ArrCheck   	= $this->_makeArray($checkers, 'data_id');
 			$ArrCheckDate 	= $this->_makeArray($checking_date, 'data_id');
+			$ArrCheckNote 	= $this->_makeArray($checking_note, 'data_id');
+			$ArrCheckVal 	= $this->_makeArray($checking_val, 'data_id');
+
+			$ArrUsers = [];
+			foreach ($users as $usr) {
+				$ArrUsers[$usr->id_user] = $usr->full_name;
+			}
 
 			$fExecution 	= [
 				'1' => 'Once Time',
@@ -591,6 +600,8 @@ class Process_checksheets extends Admin_Controller
 				'ArrExeDate' 	=> $ArrExeDate,
 				'ArrCheck' 		=> $ArrCheck,
 				'ArrCheckDate' 	=> $ArrCheckDate,
+				'ArrCheckNote' 	=> $ArrCheckNote,
+				'ArrCheckVal' 	=> $ArrCheckVal,
 				'ArrHolidays' 	=> $this->_get_holidays($data->periode),
 			]);
 
@@ -612,6 +623,7 @@ class Process_checksheets extends Admin_Controller
 			$checkers		= $this->db->get_where('checksheet_checkers', ['data_id' => $data->id])->result();
 			$checking_date	= $this->db->get_where('checksheet_checking_date', ['data_id' => $data->id])->result();
 			$checking_note	= $this->db->get_where('checksheet_checker_note', ['data_id' => $data->id])->result();
+			$checking_val	= $this->db->get_where('checksheet_checker_values', ['data_id' => $data->id])->result();
 
 			$ArrNotes 		= $this->_makeArray($notes, 'item_id');
 			$ArrUsers 		= $this->_makeArray($users, 'id_user', 'full_name');
@@ -621,6 +633,7 @@ class Process_checksheets extends Admin_Controller
 			$ArrCheck   	= $this->_makeArray($checkers, 'data_id');
 			$ArrCheckDate 	= $this->_makeArray($checking_date, 'data_id');
 			$ArrCheckNote 	= $this->_makeArray($checking_note, 'data_id');
+			$ArrCheckVal 	= $this->_makeArray($checking_val, 'data_id');
 
 			$ArrUsers = [];
 			foreach ($users as $usr) {
@@ -684,6 +697,8 @@ class Process_checksheets extends Admin_Controller
 				'ArrExeDate' 		=> $ArrExeDate,
 				'ArrCheck' 			=> $ArrCheck,
 				'ArrCheckDate' 		=> $ArrCheckDate,
+				'ArrCheckNote' 		=> $ArrCheckNote,
+				'ArrCheckVal' 		=> $ArrCheckVal,
 				'ArrUsers' 			=> $ArrUsers,
 				'weekOfMonth' 		=> $weekOfMonth,
 				'ArrHolidays' 		=> $this->_get_holidays($data->periode),
@@ -1432,62 +1447,140 @@ class Process_checksheets extends Admin_Controller
 	}
 
 
-	public function save_done()
+	public function save_checker()
 	{
 		$post = $this->input->post();
+		if (!$post || empty($post['id'])) {
+			echo json_encode([
+				'status' => 0,
+				'msg'    => 'Data tidak valid!'
+			]);
+			return;
+		}
 
-		if ($post['id']) {
-			// $data = $this->db->get_where('checksheet_process_data', ['id' => $post['id']])->row();
+		$data_id = $post['id'];
+		$user_id = $this->auth->user_id();
+		$now     = date('Y-m-d H:i:s');
 
-			$field 			= $post['field'];
-			$fieldDate 		= "date" . $field;
-			$fieldChecker 	= "day" . $field;
+		$this->db->trans_begin();
 
+		// 1. Update summary note & status in checksheet_process_data
+		$summaryNote   = isset($post['checker_summary_note']) ? trim($post['checker_summary_note']) : null;
+		$checkerStatus = isset($post['checker_status']) ? trim($post['checker_status']) : 'Approved';
 
-			$this->db->trans_begin();
-			/* CHECKING DATE */
-			$checkDate 	= $this->db->get_where('checksheet_checking_date', ['data_id' => $post['id']])->row();
-			$dataDate 	= [
-				'data_id'	=> $post['id'],
-				$fieldDate 	=> date('Y-m-d H:i:s')
-			];
+		$this->db->update('checksheet_process_data', [
+			'checker_summary_note' => $summaryNote,
+			'checker_status'       => $checkerStatus,
+			'checked_at'           => $now,
+			'checked_by'           => $user_id,
+			'updated_at'           => $now,
+			'update_by'            => $user_id
+		], ['id' => $data_id]);
 
-			if (!$checkDate) {
-				$this->db->insert('checksheet_checking_date', $dataDate);
-			} else {
-				$this->db->update('checksheet_checking_date', $dataDate, ['data_id' => $post['id']]);
+		// 2. Fetch existing records
+		$existChecker = $this->db->get_where('checksheet_checkers', ['data_id' => $data_id])->row();
+		$existDate    = $this->db->get_where('checksheet_checking_date', ['data_id' => $data_id])->row();
+		$existNote    = $this->db->get_where('checksheet_checker_note', ['data_id' => $data_id])->row();
+		$existValues  = $this->db->get_where('checksheet_checker_values', ['data_id' => $data_id])->row();
+
+		$dataChecker = ['data_id' => $data_id];
+		$dataDate    = ['data_id' => $data_id];
+		$dataNote    = ['data_id' => $data_id];
+		$dataValues  = ['data_id' => $data_id];
+
+		// Check if specific field (day) is submitted
+		if (!empty($post['field'])) {
+			$field = (int)$post['field'];
+			$dataChecker['day' . $field]   = $user_id;
+			$dataDate['date' . $field]     = $now;
+			if (isset($post['check_status'])) {
+				$dataValues['check' . $field] = $post['check_status'];
 			}
-
-			/* CHECKER */
-			$checkBy 	= $this->db->get_where('checksheet_checkers', ['data_id' => $post['id']])->row();
-			$dataChecker 	= [
-				'data_id' => $post['id'],
-				$fieldChecker 	=> $this->auth->user_id()
-			];
-
-			if (!$checkBy) {
-				$this->db->insert('checksheet_checkers', $dataChecker);
-			} else {
-				$this->db->update('checksheet_checkers', $dataChecker, ['data_id' => $post['id']]);
+			if (isset($post['check_note'])) {
+				$dataNote['day' . $field] = trim($post['check_note']);
 			}
 		}
 
+		// Also handle batch array of checker status / notes (if submitted as arrays)
+		if (isset($post['checker_values']) && is_array($post['checker_values'])) {
+			foreach ($post['checker_values'] as $d => $v) {
+				$dNum = (int)$d;
+				if ($dNum >= 1 && $dNum <= 31 && !empty($v)) {
+					$dataValues['check' . $dNum] = $v;
+					$dataChecker['day' . $dNum]  = $user_id;
+					$dataDate['date' . $dNum]    = $now;
+					if ($v === 'yes') {
+						$dataNote['day' . $dNum] = '';
+					}
+				}
+			}
+		}
+
+		if (isset($post['checker_notes']) && is_array($post['checker_notes'])) {
+			foreach ($post['checker_notes'] as $d => $n) {
+				$dNum = (int)$d;
+				if ($dNum >= 1 && $dNum <= 31) {
+					if (isset($post['checker_values'][$dNum]) && $post['checker_values'][$dNum] === 'no') {
+						$dataNote['day' . $dNum] = trim($n);
+					}
+				}
+			}
+		}
+
+		// Insert or update checksheet_checkers
+		if (count($dataChecker) > 1) {
+			if (!$existChecker) {
+				$this->db->insert('checksheet_checkers', $dataChecker);
+			} else {
+				$this->db->update('checksheet_checkers', $dataChecker, ['data_id' => $data_id]);
+			}
+		}
+
+		// Insert or update checksheet_checking_date
+		if (count($dataDate) > 1) {
+			if (!$existDate) {
+				$this->db->insert('checksheet_checking_date', $dataDate);
+			} else {
+				$this->db->update('checksheet_checking_date', $dataDate, ['data_id' => $data_id]);
+			}
+		}
+
+		// Insert or update checksheet_checker_values
+		if (count($dataValues) > 1) {
+			if (!$existValues) {
+				$this->db->insert('checksheet_checker_values', $dataValues);
+			} else {
+				$this->db->update('checksheet_checker_values', $dataValues, ['data_id' => $data_id]);
+			}
+		}
+
+		// Insert or update checksheet_checker_note
+		if (count($dataNote) > 1) {
+			if (!$existNote) {
+				$this->db->insert('checksheet_checker_note', $dataNote);
+			} else {
+				$this->db->update('checksheet_checker_note', $dataNote, ['data_id' => $data_id]);
+			}
+		}
 
 		if ($this->db->trans_status() === FALSE) {
 			$this->db->trans_rollback();
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Save data checkheet failed. Error!'
-			);
+			echo json_encode([
+				'status' => 0,
+				'msg'    => 'Gagal menyimpan data verifikasi. Terjadi kesalahan database.'
+			]);
 		} else {
 			$this->db->trans_commit();
-			$Return		= array(
-				'status'		=> 1,
-				'msg'			=> 'Save data checkheet successfull'
-			);
+			echo json_encode([
+				'status' => 1,
+				'msg'    => 'Verifikasi checksheet berhasil disimpan!'
+			]);
 		}
+	}
 
-		echo json_encode($Return);
+	public function save_done()
+	{
+		$this->save_checker();
 	}
 
 	public function print_sheet()
@@ -1508,6 +1601,8 @@ class Process_checksheets extends Admin_Controller
 
 		$checkers		= $this->db->get_where('checksheet_checkers', ['data_id' => $sheet->id])->result();
 		$checking_date	= $this->db->get_where('checksheet_checking_date', ['data_id' => $sheet->id])->result();
+		$checking_note	= $this->db->get_where('checksheet_checker_note', ['data_id' => $sheet->id])->result();
+		$checking_val	= $this->db->get_where('checksheet_checker_values', ['data_id' => $sheet->id])->result();
 
 		$ArrNotes 		= $this->_makeArray($notes, 'item_id');
 		$ArrUsers 		= $this->_makeArray($users, 'id_user', 'full_name');
@@ -1516,7 +1611,8 @@ class Process_checksheets extends Admin_Controller
 
 		$ArrCheck   	= $this->_makeArray($checkers, 'data_id');
 		$ArrCheckDate 	= $this->_makeArray($checking_date, 'data_id');
-
+		$ArrCheckNote 	= $this->_makeArray($checking_note, 'data_id');
+		$ArrCheckVal 	= $this->_makeArray($checking_val, 'data_id');
 
 		$ArrUsers = [];
 		foreach ($users as $usr) {
@@ -1580,6 +1676,8 @@ class Process_checksheets extends Admin_Controller
 			'ArrExeDate' 		=> $ArrExeDate,
 			'ArrCheck' 			=> $ArrCheck,
 			'ArrCheckDate' 		=> $ArrCheckDate,
+			'ArrCheckNote' 		=> $ArrCheckNote,
+			'ArrCheckVal' 		=> $ArrCheckVal,
 			'ArrUsers' 			=> $ArrUsers,
 			'weekOfMonth' 		=> $weekOfMonth,
 			'ArrHolidays' 		=> $this->_get_holidays($sheet->periode),
