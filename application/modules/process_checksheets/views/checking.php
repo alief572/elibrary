@@ -33,32 +33,58 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 
 			<!-- Header Card -->
 			<div class="card card-custom border shadow-sm mb-4 bg-white">
-				<div class="card-header border-bottom py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-					<div class="d-flex align-items-center">
-						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . '&sub=' . $dataSub2->id_sub . '&sub2=' . $data->sub_id . '&checksheet=' . $data->dir_id); ?>" class="btn btn-light-dark btn-icon btn-sm mr-3" title="Kembali">
-							<i class="fa fa-arrow-left"></i>
-						</a>
+				<!-- 1. Top Navbar / Title Bar -->
+				<div class="card-header border-bottom py-3 px-3 px-md-4">
+					<div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
+						<div class="d-flex align-items-center">
+							<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . '&sub=' . $dataSub2->id_sub . '&sub2=' . $data->sub_id . '&checksheet=' . $data->dir_id); ?>" class="btn btn-light btn-sm btn-icon mr-3 shadow-xs" title="Kembali">
+								<i class="fa fa-arrow-left text-dark"></i>
+							</a>
+							<div>
+								<h3 class="card-title font-weight-bolder text-dark m-0" style="font-size: 1.15rem;">
+									Eksekusi Checksheet
+								</h3>
+							</div>
+						</div>
+
 						<div>
-							<h3 class="card-title font-weight-bolder text-dark m-0" style="font-size: 1.25rem;">
-								Eksekusi Checksheet
-							</h3>
-							<div class="d-flex flex-wrap align-items-center mt-1" style="font-size: 12px;">
-								<span class="font-weight-bold text-dark mr-3">
-									<i class="fa fa-file-alt text-primary mr-1"></i> <?= $data->checksheet_name; ?>
+							<span class="badge badge-light-primary font-weight-bolder px-3 py-2" style="font-size: 12px;">
+								<i class="fa fa-calendar-check mr-1 text-primary"></i> <?= $dayNamesIndo[$todayDayNum]; ?>, <?= date('d M Y'); ?>
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- 2. Checksheet Metadata Strip -->
+				<div class="py-3 px-3 px-md-4 border-bottom bg-white">
+					<div class="row align-items-center">
+						<div class="col-12 col-md-8 mb-2 mb-md-0">
+							<h4 class="font-weight-bolder text-dark mb-1 d-flex align-items-center" style="font-size: 1.1rem;">
+								<i class="fa fa-clipboard-list text-primary mr-2"></i> <?= $data->checksheet_name; ?>
+							</h4>
+							<div class="d-flex flex-wrap align-items-center mt-1">
+								<span class="badge badge-light font-weight-bold text-dark border mr-2 mb-1" style="font-size: 11px;">
+									<i class="fa fa-sync-alt text-primary mr-1"></i> Frekuensi: <?= $fExecution[$data->frequency_execution]; ?>
 								</span>
-								<span class="badge badge-light-primary font-weight-bold mr-2">
-									<i class="fa fa-sync-alt mr-1"></i> <?= $fExecution[$data->frequency_execution]; ?>
+								<span class="badge badge-light font-weight-bold text-dark border mr-2 mb-1" style="font-size: 11px;">
+									<i class="fa fa-calendar-alt text-muted mr-1"></i> Periode: <?= (!empty($data->periode) && strtotime($data->periode)) ? date('F Y', strtotime($data->periode)) : '-'; ?>
 								</span>
-								<span class="badge badge-light font-weight-bold text-dark mr-2">
-									<i class="fa fa-calendar mr-1"></i> <?= (!empty($data->periode) && strtotime($data->periode)) ? date('F Y', strtotime($data->periode)) : '-'; ?>
+								<span class="badge badge-light font-weight-bold text-dark border mb-1" style="font-size: 11px;">
+									<i class="fa fa-clock text-info mr-1"></i> Checking: <?= $fChecking[$data->frequency_checking]; ?>
 								</span>
 							</div>
 						</div>
-					</div>
 
-					<div class="text-right">
-						<div class="badge badge-primary font-weight-bolder px-3 py-2" style="font-size: 12px;">
-							<i class="fa fa-clock text-white mr-1"></i> <?= $dayNamesIndo[$todayDayNum]; ?>, <?= date('d M Y'); ?>
+						<div class="col-12 col-md-4 text-md-right text-left">
+							<div class="d-inline-flex align-items-center bg-light rounded px-3 py-2 border">
+								<div class="text-left mr-3">
+									<small class="text-muted d-block font-weight-bold" style="font-size: 10px; line-height: 1;">JADWAL HARI AKTIF</small>
+									<strong class="text-dark" style="font-size: 13px;">
+										<?= ($data->frequency_execution == 5 && is_array($name_col)) ? $name_col[$activeCol] : 'Hari Ke-' . $activeCol; ?>
+									</strong>
+								</div>
+								<span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 10px;">AKTIF</span>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -77,10 +103,10 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 					</div>
 				<?php else : ?>
 
-					<!-- Quick Actions & Live Progress Bar Bar -->
-					<div class="card-body py-3 px-4 bg-light border-bottom">
+					<!-- 3. Quick Actions & Live Progress Bar -->
+					<div class="card-body py-3 px-3 px-md-4 bg-light border-bottom">
 						<div class="row align-items-center">
-							<div class="col-md-7 mb-2 mb-md-0">
+							<div class="col-12 col-md-6 mb-2 mb-md-0">
 								<div class="d-flex align-items-center justify-content-between mb-1">
 									<span class="font-weight-bold text-dark" style="font-size: 12px;">
 										<i class="fa fa-tasks text-primary mr-1"></i> Progress Pengisian:
@@ -94,11 +120,11 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 								</div>
 							</div>
 
-							<div class="col-md-5 text-md-right">
-								<button type="button" class="btn btn-success btn-sm font-weight-bold mr-2" id="btn-set-all-yes" title="Set semua item menjadi YES jika semua kondisi normal">
+							<div class="col-12 col-md-6 text-md-right text-left mt-2 mt-md-0">
+								<button type="button" class="btn btn-success btn-sm font-weight-bold mr-2 mb-1" id="btn-set-all-yes" title="Set semua item menjadi YES jika semua kondisi normal">
 									<i class="fa fa-check-double mr-1"></i> Set Semua YES (Normal)
 								</button>
-								<button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold" id="btn-reset-all" title="Reset pilihan">
+								<button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold mb-1" id="btn-reset-all" title="Reset pilihan">
 									<i class="fa fa-undo mr-1"></i> Reset
 								</button>
 							</div>
