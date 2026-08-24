@@ -1,13 +1,13 @@
-<?php 
-$exec = $data->frequency_execution; 
+<?php
+$exec = $data->frequency_execution;
 $dayNamesIndo = [
-	0 => 'Min', // Minggu
-	1 => 'Sen', // Senin
-	2 => 'Sel', // Selasa
-	3 => 'Rab', // Rabu
-	4 => 'Kam', // Kamis
-	5 => 'Jum', // Jumat
-	6 => 'Sab'  // Sabtu
+	0 => 'Minggu',
+	1 => 'Senin',
+	2 => 'Selasa',
+	3 => 'Rabu',
+	4 => 'Kamis',
+	5 => 'Jumat',
+	6 => 'Sabtu'
 ];
 
 $todayDateStr = date('Y-m-d');
@@ -15,365 +15,441 @@ $todayDayNum = (int)date('w');
 $todayIsHoliday = (isset($ArrHolidays) && isset($ArrHolidays[$todayDateStr])) ? $ArrHolidays[$todayDateStr] : false;
 $todayIsWeekend = ($exec == 3 && ($todayDayNum === 0 || $todayDayNum === 6));
 $todayIsOff = ($exec == 3 && ($todayIsWeekend || $todayIsHoliday));
+
+// Menentukan kolom hari aktif (active day column)
+$activeCol = 1;
+if ($fChecking[$data->frequency_checking] == 'Daily') {
+	$activeCol = (int)date('d');
+} elseif ($fChecking[$data->frequency_checking] == 'Weekly') {
+	$activeCol = (int)$weekOfMonth;
+} elseif ($fChecking[$data->frequency_checking] == 'Monthly') {
+	$activeCol = (int)date('m');
+}
 ?>
+
 <div class="content d-flex flex-column flex-column-fluid">
 	<div class="d-flex flex-column-fluid justify-content-between align-items-top">
 		<div class="container">
-			<div class="card">
-				<div class="card-header">
-					<h2 class="">New Checksheet</h2>
-				</div>
-				<div class="card-body overflow-auto">
-					<?php if ($todayIsOff && $fChecking[$data->frequency_checking] == 'Daily') : ?>
-						<div class="alert alert-custom alert-light-danger fade show mb-5" role="alert">
-							<div class="alert-icon"><i class="fa fa-info-circle text-danger"></i></div>
-							<div class="alert-text font-weight-bold">
-								Hari ini (<?= $dayNamesIndo[$todayDayNum]; ?>, <?= date('d M Y'); ?>) adalah hari libur <?= $todayIsHoliday ? "Nasional (" . htmlspecialchars($todayIsHoliday) . ")" : "akhir pekan (Sabtu/Minggu)"; ?>. Checksheet tidak dapat diinput pada hari libur.
-							</div>
-						</div>
-					<?php endif; ?>
 
-					<form id="form-checksheet" enctype="multipart/form-data">
-						<div class="row mb-3">
-							<label for="" class="col-md-2 control-label">Checksheet Name</label>
-							<div class="col-md-4">:
-								<input type="hidden" name="id" value="<?= $data->id; ?>">
-								<label for=""><?= $data->checksheet_name; ?></label>
+			<!-- Header Card -->
+			<div class="card card-custom border shadow-sm mb-4 bg-white">
+				<div class="card-header border-bottom py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+					<div class="d-flex align-items-center">
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . '&sub=' . $dataSub2->id_sub . '&sub2=' . $data->sub_id . '&checksheet=' . $data->dir_id); ?>" class="btn btn-light-dark btn-icon btn-sm mr-3" title="Kembali">
+							<i class="fa fa-arrow-left"></i>
+						</a>
+						<div>
+							<h3 class="card-title font-weight-bolder text-dark m-0" style="font-size: 1.25rem;">
+								Eksekusi Checksheet
+							</h3>
+							<div class="d-flex flex-wrap align-items-center mt-1" style="font-size: 12px;">
+								<span class="font-weight-bold text-dark mr-3">
+									<i class="fa fa-file-alt text-primary mr-1"></i> <?= $data->checksheet_name; ?>
+								</span>
+								<span class="badge badge-light-primary font-weight-bold mr-2">
+									<i class="fa fa-sync-alt mr-1"></i> <?= $fExecution[$data->frequency_execution]; ?>
+								</span>
+								<span class="badge badge-light font-weight-bold text-dark mr-2">
+									<i class="fa fa-calendar mr-1"></i> <?= (!empty($data->periode) && strtotime($data->periode)) ? date('F Y', strtotime($data->periode)) : '-'; ?>
+								</span>
 							</div>
 						</div>
-						<div class="row mb-3">
-							<label for="" class="col-md-2 control-label">Frequency Execution</label>
-							<div class="col-md-4">:
-								<label for=""><?= $fExecution[$data->frequency_execution]; ?></label>
-							</div>
+					</div>
+
+					<div class="text-right">
+						<div class="badge badge-primary font-weight-bolder px-3 py-2" style="font-size: 12px;">
+							<i class="fa fa-clock text-white mr-1"></i> <?= $dayNamesIndo[$todayDayNum]; ?>, <?= date('d M Y'); ?>
 						</div>
-						<div class="row mb-3">
-							<label for="" class="col-md-2 control-label">Periode</label>
-							<div class="col-md-4">:
-								<label><?= date_format(date_create($data->periode), 'M, Y'); ?></label>
-							</div>
+					</div>
+				</div>
+
+				<?php if ($todayIsOff && $fChecking[$data->frequency_checking] == 'Daily') : ?>
+					<div class="card-body p-4">
+						<div class="alert alert-danger mb-0 text-center p-4">
+							<i class="fa fa-calendar-times fa-3x text-danger mb-3 d-block"></i>
+							<h4 class="font-weight-bolder text-danger">HARI INI LIBUR (TIDAK ADA EKSEKUSI)</h4>
+							<p class="mb-0 text-dark font-weight-bold">
+								Hari ini (<strong><?= $dayNamesIndo[$todayDayNum]; ?>, <?= date('d M Y'); ?></strong>) adalah hari libur 
+								<strong><?= $todayIsHoliday ? "Nasional (" . htmlspecialchars($todayIsHoliday) . ")" : "akhir pekan (Sabtu/Minggu)"; ?></strong>.<br>
+								Checksheet dinonaktifkan dan tidak dapat diinput pada hari libur.
+							</p>
 						</div>
-						<div class="row mb-3">
-							<label for="" class="col-md-2 control-label">Checksheet Name</label>
-							<div class="col-md-4">:
-								<label for=""><?= $data->checksheet_name; ?></label>
-							</div>
-						</div>
-						<div class="row mb-3">
-							<label for="" class="col-md-2 control-label">Frequency Checking</label>
-							<div class="col-md-4">:
-								<label for=""><?= $fChecking[$data->frequency_checking]; ?></label>
-							</div>
-						</div>
-						<?php if ($weekOfMonth) : ?>
-							<div class="row mb-3">
-								<label for="" class="col-md-2 control-label">Week</label>
-								<div class="col-md-4">:
-									<label for=""><?= $weekOfMonth; ?></label>
+					</div>
+				<?php else : ?>
+
+					<!-- Quick Actions & Live Progress Bar Bar -->
+					<div class="card-body py-3 px-4 bg-light border-bottom">
+						<div class="row align-items-center">
+							<div class="col-md-7 mb-2 mb-md-0">
+								<div class="d-flex align-items-center justify-content-between mb-1">
+									<span class="font-weight-bold text-dark" style="font-size: 12px;">
+										<i class="fa fa-tasks text-primary mr-1"></i> Progress Pengisian:
+									</span>
+									<span class="font-weight-bolder" id="progress-text" style="font-size: 12px; color: #000;">
+										0 / <?= count($details); ?> Item (0%)
+									</span>
+								</div>
+								<div class="progress" style="height: 10px; border-radius: 5px; background-color: #e0e0e0;">
+									<div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 								</div>
 							</div>
-						<?php endif; ?>
-						<hr>
-						<h5>List Checksheets</h5>
-						<div class="table-responsive" style="overflow-x:auto;">
-							<table class="table table-bordered">
-								<thead class="table-light">
-									<tr>
-										<th rowspan="2" class="p-2" width="50">No</th>
-										<th rowspan="2" class="p-2" width="">Items</th>
-										<th rowspan="2" class="p-2" width="">Standard</th>
-										<th colspan="<?= $count; ?>" class="p-2 text-center" width="<?= $col_width; ?>">Result</th>
-									</tr>
-									<tr>
-										<?php for ($i = 1; $i <= $count; $i++) {
-											if (
-												($fChecking[$data->frequency_checking] == 'Daily' && $i == date('d')) ||
-												($fChecking[$data->frequency_checking] == 'Weekly' && $i == $weekOfMonth) ||
-												($fChecking[$data->frequency_checking] == 'Monthly' && $i == date('m'))
-											) {
 
-												$isWeekend = false;
-												$isHoliday = false;
-												$holidayName = "";
-												$dayName = "";
-												if ($exec == 3 && !empty($data->periode)) {
-													$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . sprintf('%02d', $i);
-													$dayNum = (int)date('w', strtotime($tanggalkolom));
-													$dayName = isset($dayNamesIndo[$dayNum]) ? $dayNamesIndo[$dayNum] : '';
-													if ($dayNum === 0 || $dayNum === 6) {
-														$isWeekend = true;
-													}
-													if (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom])) {
-														$isHoliday = true;
-														$holidayName = $ArrHolidays[$tanggalkolom];
-													}
-												}
-												$isOff = ($isWeekend || $isHoliday);
-												$offClass = $isOff ? "table-danger text-danger font-weight-bold" : "";
-										?>
-												<th class="text-center <?= $offClass ?> <?= $i < (date('d')) ? 'ds-none' : ''; ?>  <?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && $i == date('d') && !$isOff) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>" title="<?= $holidayName ? htmlspecialchars($holidayName) : ''; ?>">
-													<?php if ($exec == 3 && $dayName) : ?>
-														<span class="d-block" style="font-size:11px;"><?= $dayName; ?></span>
-														<span><?= $i; ?></span>
-														<?php if ($isHoliday) : ?>
-															<small class="d-block text-danger" style="font-size:9px;line-height:1;"><?= htmlspecialchars($holidayName); ?></small>
-														<?php endif; ?>
-													<?php elseif ($exec == 5 && is_array($name_col)) : ?>
-														<?= $name_col[$i]; ?>
-													<?php else : ?>
-														<?= $name_col . " " . $i; ?>
-													<?php endif; ?>
-												</th>
-											<?php } ?>
-										<?php } ?>
-									</tr>
-								</thead>
-								<tbody>
-									<?php $n = 0;
-									if ($details) foreach ($details as $it) : $n++; ?>
-										<tr>
-											<td>
-												<?= $n; ?>
-											</td>
-											<td><?= $it->item_name; ?></td>
-											<td>
-												<?= $it->standard_check; ?>
-												<?php
-												if (!empty($it->upload_standard_check) && file_exists($it->upload_standard_check)) {
-													echo '<br>';
-													echo '<a href="' . base_url($it->upload_standard_check) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File</a>';
-												}
-												?>
-											</td>
-											<?php for ($i = 1; $i <= $count; $i++) :
-												if (
-													($fChecking[$data->frequency_checking] == 'Daily' && $i == date('d')) ||
-													($fChecking[$data->frequency_checking] == 'Weekly' && $i == $weekOfMonth) ||
-													($fChecking[$data->frequency_checking] == 'Monthly' && $i == date('m'))
-												) {
+							<div class="col-md-5 text-md-right">
+								<button type="button" class="btn btn-success btn-sm font-weight-bold mr-2" id="btn-set-all-yes" title="Set semua item menjadi YES jika semua kondisi normal">
+									<i class="fa fa-check-double mr-1"></i> Set Semua YES (Normal)
+								</button>
+								<button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold" id="btn-reset-all" title="Reset pilihan">
+									<i class="fa fa-undo mr-1"></i> Reset
+								</button>
+							</div>
+						</div>
+					</div>
 
-													$isWeekend = false;
-													$isHoliday = false;
-													$holidayName = "";
-													$dayName = "";
-													if ($exec == 3 && !empty($data->periode)) {
-														$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . sprintf('%02d', $i);
-														$dayNum = (int)date('w', strtotime($tanggalkolom));
-														$dayName = isset($dayNamesIndo[$dayNum]) ? $dayNamesIndo[$dayNum] : '';
-														if ($dayNum === 0 || $dayNum === 6) {
-															$isWeekend = true;
-														}
-														if (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom])) {
-															$isHoliday = true;
-															$holidayName = $ArrHolidays[$tanggalkolom];
-														}
-													}
-													$isOff = ($isWeekend || $isHoliday);
-													$offClass = $isOff ? "table-danger text-danger font-weight-bold" : "";
-											?>
-													<?php $nn = "n" . $i; ?>
-													<?php $Nn = "note" . $i; ?>
-													<?php $NBukti = "bukti_" . $i; ?>
-													<?php if ($isOff) : ?>
-														<td class="table-danger text-danger text-center align-middle">
-															<div class="text-danger font-weight-bold p-2">
-																<i class="fa fa-ban text-danger mr-1"></i> Libur (<?= $isHoliday ? htmlspecialchars($holidayName) : $dayName; ?>)<br>
-																<small class="text-muted">Tidak dapat diisi</small>
+					<div class="card-body p-4">
+						<form id="form-checksheet" enctype="multipart/form-data">
+							<input type="hidden" name="id" value="<?= $data->id; ?>">
+
+							<!-- List Checksheet Items (Modern Card Layout) -->
+							<div class="checksheet-items-container">
+								<?php 
+								$n = 0;
+								if ($details) foreach ($details as $it) : 
+									$n++;
+									$i = $activeCol;
+									$nn = "n" . $i;
+									$Nn = "note" . $i;
+									$NBukti = "bukti_" . $i;
+									$currentVal = isset($it->$nn) ? $it->$nn : '';
+									$currentNote = isset($ArrNote[$it->id]->$Nn) ? $ArrNote[$it->id]->$Nn : '';
+									$currentBukti = isset($ArrNote[$it->id]->$NBukti) ? $ArrNote[$it->id]->$NBukti : '';
+								?>
+									<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>">
+									<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>">
+
+									<div class="card border mb-3 checksheet-item-card shadow-xs <?= ($currentVal == 'yes') ? 'border-success' : (($currentVal == 'no') ? 'border-danger' : 'border-secondary'); ?>" id="card_item_<?= $n; ?>" style="transition: all 0.2s ease;">
+										<div class="card-body p-3 p-md-4">
+											<div class="row align-items-center">
+												
+												<!-- Item Name & Standard Info -->
+												<div class="col-lg-7 col-md-6 mb-3 mb-md-0">
+													<div class="d-flex align-items-start">
+														<span class="badge badge-dark font-weight-bolder mr-3 mt-1" style="font-size: 13px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;">
+															<?= $n; ?>
+														</span>
+														<div class="flex-grow-1">
+															<h5 class="font-weight-bolder text-dark mb-1" style="font-size: 14px;">
+																<?= $it->item_name; ?>
+															</h5>
+															<div class="d-flex flex-wrap align-items-center text-muted" style="font-size: 12px;">
+																<span class="mr-2">
+																	<strong>Standar:</strong> <?= $it->standard_check; ?>
+																</span>
+																<?php if (!empty($it->upload_standard_check) && file_exists($it->upload_standard_check)) : ?>
+																	<a href="<?= base_url($it->upload_standard_check); ?>" target="_blank" class="badge badge-light-primary font-weight-bold" style="font-size: 10px;">
+																		<i class="fa fa-file-pdf mr-1"></i> Dokumen Standar
+																	</a>
+																<?php endif; ?>
 															</div>
-														</td>
+														</div>
+													</div>
+												</div>
+
+												<!-- Input Controls (Big Segmented Touch Buttons) -->
+												<div class="col-lg-5 col-md-6">
+													<?php if ($it->check_type == 'boolean') : ?>
+														<div class="d-flex justify-content-md-end justify-content-start align-items-center">
+															<div class="btn-group btn-group-toggle w-100 w-md-auto" data-toggle="buttons">
+																<label class="btn btn-outline-success font-weight-bolder px-4 py-2 <?= ($currentVal == 'yes') ? 'active bg-success text-white border-success' : ''; ?>" style="font-size: 13px; min-width: 110px;">
+																	<input type="radio" name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" class="check-radio-item check-yes" data-row="<?= $n . $i; ?>" data-item-index="<?= $n; ?>" value="yes" autocomplete="off" <?= ($currentVal == 'yes') ? 'checked' : ''; ?>>
+																	<i class="fa fa-check mr-1"></i> YES / OK
+																</label>
+																<label class="btn btn-outline-danger font-weight-bolder px-4 py-2 <?= ($currentVal == 'no') ? 'active bg-danger text-white border-danger' : ''; ?>" style="font-size: 13px; min-width: 110px;">
+																	<input type="radio" name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" class="check-radio-item check-no" data-row="<?= $n . $i; ?>" data-item-index="<?= $n; ?>" value="no" autocomplete="off" <?= ($currentVal == 'no') ? 'checked' : ''; ?>>
+																	<i class="fa fa-times mr-1"></i> NO / NG
+																</label>
+															</div>
+														</div>
 													<?php else : ?>
-														<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
-														<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?>>
-														<td class="<?= ($weekOfMonth) && ($weekOfMonth == $i) ? 'bg-light-warning' : (($exec == 3 && $i == date('d')) ? 'bg-light-warning' : (($exec == 5 && $i == date('m')) ? 'bg-light-warning' : '')); ?>">
-															<br>
-															<?php if ($it->check_type == 'boolean') : ?>
-																<div class="" id="r_<?= $n . '_c_' . $i; ?>">
-																	<div class="d-flex justify-content-start align-items-center gap-4">
-																		<div class="form-check form-check-custom form-check-solid mr-10">
-																			<label class="form-check-label font-weight-bolder text-dark">
-																				<input class="form-check-input yes required" type="radio" value="yes" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?> name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" data-row="<?= $n . $i; ?>" id="boolean_<?= $i . $n; ?>" <?= ($it->$nn == 'yes') ? 'checked' : ''; ?>>
-																				Yes
-																				<span class="invalid-feedback font-weight-normal">
-																					<i class="text-danger fa fa-exclamation-circle"></i>
-																				</span>
-																			</label>
-																		</div>
-																		<div class="form-check form-check-custom form-check-danger form-check-solid mr-10">
-																			<label class="form-check-label font-weight-bolder text">
-																				<input class="form-check-input no required" type="radio" value="no" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && ($i != date('d')) ? 'disabled' : (($exec == 5) && ($i != (date('m'))) ? 'disabled' : '')); ?> name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" data-row="<?= $n . $i; ?>" id="boolean_<?= $i . $n; ?>" <?= ($it->$nn == 'no') ? 'checked' : ''; ?>>
-																				No
-																				<span class="invalid-feedback font-weight-normal">
-																					<i class="text-danger fa fa-exclamation-circle fa-md"></i>
-																				</span>
-																			</label>
-																		</div>
-																	</div>
-																	<textarea type="text" name="detail[<?= $n . "_" . $i; ?>][note<?= $i; ?>]" id="note<?= $n . $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : ((!$it->$nn || $it->$nn == 'yes') ? 'disabled' : '')) : ($i != (date('d')) ? 'disabled' : ((!$it->$nn || $it->$nn == 'yes') ? 'disabled' : '')); ?> class="form-control <?= $i == (date('d')) ? 'required' : ''; ?>" placeholder="Reason"><?= isset($ArrNote[$it->id]) ? $ArrNote[$it->id]->$Nn : ''; ?></textarea>
-																	<br>
-																	<span style="font-weight: bold;">Bukti</span>
-																	<input type="file" name="bukti<?= $n . $i ?>" class="form-control">
-																	<?php
-																	if (isset($ArrNote[$it->id]->$NBukti)) {
-																		if ($ArrNote[$it->id]->$NBukti !== '' && file_exists($ArrNote[$it->id]->$NBukti)) {
-																			echo '<br>';
-																			echo '<a href="' . base_url($ArrNote[$it->id]->$NBukti) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> Document</a>';
-																		}
-																	}
-																	?>
-																	<span class="invalid-feedback">Can not be empty</span>
-																</div>
-															<?php else : ?>
-																<textarea name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" id="r_<?= $n . '_c_' . $i; ?>" <?= ($weekOfMonth) ? (($weekOfMonth != $i) ? 'disabled' : '') : ($exec == 3 && $i != (date('d')) ? 'disabled' : ($exec == 5 && $i != (date('m')) ? 'disabled' : '')); ?> class="form-control <?= $i == (date('d')) ? 'required' : ''; ?>" placeholder="Result"><?= ($it->$nn) ?: ''; ?></textarea>
-																<span class="invalid-feedback">Can not be empty</span>
-															<?php endif; ?>
-														</td>
+														<input type="text" name="detail[<?= $n . "_" . $i; ?>][n<?= $i; ?>]" class="form-control check-text-item font-weight-bold" data-item-index="<?= $n; ?>" placeholder="Input hasil pengukuran / nilai..." value="<?= htmlspecialchars($currentVal); ?>">
 													<?php endif; ?>
-											<?php
-												}
-											endfor; ?>
-										</tr>
-									<?php endforeach; ?>
-								</tbody>
-							</table>
-						</div>
-						<hr>
-						<div class="text-right">
-							<?php if ($todayIsOff && $fChecking[$data->frequency_checking] == 'Daily') : ?>
-								<button type="button" class="btn btn-secondary" disabled title="Hari libur"><i class="fa fa-ban"></i> Libur (<?= $todayIsHoliday ? 'Tanggal Merah' : 'Sabtu/Minggu'; ?>)</button>
-							<?php else : ?>
-								<button type="submit" class="btn btn-primary" id="save"><i class="fa fa-save"></i> Save</button>
-							<?php endif; ?>
-							<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . '&sub=' . $dataSub2->id_sub . '&sub2=' . $data->sub_id . '&checksheet=' . $data->dir_id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Back</a>
-						</div>
-					</form>
-				</div>
+												</div>
+											</div>
+
+											<!-- Conditional Expansion for NO (Alasan Temuan & Upload Bukti) -->
+											<?php if ($it->check_type == 'boolean') : ?>
+												<div class="no-reason-container mt-3 pt-3 border-top <?= ($currentVal == 'no') ? '' : 'd-none'; ?>" id="reason_container_<?= $n . $i; ?>">
+													<div class="row bg-light-danger rounded p-3 m-0 border border-danger">
+														<div class="col-md-7 mb-2 mb-md-0">
+															<label class="font-weight-bold text-danger" style="font-size: 12px;">
+																<i class="fa fa-exclamation-circle text-danger mr-1"></i> Keterangan Temuan / Alasan NO <span class="text-danger">*</span>
+															</label>
+															<textarea name="detail[<?= $n . "_" . $i; ?>][note<?= $i; ?>]" id="note<?= $n . $i; ?>" class="form-control form-control-sm text-dark item-note-input" rows="2" placeholder="Tuliskan temuan atau kendala pengecekan..." style="font-size: 12px;" <?= ($currentVal == 'no') ? '' : 'disabled'; ?>><?= htmlspecialchars($currentNote); ?></textarea>
+														</div>
+														<div class="col-md-5">
+															<label class="font-weight-bold text-dark" style="font-size: 12px;">
+																<i class="fa fa-camera text-primary mr-1"></i> Upload Foto Bukti (Opsional)
+															</label>
+															<input type="file" name="bukti<?= $n . $i; ?>" class="form-control-file" accept="image/*,.pdf">
+															<?php if (!empty($currentBukti) && file_exists($currentBukti)) : ?>
+																<div class="mt-1">
+																	<a href="<?= base_url($currentBukti); ?>" target="_blank" class="badge badge-primary font-weight-bold">
+																		<i class="fa fa-image mr-1"></i> Lihat Bukti Terupload
+																	</a>
+																</div>
+															<?php endif; ?>
+														</div>
+													</div>
+												</div>
+											<?php endif; ?>
+
+										</div>
+									</div>
+								<?php endforeach; ?>
+							</div>
+
+							<!-- Action Buttons -->
+							<div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+								<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $data->process_id . '&sub=' . $dataSub2->id_sub . '&sub2=' . $data->sub_id . '&checksheet=' . $data->dir_id); ?>" class="btn btn-secondary font-weight-bold">
+									<i class="fa fa-reply mr-1"></i> Batal / Kembali
+								</a>
+								<button type="submit" class="btn btn-primary font-weight-bolder px-5 py-3" id="save" style="font-size: 14px;">
+									<i class="fa fa-save mr-1"></i> Simpan Eksekusi Checksheet
+								</button>
+							</div>
+
+						</form>
+					</div>
+
+				<?php endif; ?>
+
 			</div>
 		</div>
 	</div>
 </div>
+
 <script>
 	$(document).ready(function() {
-		$('.select2').select2({
-			width: '100%',
-			allowClear: true,
-			placeholder: 'Choose an options'
-		})
+		const totalItems = <?= count($details); ?>;
 
-		// $('.datepicker').MonthPicker('option', 'AltField': '#OtherField');
+		// Fungsi untuk mengupdate progress bar secara live
+		function updateProgress() {
+			let filledCount = 0;
+			$('.checksheet-item-card').each(function(index) {
+				const itemIdx = index + 1;
+				const isBoolean = $(this).find('.check-radio-item').length > 0;
+				let isFilled = false;
 
-		$('.datepicker').MonthPicker({
-			ShowIcon: false,
-			MonthFormat: 'MM, yy',
-			Button: false,
-			MinMonth: "0",
-			StartYear: 2023
-			// Position: {
-			// 	collision: 'fit flip'
-			// }
+				if (isBoolean) {
+					isFilled = $(this).find('.check-radio-item:checked').length > 0;
+				} else {
+					isFilled = $(this).find('.check-text-item').val().trim() !== '';
+				}
+
+				if (isFilled) {
+					filledCount++;
+				}
+			});
+
+			const percent = Math.round((filledCount / totalItems) * 100);
+			$('#progress-text').text(filledCount + ' / ' + totalItems + ' Item (' + percent + '%)');
+			$('#progress-bar').css('width', percent + '%');
+
+			if (percent === 100) {
+				$('#progress-bar').removeClass('bg-warning bg-info').addClass('bg-success');
+				$('#progress-text').css('color', '#2e7d32');
+			} else if (percent > 50) {
+				$('#progress-bar').removeClass('bg-warning bg-success').addClass('bg-info');
+				$('#progress-text').css('color', '#000');
+			} else {
+				$('#progress-bar').removeClass('bg-info bg-success').addClass('bg-warning');
+				$('#progress-text').css('color', '#000');
+			}
+		}
+
+		// Update pertama kali saat halaman dimuat
+		updateProgress();
+
+		// Handler saat memilih YES
+		$(document).on('change', '.check-yes', function() {
+			const row = $(this).data('row');
+			const itemIndex = $(this).data('item-index');
+			const $card = $('#card_item_' + itemIndex);
+
+			$card.removeClass('border-secondary border-danger').addClass('border-success');
+			$('#reason_container_' + row).addClass('d-none');
+			$('#note' + row).val('').prop('disabled', true);
+
+			$(this).closest('.btn-group').find('label').removeClass('active bg-danger text-white border-danger');
+			$(this).closest('label').addClass('active bg-success text-white border-success');
+
+			updateProgress();
 		});
 
-		$('input[type=month]').MonthPicker().css('backgroundColor', 'lightyellow');
+		// Handler saat memilih NO
+		$(document).on('change', '.check-no', function() {
+			const row = $(this).data('row');
+			const itemIndex = $(this).data('item-index');
+			const $card = $('#card_item_' + itemIndex);
 
-		$('.datatable').DataTable()
+			$card.removeClass('border-secondary border-success').addClass('border-danger');
+			$('#reason_container_' + row).removeClass('d-none');
+			$('#note' + row).prop('disabled', false).focus();
 
+			$(this).closest('.btn-group').find('label').removeClass('active bg-success text-white border-success');
+			$(this).closest('label').addClass('active bg-danger text-white border-danger');
+
+			updateProgress();
+		});
+
+		// Handler input nilai teks
+		$(document).on('input', '.check-text-item', function() {
+			const itemIndex = $(this).data('item-index');
+			const $card = $('#card_item_' + itemIndex);
+			if ($(this).val().trim() !== '') {
+				$card.removeClass('border-secondary border-danger').addClass('border-success');
+			} else {
+				$card.removeClass('border-success border-danger').addClass('border-secondary');
+			}
+			updateProgress();
+		});
+
+		// Shortcut: Set Semua YES
+		$('#btn-set-all-yes').on('click', function() {
+			$('.check-yes').each(function() {
+				$(this).prop('checked', true).trigger('change');
+			});
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'success',
+				title: 'Seluruh item telah diatur ke YES (Normal)',
+				showConfirmButton: false,
+				timer: 2000
+			});
+		});
+
+		// Shortcut: Reset Semua
+		$('#btn-reset-all').on('click', function() {
+			Swal.fire({
+				title: 'Reset Pilihan?',
+				text: 'Semua isian pada form ini akan dikosongkan.',
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#d33',
+				cancelButtonColor: '#3085d6',
+				confirmButtonText: 'Ya, Reset',
+				cancelButtonText: 'Batal'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$('.check-radio-item').prop('checked', false);
+					$('.btn-group-toggle label').removeClass('active bg-success bg-danger text-white border-success border-danger');
+					$('.no-reason-container').addClass('d-none');
+					$('.item-note-input').val('').prop('disabled', true);
+					$('.check-text-item').val('');
+					$('.checksheet-item-card').removeClass('border-success border-danger').addClass('border-secondary');
+					updateProgress();
+				}
+			});
+		});
+
+		// Submit Form
 		$(document).on('submit', '#form-checksheet', function(e) {
 			e.preventDefault();
 
-			var valid = 0;
-			var validText = 0;
-			// for (let r = 1; r <= count ; r++) {
-			// 	validText
-			// 	for (let i = 1; i <= count; i++) {
-			// 		if ($('input[name="results[' + r + '][n' + i + ']"]').is(':checked') == false) {
-			// 			// console.log(r + '-n' + i + ' not checked')
-			// 			$('div#r_' + r + "_c_" + i).addClass('is-invalid')
-			// 			valid++
-			// 		} else {
-			// 			$('div#r_' + r + "_c_" + i).removeClass('is-invalid')
-			// 			valid--;
-			// 		}
+			// Validasi kelengkapan
+			let unanswered = 0;
+			let emptyNotes = 0;
 
-			// 		if ($('textarea[name="results[' + r + '][n' + i + ']"]').val() == '') {
-			// 			console.log($(this).val())
-			// 			$('textarea#r_' + r + "_c_" + i).addClass('is-invalid')
-			// 			validText++
-			// 		} else {
-			// 			$('textarea#r_' + r + "_c_" + i).removeClass('is-invalid')
-			// 			validText - 1;
-			// 		}
-			// 	}
-			// }
-			console.log(valid);
-			console.log(validText);
-			console.log(valid + validText);
-			// if ((valid + validText) != 0) {
-			// 	return false
-			// }
+			$('.checksheet-item-card').each(function(index) {
+				const itemIdx = index + 1;
+				const isBoolean = $(this).find('.check-radio-item').length > 0;
 
-			const formdata = new FormData($('#form-checksheet')[0])
-			// var formdata = $('#form-checksheet').serialize();
-
-			const isValid = getValidation('#form-checksheet')
-
-			if (isValid == true) {
-				Swal.fire({
-					title: 'Confirm!',
-					text: 'Are you sure you want to save this checkseet?',
-					icon: 'question',
-					showCancelButton: true,
-				}).then((value) => {
-					if (value.isConfirmed) {
-						$.ajax({
-							url: siteurl + active_controller + 'save_process_checksheet',
-							dataType: 'JSON',
-							type: 'POST',
-							data: formdata,
-							contentType: false,
-							processData: false,
-							cache: false,
-							success: function(result) {
-								if (result.status == 1) {
-									Swal.fire({
-										title: "Success!",
-										text: result.msg,
-										icon: "success",
-										timer: 3000
-									}).then(function() {
-										window.location.href = siteurl + active_controller + '?p=' + <?= $data->process_id; ?> + '&sub=' + <?= $dataSub2->id_sub ?> + '&sub2=' + <?= $data->sub_id; ?> + '&checksheet=' + <?= $data->dir_id; ?>
-									})
-								} else {
-									Swal.fire({
-										title: "Warning!",
-										text: result.msg,
-										icon: "warning",
-										timer: 3000
-									})
-								}
-							},
-							error: function(result) {
-								Swal.fire({
-									title: "Error!",
-									text: "Server time out.",
-									icon: "error",
-									timer: 3000
-								})
-
-							}
-						})
+				if (isBoolean) {
+					const $checked = $(this).find('.check-radio-item:checked');
+					if ($checked.length === 0) {
+						unanswered++;
+						$(this).removeClass('border-secondary border-success').addClass('border-warning');
+					} else if ($checked.val() === 'no') {
+						const noteVal = $(this).find('.item-note-input').val().trim();
+						if (noteVal === '') {
+							emptyNotes++;
+							$(this).find('.item-note-input').addClass('is-invalid');
+						} else {
+							$(this).find('.item-note-input').removeClass('is-invalid');
+						}
 					}
-				})
+				} else {
+					if ($(this).find('.check-text-item').val().trim() === '') {
+						unanswered++;
+					}
+				}
+			});
+
+			if (unanswered > 0) {
+				Swal.fire({
+					title: 'Belum Lengkap!',
+					text: 'Terdapat ' + unanswered + ' item yang belum diisi. Mohon lengkapi seluruh item sebelum menyimpan.',
+					icon: 'warning'
+				});
+				return false;
 			}
-		})
 
-		$(document).on('change', '.no', function() {
-			const row = $(this).data('row')
-			$('#note' + row).val('').prop('disabled', false)
-		})
+			if (emptyNotes > 0) {
+				Swal.fire({
+					title: 'Catatan Temuan Wajib Diisi!',
+					text: 'Terdapat item yang dipilih NO tetapi belum memiliki keterangan temuan.',
+					icon: 'warning'
+				});
+				return false;
+			}
 
-		$(document).on('change', '.yes', function() {
-			const row = $(this).data('row')
-			$('#note' + row).val('').prop('disabled', true)
-		})
+			const formdata = new FormData($('#form-checksheet')[0]);
+			const $btnSave = $('#save');
 
-	})
+			Swal.fire({
+				title: 'Simpan Eksekusi Checksheet?',
+				text: 'Seluruh hasil pengecekan hari ini akan disimpan ke sistem.',
+				icon: 'question',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ya, Simpan!',
+				cancelButtonText: 'Batal'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$btnSave.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i> Menyimpan...');
+
+					$.ajax({
+						url: siteurl + active_controller + 'save_process_checksheet',
+						type: 'POST',
+						data: formdata,
+						dataType: 'JSON',
+						contentType: false,
+						processData: false,
+						cache: false,
+						success: function(res) {
+							$btnSave.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Simpan Eksekusi Checksheet');
+							if (res.status == 1) {
+								Swal.fire({
+									title: "Berhasil!",
+									text: res.msg,
+									icon: "success",
+									timer: 2500,
+									showConfirmButton: false
+								}).then(function() {
+									window.location.href = siteurl + active_controller + '?p=' + <?= $data->process_id; ?> + '&sub=' + <?= $dataSub2->id_sub ?> + '&sub2=' + <?= $data->sub_id; ?> + '&checksheet=' + <?= $data->dir_id; ?>;
+								});
+							} else {
+								Swal.fire('Gagal!', res.msg, 'warning');
+							}
+						},
+						error: function() {
+							$btnSave.prop('disabled', false).html('<i class="fa fa-save mr-1"></i> Simpan Eksekusi Checksheet');
+							Swal.fire('Error', 'Terjadi kesalahan sistem / koneksi server.', 'error');
+						}
+					});
+				}
+			});
+		});
+	});
 </script>
