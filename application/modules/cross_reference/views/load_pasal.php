@@ -1,15 +1,17 @@
 <div class="row mb-3">
-	<label for="exampleInputEmail1" class="col-2 col-form-label"></label>
 	<div class="col-12">
+		<?php if (isset($Data) && $Data) : ?>
+			<h3 class="mb-3">Standard : <?= $Data->name; ?> <?= ($Data->year || $Data->number) ? '(' . $Data->year . ' - ' . $Data->number . ')' : ''; ?></h3>
+		<?php endif; ?>
 		<table class="table table-bordered table-striped">
 			<thead>
 				<tr>
-					<th>No</th>
-					<th width="100">Pasal</th>
+					<th width="40" class="text-center">No</th>
+					<th width="120">Pasal</th>
 					<th>Desc. Indonesian</th>
 					<th>Desc. English</th>
-					<th class="w-25">Proses Terkait <span class="text-danger">*</span></th>
-					<th class="w-25">Dokumen Lain</th>
+					<th width="25%">Proses Terkait</th>
+					<th width="20%">Dokumen Lain</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -17,40 +19,37 @@
 					$n = 0;
 					foreach ($Data_detail as $key => $val) : $n++; ?>
 						<tr>
-							<td><?= $n; ?></td>
-							<td><?= $val->chapter; ?>
-								<input type="hidden" name="detail[<?= $n; ?>][chapter]" value="<?= $val->id; ?>">
+							<td class="text-center"><?= $n; ?></td>
+							<td><?= $val->chapter; ?></td>
+							<td>
+								<?= ($val->desc_indo) ? limit_text(strip_tags($val->desc_indo), 100) . ' <a href="javascript:void(0)" class="link view_pasal" data-id="' . $val->id . '">[read]</a>' : ''; ?>
 							</td>
 							<td>
-								<?= limit_text(strip_tags($val->desc_indo), 100) . ' <a href="#read" class="link view_pasal" data-id="' . $val->chapter_id . '">[read]</a>'; ?></td>
-							<td>
-								<?= limit_text(strip_tags($val->desc_eng), 100) . ' <a href="#read" class="link view_pasal" data-id="' . $val->chapter_id . '">[read]</a>'; ?></td>
-							<td>
-								<select name="detail[<?= $n; ?>][procedure][]" multiple class="form-control select2-modal" required id="procedure_<?= $n; ?>">
-									<option value=""></option>
-									<?php if (isset($procedure) && $procedure) :
-										foreach ($procedure as $k => $p) : ?>
-											<option value="<?= $p->id; ?>"><?= $p->name; ?></option>
-									<?php endforeach;
-									endif; ?>
-								</select>
+								<?= ($val->desc_eng) ? limit_text(strip_tags($val->desc_eng), 100) . ' <a href="javascript:void(0)" class="link view_pasal" data-id="' . $val->id . '">[read]</a>' : ''; ?>
 							</td>
 							<td>
-								<input type="other_docs" name="detail[<?= $n; ?>][other_docs]" id="other_docs_<?= $n; ?>" class="form-control" placeholder="Dokumen Terkait">
+								<?php
+								if (isset($Procedure[$val->id]) && $Procedure[$val->id]) {
+									$explode = explode(',', $Procedure[$val->id]);
+									if (isset($explode) && $explode) {
+										foreach ($explode as $exp) {
+											echo isset($list_procedure[$exp]) ? $list_procedure[$exp] : '';
+										}
+									}
+								}
+								?>
+							</td>
+							<td>
+								<?= isset($other_docs[$val->id]) ? $other_docs[$val->id] : ''; ?>
 							</td>
 						</tr>
-				<?php endforeach;
-				endif; ?>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<tr>
+						<td colspan="6" class="text-center text-muted">~ Not available data ~</td>
+					</tr>
+				<?php endif; ?>
 			</tbody>
 		</table>
-		<button type="submit" class="btn btn-primary mt-3" id="save"><i class="fa fa-save"></i>Save</button>
 	</div>
 </div>
-
-<script>
-	$('.select2-modal').select2({
-		placeholder: "Choose an options",
-		width: "100%",
-		allowClear: true
-	})
-</script>
