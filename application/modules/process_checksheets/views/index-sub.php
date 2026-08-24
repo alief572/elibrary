@@ -163,7 +163,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 			</div>
 			<div class="form-group">
 			<label>Periode Tahun</label>
-			<input type="number" class="form-control form-control-sm" name="periode_tahun" value="` + data.data.periode_tahun + `">
+			<input type="number" class="form-control form-control-sm" name="periode_tahun" value="` + (data.data.periode_tahun || '') + `">
 			</div>
 			`)
 			$('.btn-save').html(`<button type="button" class="btn btn-primary" id="save-sub-folder"><i class="fas fa-save"></i> Save</button>`)

@@ -90,23 +90,34 @@
 		background-repeat: no-repeat;
 		background-position: right calc(0.375em + 0.325rem) center;
 		background-size: calc(0.75em + 0.65rem) calc(0.75em + 0.65rem);
+	@media (max-width: 767.98px) {
+		.h-mobile-auto {
+			height: auto !important;
+			max-height: 250px !important;
+		}
+		.h-mobile-content-auto {
+			height: auto !important;
+			max-height: 450px !important;
+		}
+		.card-header-responsive {
+			height: auto !important;
+			padding: 10px 15px !important;
+		}
 	}
 </style>
 
-<div class="content d-flex flex-column flex-column-fluid">
+<div class="content d-flex flex-column flex-column-fluid p-0">
 	<div class="d-flex flex-column-fluid justify-content-between align-items-top">
-		<div class="container">
-			<div class="card card-stretch shadow card-custom">
-				<div class="card-header justify-content-between d-flex align-items-center">
-					<h2 class="m-0"><i class="fa fa-folder-open"></i> Data Checksheets</h2>
-				</div>
-				<div class="row">
-					<div class="col-md-3 pr-0">
-						<div class="card-header px-3 pt-3 h-50px">
+		<div class="container-fluid mt-4 mt-md-10 px-3 px-md-6">
+			<h1 class="text-white mb-5"><i class="fa fa-folder-open h1 text-white"></i> <?= isset($title) ? $title : 'Data Checksheets'; ?></h1>
+			<div class="card card-custom shadow">
+				<div class="row m-0">
+					<div class="col-md-3 col-12 pr-md-0 px-3 border-right-md">
+						<div class="card-header px-3 pt-3 h-50px d-flex align-items-center">
 							<button type="button" class="btn btn-sm btn-light-primary add-directory"><i class="fa fa-plus"></i> Add Directory</button>
 						</div>
 
-						<div class="card-body px-0 py-1 overflow-auto h-500px">
+						<div class="card-body px-0 py-1 overflow-auto h-500px h-mobile-auto">
 							<table class="table table-sm table-hover">
 								<tbody>
 									<?php
@@ -116,10 +127,10 @@
 										foreach ($data as $dt) :
 										?>
 											<tr class="<?= ($dt->id == $selected) ? 'bg-secondary' : ''; ?>">
-												<th class="cursor-pointer pl-5 pr-1">
+												<th class="cursor-pointer pl-3 pl-md-5 pr-1">
 													<div class="d-flex justify-content-between align-items-center">
 														<a class="text-dark w-100" href="<?= base_url($this->uri->segment(1) . '/?d=' . $dt->id); ?>">
-															<h4><i class="fa fa-folder fa-2x text-warning mr-3" style="vertical-align: middle;"></i>
+															<h4 class="mb-0 text-truncate"><i class="fa fa-folder fa-2x text-warning mr-3" style="vertical-align: middle;"></i>
 																<?= $dt->name; ?>
 															</h4>
 														</a>
@@ -144,11 +155,11 @@
 						</div>
 					</div>
 
-					<div class="col-md-9 pl-0">
-						<div class="card-header px-0 border-1 border-bottom-0 rounded-left-0 border-left pb-11 pt-0 h-50px">
-							<div class="d-flex justify-content-between align-items-center">
-								<h3 class="fw-bold p-2"><i class="fa fa-list mr-2"></i><?= ($breadcumb) ? implode(" / ", $breadcumb) : ''; ?></h3>
-								<div class="tools p-2 w-50">
+					<div class="col-md-9 col-12 pl-md-0 px-3">
+						<div class="card-header px-3 border-1 border-bottom-0 rounded-left-0 border-left py-2 h-auto min-h-50px card-header-responsive">
+							<div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center w-100 gap-2">
+								<h3 class="fw-bold p-2 m-0 text-truncate"><i class="fa fa-list mr-2"></i><?= ($breadcumb) ? implode(" / ", $breadcumb) : ''; ?></h3>
+								<div class="tools p-1 p-md-2 w-100 w-md-50">
 									<div class="input-group">
 										<span class="input-group-text bg-transparent border-right-0 rounded-right-0"><i class="fa fa-search"></i></span>
 										<input type="text" id="search" class="form-control" placeholder="Search" aria-label="search" aria-describedby="input1" />
@@ -156,82 +167,86 @@
 								</div>
 							</div>
 						</div>
-						<div class="card-body border border-1 border-left overflow-auto py-2 px-1 h-550px">
+						<div class="card-body border border-1 border-left overflow-auto py-2 px-3 h-550px h-mobile-content-auto">
 							<?php if (!isset($details) || !$details) : ?>
 								<?php if (!$selected == '') : ?>
-									<div class="px-3">
+									<div class="px-1 py-1">
 										<button type="button" class="btn mb-2 btn-sm btn-light-success add-sub-directory" data-id="<?= $selected; ?>" title="New Sub Directory"><i class="fa fa-plus"></i> New Sub Directory</button>
 									</div>
 									<hr class="m-0">
 									<div class="d-flex justify-content-center align-items-center py-10">
-										<img src="<?= base_url('assets\images\dashboard\folder-file.gif'); ?>" alt="" width="300px" class="img-responsive text-center opacity-30">
+										<img src="<?= base_url('assets\images\dashboard\folder-file.gif'); ?>" alt="" width="300px" class="img-responsive text-center opacity-30" style="max-width: 100%; height: auto;">
 									</div>
 								<?php endif; ?>
 								<p class="text-muted text-center">~Not selected data~</p>
 							<?php else : ?>
 								<?php if ($details && $details_data == 0) : ?>
-									<div class="px-3">
+									<div class="px-1 py-1">
 										<button type="button" class="btn mb-2 btn-sm btn-light-success add-sub-directory" data-id="<?= $selected; ?>" title="New Sub Directory"><i class="fa fa-plus"></i> New Sub Directory</button>
 										<?php if ($details) : ?>
 										<?php endif; ?>
 									</div>
 									<hr class="m-0">
-									<table class="table table-hover datatable" style="margin:0px 0px !important;">
-										<thead>
-											<tr class="table-light">
-												<th class="py-2">Name</th>
-												<th width="150">Last update</th>
-												<th class="py-2 text-center" width="100">Opsi</th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php if (isset($details)) foreach ($details as $dtl) : ?>
-												<tr>
-													<!-- <td><?= $dtl->id; ?></td> -->
-													<td class="py-3"><a href="?d=<?= $dtl->checksheet_id . "&sub=" . $dtl->id ?>" class="text-dark h4 text-hover-primary"><i class="fa fa-folder text-success mr-2"></i><?= $dtl->checksheet_detail_name; ?></a></td>
-													<td class="py-3"><?= ($dtl->modified_at) ?: $dtl->created_at; ?></td>
-													<td class="py-3 text-center">
-														<button type="button" class="btn btn-icon btn-xs btn-info info-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fas fa-question-circle"></i></button>
-														<button type="button" class="btn btn-icon btn-xs btn-warning edit-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-pencil-alt"></i></button>
-														<button type="button" class="btn btn-icon btn-xs btn-danger delete-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-trash-alt"></i></button>
-													</td>
+									<div class="table-responsive">
+										<table class="table table-hover datatable" style="margin:0px 0px !important;">
+											<thead>
+												<tr class="table-light">
+													<th class="py-2">Name</th>
+													<th width="150" class="text-nowrap">Last update</th>
+													<th class="py-2 text-center text-nowrap" width="100">Opsi</th>
 												</tr>
-											<?php endforeach; ?>
-										</tbody>
-									</table>
+											</thead>
+											<tbody>
+												<?php if (isset($details)) foreach ($details as $dtl) : ?>
+													<tr>
+														<!-- <td><?= $dtl->id; ?></td> -->
+														<td class="py-3"><a href="?d=<?= $dtl->checksheet_id . "&sub=" . $dtl->id ?>" class="text-dark h4 text-hover-primary"><i class="fa fa-folder text-success mr-2"></i><?= $dtl->checksheet_detail_name; ?></a></td>
+														<td class="py-3 text-nowrap"><?= ($dtl->modified_at) ?: $dtl->created_at; ?></td>
+														<td class="py-3 text-center text-nowrap">
+															<button type="button" class="btn btn-icon btn-xs btn-info info-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fas fa-question-circle"></i></button>
+															<button type="button" class="btn btn-icon btn-xs btn-warning edit-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-pencil-alt"></i></button>
+															<button type="button" class="btn btn-icon btn-xs btn-danger delete-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-trash-alt"></i></button>
+														</td>
+													</tr>
+												<?php endforeach; ?>
+											</tbody>
+										</table>
+									</div>
 								<?php else : ?>
-									<div class="d-flex justify-content-between align-items-center">
+									<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-1">
 										<div class="tools pr-3">
 											<button type="button" class="btn btn-outline-primary btn-sm upload-file" data-checksheet_detail_id="<?= $sub; ?>" title="Create Checksheet" data-toggle="tooltip"><i class="fa fa-plus"></i> Create Checksheet</button>
 										</div>
 									</div>
 									<hr class="my-1">
-									<table class="table py-0 table-sm table-hover datatable">
-										<thead>
-											<tr>
-												<th class="py-2" width="30">No.</th>
-												<th class="py-2">Checksheet Nama</th>
-												<th class="py-2">Periode</th>
-												<th class="py-2 text-center" width="100">Action</th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php $n = 0;
-											if (isset($details_data)) : foreach ($details_data as $dtDtl) : $n++; ?>
-													<tr>
-														<td><?= $n; ?></td>
-														<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->checksheet_detail_data_name; ?></td>
-														<td class="cursor-pointer"><?= $freq[$dtDtl->frequency_execution]; ?></td>
-														<td class="text-center">
-															<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-checksheet_detail_id="<?= $sub; ?>" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-															<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-checksheet_detail_id="<?= $sub; ?>" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-															<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-checksheet_detail_id="<?= $sub; ?>" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash-alt"></i></button>
-														</td>
-													</tr>
-											<?php endforeach;
-											endif; ?>
-										</tbody>
-									</table>
+									<div class="table-responsive">
+										<table class="table py-0 table-sm table-hover datatable">
+											<thead>
+												<tr>
+													<th class="py-2 text-nowrap" width="30">No.</th>
+													<th class="py-2">Checksheet Nama</th>
+													<th class="py-2 text-nowrap">Periode</th>
+													<th class="py-2 text-center text-nowrap" width="100">Action</th>
+												</tr>
+											</thead>
+											<tbody>
+												<?php $n = 0;
+												if (isset($details_data)) : foreach ($details_data as $dtDtl) : $n++; ?>
+														<tr>
+															<td><?= $n; ?></td>
+															<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->checksheet_detail_data_name; ?></td>
+															<td class="cursor-pointer text-nowrap"><?= isset($freq[$dtDtl->frequency_execution]) ? $freq[$dtDtl->frequency_execution] : '-'; ?></td>
+															<td class="text-center text-nowrap">
+																<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-checksheet_detail_id="<?= $sub; ?>" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-checksheet_detail_id="<?= $sub; ?>" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-checksheet_detail_id="<?= $sub; ?>" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash-alt"></i></button>
+															</td>
+														</tr>
+												<?php endforeach;
+												endif; ?>
+											</tbody>
+										</table>
+									</div>
 								<?php endif; ?>
 							<?php endif; ?>
 						</div>

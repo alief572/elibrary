@@ -55,7 +55,7 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 						<tbody>
 							<?php $n = 0;
 
-							$period_active = ($sub->periode_tahun == date('Y')) ? 1 : 0;
+							$period_active = (!empty($sub->periode_tahun)) ? (($sub->periode_tahun == date('Y')) ? 1 : 0) : 1;
 
 							if ($data) foreach ($data as $dt) : $n++; ?>
 								<?php
