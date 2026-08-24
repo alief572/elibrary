@@ -351,7 +351,7 @@ class Checksheets extends Admin_Controller
 					foreach ($items as $item) {
 						if (isset($item['id'])) {
 							$upload_standard_check = '';
-							if (isset($_FILES['items']['name'][$no]['upload_standard_check'])) {
+							if (isset($_FILES['items']['name'][$no]['upload_standard_check']) && !empty($_FILES['items']['name'][$no]['upload_standard_check'])) {
 								$_FILES['file'] = [
 									'name'     => $_FILES['items']['name'][$no]['upload_standard_check'],
 									'type'     => $_FILES['items']['type'][$no]['upload_standard_check'],
@@ -398,15 +398,9 @@ class Checksheets extends Admin_Controller
 								}
 							}
 
-							// $this->db->update('checksheet_process_details', [
-							// 	'item_name' => $item['item_name'],
-							// 	'standard_check' => $item['standard_check'],
-							// 	'check_type' => $item['check_type'],
-							// ], ['checkheet_item_id' => $item['id']]);
-
 						} else {
-							$upload_standard_check = '';
-							if (isset($_FILES['items']['name'][$no]['upload_standard_check'])) {
+							$upload_standard_check = null;
+							if (isset($_FILES['items']['name'][$no]['upload_standard_check']) && !empty($_FILES['items']['name'][$no]['upload_standard_check'])) {
 								$_FILES['file'] = [
 									'name'     => $_FILES['items']['name'][$no]['upload_standard_check'],
 									'type'     => $_FILES['items']['type'][$no]['upload_standard_check'],
