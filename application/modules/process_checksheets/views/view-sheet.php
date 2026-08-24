@@ -1,3 +1,14 @@
+<?php
+$dayNamesIndo = [
+	0 => 'Min', // Minggu
+	1 => 'Sen', // Senin
+	2 => 'Sel', // Selasa
+	3 => 'Rab', // Rabu
+	4 => 'Kam', // Kamis
+	5 => 'Jum', // Jumat
+	6 => 'Sab'  // Sabtu
+];
+?>
 <div class="row mb-3">
 	<label for="" class="col-md-2 control-label">Checksheet Name</label>
 	<div class="col-md-4">:
@@ -42,11 +53,38 @@
 			</tr>
 			<tr>
 				<?php for ($i = 1; $i <= $count; $i++) {
-					$weekend = "";
-					$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . $i;
-					if (date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend = "table-danger";
-					if ($data->frequency_checking != 1) $weekend = ""; ?>
-					<th class="text-center <?= $weekend ?>"><?= $name_col . " " . $i; ?></th>
+					$isWeekend = false;
+					$isHoliday = false;
+					$holidayName = "";
+					$dayName = "";
+					if ($data->frequency_execution == 3 && !empty($data->periode)) {
+						$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . sprintf('%02d', $i);
+						$dayNum = (int)date('w', strtotime($tanggalkolom));
+						$dayName = isset($dayNamesIndo[$dayNum]) ? $dayNamesIndo[$dayNum] : '';
+						if ($dayNum === 0 || $dayNum === 6) {
+							$isWeekend = true;
+						}
+						if (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom])) {
+							$isHoliday = true;
+							$holidayName = $ArrHolidays[$tanggalkolom];
+						}
+					}
+					$isOff = ($isWeekend || $isHoliday);
+					$offClass = $isOff ? "table-danger text-danger font-weight-bold" : "";
+				?>
+					<th class="text-center <?= $offClass ?>" title="<?= $holidayName ? htmlspecialchars($holidayName) : ''; ?>">
+						<?php if ($data->frequency_execution == 3 && $dayName) : ?>
+							<span class="d-block" style="font-size:11px;"><?= $dayName; ?></span>
+							<span><?= $i; ?></span>
+							<?php if ($isHoliday) : ?>
+								<small class="d-block text-danger" style="font-size:9px;line-height:1;"><?= htmlspecialchars($holidayName); ?></small>
+							<?php endif; ?>
+						<?php elseif ($data->frequency_execution == 5 && is_array($name_col)) : ?>
+							<?= $name_col[$i]; ?>
+						<?php else : ?>
+							<?= $name_col . " " . $i; ?>
+						<?php endif; ?>
+					</th>
 				<?php } ?>
 			</tr>
 		</thead>
@@ -63,10 +101,8 @@
 						<?php
 						$get_checksheet_data = $this->db->get_where('checksheet_data_items', array('id' => $it->checksheet_item_id))->row();
 						if (
-							!empty($get_checksheet_data) &&
-							file_exists($get_checksheet_data->upload_standard_check) &&
-							$get_checksheet_data->upload_standard_check !== '' &&
-							$get_checksheet_data->upload_standard_check !== null
+							!empty($get_checksheet_data->upload_standard_check) &&
+							file_exists($get_checksheet_data->upload_standard_check)
 						) {
 							echo '<br>';
 							echo '<a href="' . base_url($get_checksheet_data->upload_standard_check) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File </a>';
@@ -74,24 +110,34 @@
 						?>
 					</td>
 					<?php for ($i = 1; $i <= $count; $i++) {
-						$weekend = "";
-						$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . $i;
-						if (date('w', strtotime($tanggalkolom)) % 6 == 0) $weekend = "table-danger";
-						if ($data->frequency_checking != 1) $weekend = ""; ?>
-						<?php $nn = "n" . $i; ?>
-						<?php $Nn = "note" . $i; ?>
+						$isWeekend = false;
+						$isHoliday = false;
+						if ($data->frequency_execution == 3 && !empty($data->periode)) {
+							$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . sprintf('%02d', $i);
+							$dayNum = (int)date('w', strtotime($tanggalkolom));
+							if ($dayNum === 0 || $dayNum === 6) {
+								$isWeekend = true;
+							}
+							if (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom])) {
+								$isHoliday = true;
+							}
+						}
+						$isOff = ($isWeekend || $isHoliday);
+						$nn = "n" . $i;
+						$Nn = "note" . $i;
+					?>
 						<td class=" 
-							<?php if ($weekend == "") { ?>
+							<?php if (!$isOff) { ?>
 								<?= ($it->$nn == '') ? 'bg-light' : ''; ?>
 							<?php
 							} else {
-								echo $weekend;
+								echo "table-danger";
 							}
 							?>">
 							<?php if ($it->check_type == 'boolean') : ?>
 								<?php if ($it->$nn == 'no') : ?>
 									<label for="" class="label-danger label"><?= ucfirst($it->$nn); ?></label>
-									<?php if ($ArrNotes[$it->id]->$Nn) : ?>
+									<?php if (isset($ArrNotes[$it->id]->$Nn) && $ArrNotes[$it->id]->$Nn) : ?>
 										<div class="alert alert-light p-2 my-1 font-italic" role="alert">
 											<?= $ArrNotes[$it->id]->$Nn; ?>
 										</div>
@@ -118,8 +164,16 @@
 				for ($i = 1; $i <= $count; $i++) :
 					$dayCheck = $day . $i;
 					$dateCheck = $date . $i;
+					$isOff = false;
+					if ($data->frequency_execution == 3 && !empty($data->periode)) {
+						$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . sprintf('%02d', $i);
+						$dayNum = (int)date('w', strtotime($tanggalkolom));
+						if ($dayNum === 0 || $dayNum === 6 || (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom]))) {
+							$isOff = true;
+						}
+					}
 				?>
-					<td class="text-muted p-1">
+					<td class="text-muted p-1 <?= $isOff ? 'table-danger' : ''; ?>">
 						<small for="">
 							<?= isset($ArrExe[$data->id]->$dayCheck) ? $ArrUsers[$ArrExe[$data->id]->$dayCheck] . " | " : ''; ?>
 						</small><small for="">
@@ -138,8 +192,16 @@
 				for ($i = 1; $i <= $count; $i++) :
 					$dayCheck = $day . $i;
 					$dateCheck = $date . $i;
+					$isOff = false;
+					if ($data->frequency_execution == 3 && !empty($data->periode)) {
+						$tanggalkolom = date("Y-m", strtotime($data->periode)) . "-" . sprintf('%02d', $i);
+						$dayNum = (int)date('w', strtotime($tanggalkolom));
+						if ($dayNum === 0 || $dayNum === 6 || (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom]))) {
+							$isOff = true;
+						}
+					}
 				?>
-					<td class="text-muted p-1">
+					<td class="text-muted p-1 <?= $isOff ? 'table-danger' : ''; ?>">
 						<small for="">
 							<?= isset($ArrCheck[$data->id]->$dayCheck) ? $ArrUsers[$ArrCheck[$data->id]->$dayCheck] . " | " : ''; ?>
 						</small><small for="">

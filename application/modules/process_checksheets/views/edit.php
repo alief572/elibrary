@@ -85,7 +85,7 @@
 											<td>
 												<?= $it->standard_check; ?>
 												<?php
-												if (file_exists($it->upload_standard_check) && $it->upload_standard_check !== '' && $it->upload_standard_check !== null) {
+												if (!empty($it->upload_standard_check) && file_exists($it->upload_standard_check)) {
 													echo '<br>';
 													echo '<a href="' . base_url($it->upload_standard_check) . '" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File</a>';
 												}

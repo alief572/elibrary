@@ -234,11 +234,28 @@ class Process_checksheets extends Admin_Controller
 	{
 		if ($id) {
 			$sheet 		= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
-			$dataDir 	= $this->db->get_where('view_checksheet_process_dir', ['id' => $sheet->dir_id])->row();
-			$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row();
-			// $items 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
-			$items 		= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
-			// $items 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
+			if (!$sheet) {
+				echo "Data not found..";
+				return false;
+			}
+
+			$dataDir = $this->db->select('
+					d.*,
+					d.name as dir_name,
+					p.name as process_name,
+					s.name as sub_name,
+					s2.name as sub_name2,
+					s2.id_sub
+				')
+				->from('checksheet_process_dir d')
+				->join('checksheet_process_sub2 s2', 's2.id = d.sub_id', 'left')
+				->join('checksheet_process_sub s', 's.id = s2.id_sub', 'left')
+				->join('checksheet_process p', 'p.id = d.process_id', 'left')
+				->where('d.id', $sheet->dir_id)
+				->get()
+				->row();
+
+			$get_sub2 = ($dataDir && $dataDir->sub_id) ? $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row() : null;
 			$items 		= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
 
 			$fExecution 	= [
@@ -288,9 +305,24 @@ class Process_checksheets extends Admin_Controller
 				'2' => 'Weekly',
 				'3' => 'Monthly',
 			];
-			$dataDir = $this->db->get_where('view_checksheet_process_dir', ['id' => $dir])->row();
 
-			$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row();
+			$dataDir = $this->db->select('
+					d.*,
+					d.name as dir_name,
+					p.name as process_name,
+					s.name as sub_name,
+					s2.name as sub_name2,
+					s2.id_sub
+				')
+				->from('checksheet_process_dir d')
+				->join('checksheet_process_sub2 s2', 's2.id = d.sub_id', 'left')
+				->join('checksheet_process_sub s', 's.id = s2.id_sub', 'left')
+				->join('checksheet_process p', 'p.id = d.process_id', 'left')
+				->where('d.id', $dir)
+				->get()
+				->row();
+
+			$get_sub2 = ($dataDir && $dataDir->sub_id) ? $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row() : null;
 
 			$this->template->set(
 				[
@@ -299,7 +331,7 @@ class Process_checksheets extends Admin_Controller
 					'fExecution' 	=> $fExecution,
 					'fChecking' 	=> $fChecking,
 					'dataDir' 		=> $dataDir,
-					'sub_id'		=> $get_sub2->id_sub
+					'sub_id'		=> $get_sub2 ? $get_sub2->id_sub : ($dataDir->id_sub ?? '')
 				]
 			);
 
@@ -529,7 +561,7 @@ class Process_checksheets extends Admin_Controller
 				$name_col 	= 'Day';
 			} elseif ($data->frequency_execution == 3) {
 				$width 		= '170%';
-				$count 		= 31;
+				$count 		= (!empty($data->periode) && strtotime($data->periode)) ? (int)date('t', strtotime($data->periode)) : 31;
 				$name_col 	= 'Day';
 				$col_width 	= '30%';
 			} elseif ($data->frequency_execution == 4) {
@@ -559,6 +591,7 @@ class Process_checksheets extends Admin_Controller
 				'ArrExeDate' 	=> $ArrExeDate,
 				'ArrCheck' 		=> $ArrCheck,
 				'ArrCheckDate' 	=> $ArrCheckDate,
+				'ArrHolidays' 	=> $this->_get_holidays($data->periode),
 			]);
 
 			$this->template->render('view-sheet');
@@ -621,7 +654,7 @@ class Process_checksheets extends Admin_Controller
 				$name_col 	= 'Day';
 			} elseif ($data->frequency_execution == 3) {
 				$width 		= '170%';
-				$count 		= 31;
+				$count 		= (!empty($data->periode) && strtotime($data->periode)) ? (int)date('t', strtotime($data->periode)) : 31;
 				$name_col 	= 'Day';
 				$col_width 	= '30%';
 			} elseif ($data->frequency_execution == 4) {
@@ -653,6 +686,7 @@ class Process_checksheets extends Admin_Controller
 				'ArrCheckDate' 		=> $ArrCheckDate,
 				'ArrUsers' 			=> $ArrUsers,
 				'weekOfMonth' 		=> $weekOfMonth,
+				'ArrHolidays' 		=> $this->_get_holidays($data->periode),
 			]);
 
 			$this->template->render('checking-sheet');
@@ -681,6 +715,35 @@ class Process_checksheets extends Admin_Controller
 			// It's a "normal" week.
 			return $weekOfYear;
 		}
+	}
+
+	private function _get_holidays($periode = null)
+	{
+		$ArrHolidays = [];
+		if ($periode && strtotime($periode)) {
+			$yearMonth = date('Y-m', strtotime($periode));
+			$holidays = $this->db->like('holiday_date', $yearMonth, 'after')
+				->where('status', '1')
+				->get('master_holidays')
+				->result();
+			if ($holidays) {
+				foreach ($holidays as $h) {
+					$ArrHolidays[$h->holiday_date] = $h->holiday_name;
+				}
+			}
+		} else {
+			$currentYear = date('Y');
+			$holidays = $this->db->like('holiday_date', $currentYear, 'after')
+				->where('status', '1')
+				->get('master_holidays')
+				->result();
+			if ($holidays) {
+				foreach ($holidays as $h) {
+					$ArrHolidays[$h->holiday_date] = $h->holiday_name;
+				}
+			}
+		}
+		return $ArrHolidays;
 	}
 
 	/* FOLDER */
@@ -1113,7 +1176,7 @@ class Process_checksheets extends Admin_Controller
 		} elseif ($sheet->frequency_execution == 3) {
 			$width 		= '450%';
 			$col_width 	= '30%';
-			$count 		= 31;
+			$count 		= (!empty($sheet->periode) && strtotime($sheet->periode)) ? (int)date('t', strtotime($sheet->periode)) : 31;
 			$name_col 	= 'Day';
 		} elseif ($sheet->frequency_execution == 4) {
 			$width 		= '120%';
@@ -1168,6 +1231,7 @@ class Process_checksheets extends Admin_Controller
 			'execution' 	=> ($execution) ?: [],
 			'checking_date' => ($execution_date) ?: [],
 			'weekOfMonth' 	=> $weekOfMonth,
+			'ArrHolidays' 	=> $this->_get_holidays($sheet->periode),
 		]);
 
 		$this->template->render('checking');
@@ -1187,11 +1251,23 @@ class Process_checksheets extends Admin_Controller
 		$post 	= $this->input->post();
 		$this->db->trans_begin();
 		if ($post['id']) {
+			$sheetDataCheck = $this->db->get_where('checksheet_process_data', ['id' => $post['id']])->row();
 			if (isset($post['detail'])) {
 				$nn = 1;
 				foreach ($post['detail'] as $dt) {
 					if (isset($dt['field'])) {
 						$field 			= $dt['field'];
+
+						if ($sheetDataCheck && $sheetDataCheck->frequency_execution == 3 && !empty($sheetDataCheck->periode)) {
+							$tglCheck = date('Y-m', strtotime($sheetDataCheck->periode)) . '-' . sprintf('%02d', $field);
+							$dayNum = (int)date('w', strtotime($tglCheck));
+							$isHoliday = $this->db->get_where('master_holidays', ['holiday_date' => $tglCheck, 'status' => '1'])->row();
+							if ($dayNum === 0 || $dayNum === 6 || $isHoliday) {
+								$nn++;
+								continue;
+							}
+						}
+
 						$fieldNote 		= "note" . $field;
 						$fieldDate 		= "date" . $field;
 						$fieldChecker 	= "day" . $field;
@@ -1474,7 +1550,7 @@ class Process_checksheets extends Admin_Controller
 			$name_col 	= 'Day';
 		} elseif ($sheet->frequency_execution == 3) {
 			$width 		= '170%';
-			$count 		= 31;
+			$count 		= (!empty($sheet->periode) && strtotime($sheet->periode)) ? (int)date('t', strtotime($sheet->periode)) : 31;
 			$name_col 	= 'Day';
 			$col_width 	= '30%';
 		} elseif ($sheet->frequency_execution == 4) {
@@ -1506,6 +1582,7 @@ class Process_checksheets extends Admin_Controller
 			'ArrCheckDate' 		=> $ArrCheckDate,
 			'ArrUsers' 			=> $ArrUsers,
 			'weekOfMonth' 		=> $weekOfMonth,
+			'ArrHolidays' 		=> $this->_get_holidays($sheet->periode),
 		];
 
 		$this->load->view('print-sheet', $data);
