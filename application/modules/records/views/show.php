@@ -61,7 +61,7 @@
                             <!-- Mobile View PDF: technical explanation + download button -->
                             <div class="text-center py-4 px-3 d-block d-md-none">
                                 <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
-                                <h5 class="mb-2"><?= isset($file->name) ? $file->name : ($file->file_name ?? 'Dokumen PDF'); ?></h5>
+                                <h5 class="mb-2"><?= isset($file->name) ? $file->name : (isset($file->file_name) ? $file->file_name : 'Dokumen PDF'); ?></h5>
                                 <div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
                                     <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
                                     <ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">
@@ -89,7 +89,7 @@
                             </div>
                             <div class="text-center py-4 px-3 d-block d-md-none">
                                 <i class="fas fa-file-excel fa-4x text-success mb-3"></i>
-                                <h5 class="mb-2"><?= isset($file->name) ? $file->name : ($file->file_name ?? 'Document'); ?></h5>
+                                <h5 class="mb-2"><?= isset($file->name) ? $file->name : (isset($file->file_name) ? $file->file_name : 'Document'); ?></h5>
                                 <div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
                                     <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
                                     <ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">

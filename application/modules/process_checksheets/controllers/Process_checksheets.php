@@ -331,7 +331,7 @@ class Process_checksheets extends Admin_Controller
 					'fExecution' 	=> $fExecution,
 					'fChecking' 	=> $fChecking,
 					'dataDir' 		=> $dataDir,
-					'sub_id'		=> $get_sub2 ? $get_sub2->id_sub : ($dataDir->id_sub ?? '')
+					'sub_id'		=> (!empty($get_sub2) && isset($get_sub2->id_sub)) ? $get_sub2->id_sub : (isset($dataDir->id_sub) ? $dataDir->id_sub : '')
 				]
 			);
 
