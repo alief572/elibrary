@@ -1294,43 +1294,27 @@ class Process_checksheets extends Admin_Controller
 								"n" . $field => $dt["n" . $field]
 							], ['id' => $dt['id']]);
 
-							/* NOTES */
-							if ($dt["n" . $field] == 'no') {
-								$checkNote 	= $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row();
+							/* NOTES & BUKTI */
+							$fileKey = 'bukti' . $nn . $field;
+							$upload_bukti = null;
 
-								$upload_bukti = '';
-								if (!empty($checkNote)) {
-									if ($_FILES['bukti' . $nn . $field]['name'] !== '') {
-										$files = $_FILES['bukti' . $nn . $field];
-										$file_count = count($files['name']);
+							$checkNote = $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row();
+							if ($checkNote && isset($checkNote->$fieldBukti)) {
+								$upload_bukti = $checkNote->$fieldBukti;
+							}
 
-										$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-										$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-										$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-										$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-										$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-										$this->upload->do_upload('bukti' . $nn . $field);
-										$data = $this->upload->data();
-										$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
-									}
-								} else {
-									$files = $_FILES['bukti' . $nn . $field];
-									$file_count = count($files['name']);
-
-									$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-									$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-									$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-									$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-									$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-									$this->upload->do_upload('bukti' . $nn . $field);
-									$data = $this->upload->data();
-									$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
+							if (isset($_FILES[$fileKey]) && !empty($_FILES[$fileKey]['name'])) {
+								if ($this->upload->do_upload($fileKey)) {
+									$uploadData = $this->upload->data();
+									$upload_bukti = 'assets/images/directory/checksheet/' . $uploadData['file_name'];
 								}
+							}
 
-								$dataNote 	= [
-									'data_id'	=> $post['id'],
-									'item_id'	=> $dt['id'],
-									$fieldNote 	=> (isset($dt[$fieldNote]) ? $dt[$fieldNote] : null),
+							if ($dt["n" . $field] == 'no') {
+								$dataNote = [
+									'data_id'   => $post['id'],
+									'item_id'   => $dt['id'],
+									$fieldNote  => (isset($dt[$fieldNote]) ? $dt[$fieldNote] : null),
 									$fieldBukti => $upload_bukti
 								];
 
@@ -1340,55 +1324,17 @@ class Process_checksheets extends Admin_Controller
 									$this->db->update('checksheet_notes', $dataNote, ['data_id' => $post['id'], 'item_id' => $dt['id']]);
 								}
 							} else if ($dt["n" . $field] == 'yes') {
+								$dataNote = [
+									'data_id'   => $post['id'],
+									'item_id'   => $dt['id'],
+									$fieldNote  => null,
+									$fieldBukti => $upload_bukti
+								];
 
-								$checkNote 	= $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row_array();
-
-								$upload_bukti = '';
-
-								if (!empty($checkNote)) {
-									$upload_bukti = $checkNote['bukti_' . $field];
-
-									if (isset($_FILES['bukti' . $nn . $field]) && $_FILES['bukti' . $nn . $field]['name'] !== '') {
-										$files = $_FILES['bukti' . $nn . $field];
-										$file_count = count($files['name']);
-
-										$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-										$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-										$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-										$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-										$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-										$this->upload->do_upload('bukti' . $nn . $field);
-										$data = $this->upload->data();
-										$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
-									}
+								if (!$checkNote) {
+									$this->db->insert('checksheet_notes', $dataNote);
 								} else {
-									$files = $_FILES['bukti' . $nn . $field];
-									$file_count = count($files['name']);
-
-									$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-									$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-									$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-									$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-									$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-									$this->upload->do_upload('bukti' . $nn . $field);
-									$data = $this->upload->data();
-									$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
-								}
-								// } else {
-								// }
-
-								if (empty($checkNote)) {
-									$insert_notes = $this->db->insert('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id'], $fieldNote => null, 'bukti_' . $field => $upload_bukti]);
-									if (!$insert_notes) {
-										print_r($this->db->error($insert_notes));
-										exit;
-									}
-								} else {
-									$update_notes = $this->db->update('checksheet_notes', [$fieldNote => null, 'bukti_' . $field => $upload_bukti], ['data_id' => $post['id'], 'item_id' => $dt['id']]);
-									if (!$update_notes) {
-										print_r($this->db->error($update_notes));
-										exit;
-									}
+									$this->db->update('checksheet_notes', $dataNote, ['data_id' => $post['id'], 'item_id' => $dt['id']]);
 								}
 							}
 						}
