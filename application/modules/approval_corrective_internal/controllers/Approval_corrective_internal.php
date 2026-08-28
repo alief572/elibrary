@@ -28,6 +28,7 @@ class Approval_corrective_internal extends Admin_Controller
             ->get()
             ->result();
 
+        $this->template->set('current_user_id', $this->auth->user_id());
         $this->template->set('data', $data);
         $this->template->render('index');
     }
@@ -64,6 +65,11 @@ class Approval_corrective_internal extends Admin_Controller
             redirect('approval_corrective_internal');
             return;
         }
+        // Hanya PIC Pembuat yang boleh approve/reject
+        if ($data->pic_pembuat_id != $this->auth->user_id()) {
+            redirect('approval_corrective_internal');
+            return;
+        }
         $details = $this->db->order_by('urutan', 'ASC')->get_where('corrective_internal_detail', ['corrective_internal_id' => $id])->result();
         $dept_pembuat = $this->db->get_where('audit_department', ['id' => $data->department_pembuat_id])->row();
         $dept_pic = $this->db->get_where('audit_department', ['id' => $data->department_pic_car_id])->row();
@@ -91,6 +97,12 @@ class Approval_corrective_internal extends Admin_Controller
         $car = $this->db->get_where('corrective_internal', ['id' => $id, 'company_id' => $this->company])->row();
         if (!$car || $car->status != 'waiting_approval') {
             echo json_encode(['status' => 0, 'msg' => 'Data tidak valid atau sudah diproses.']);
+            return;
+        }
+
+        // Hanya PIC Pembuat yang boleh approve/reject
+        if ($car->pic_pembuat_id != $this->auth->user_id()) {
+            echo json_encode(['status' => 0, 'msg' => 'Anda tidak memiliki akses untuk approve/reject CAR ini.']);
             return;
         }
 

@@ -50,7 +50,7 @@
 												</td>
 												<td class="text-center">
 													<a href="<?= base_url('approval_corrective_internal/view/' . $dt->id); ?>" class="btn btn-sm btn-icon rounded-circle btn-info" title="View"><i class="fa fa-eye"></i></a>
-													<?php if (isset($dt->status) && $dt->status == 'waiting_approval') : ?>
+													<?php if (isset($dt->status) && $dt->status == 'waiting_approval' && isset($current_user_id) && $dt->pic_pembuat_id == $current_user_id) : ?>
 														<a href="<?= base_url('approval_corrective_internal/approve/' . $dt->id); ?>" class="btn btn-sm btn-icon rounded-circle btn-success" title="Approve/Reject"><i class="fa fa-check"></i></a>
 													<?php endif; ?>
 												</td>
