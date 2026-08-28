@@ -2,6 +2,8 @@
 
 class Approval_corrective_internal extends Admin_Controller
 {
+    // Hanya user ini (username = iman, id_user = 4) yang boleh approve/reject
+    const APPROVER_USER_ID = 4;
 
     public function __construct()
     {
@@ -28,8 +30,8 @@ class Approval_corrective_internal extends Admin_Controller
             ->get()
             ->result();
 
-        $this->template->set('current_user_id', $this->auth->user_id());
         $this->template->set('data', $data);
+        $this->template->set('current_user_id', $this->auth->user_id());
         $this->template->render('index');
     }
 
@@ -60,13 +62,14 @@ class Approval_corrective_internal extends Admin_Controller
 
     public function approve($id = null)
     {
-        $data = $this->db->get_where('corrective_internal', ['id' => $id, 'company_id' => $this->company])->row();
-        if (!$data) {
+        // Hanya approver yang ditentukan
+        if ($this->auth->user_id() != self::APPROVER_USER_ID) {
             redirect('approval_corrective_internal');
             return;
         }
-        // Hanya PIC Pembuat yang boleh approve/reject
-        if ($data->pic_pembuat_id != $this->auth->user_id()) {
+
+        $data = $this->db->get_where('corrective_internal', ['id' => $id, 'company_id' => $this->company])->row();
+        if (!$data) {
             redirect('approval_corrective_internal');
             return;
         }
@@ -90,6 +93,12 @@ class Approval_corrective_internal extends Admin_Controller
 
     public function do_approve()
     {
+        // Hanya approver yang ditentukan
+        if ($this->auth->user_id() != self::APPROVER_USER_ID) {
+            echo json_encode(['status' => 0, 'msg' => 'Anda tidak memiliki akses untuk approve/reject CAR.']);
+            return;
+        }
+
         $id = $this->input->post('id');
         $action = $this->input->post('action');
         $alasan = $this->input->post('alasan_reject');
@@ -97,12 +106,6 @@ class Approval_corrective_internal extends Admin_Controller
         $car = $this->db->get_where('corrective_internal', ['id' => $id, 'company_id' => $this->company])->row();
         if (!$car || $car->status != 'waiting_approval') {
             echo json_encode(['status' => 0, 'msg' => 'Data tidak valid atau sudah diproses.']);
-            return;
-        }
-
-        // Hanya PIC Pembuat yang boleh approve/reject
-        if ($car->pic_pembuat_id != $this->auth->user_id()) {
-            echo json_encode(['status' => 0, 'msg' => 'Anda tidak memiliki akses untuk approve/reject CAR ini.']);
             return;
         }
 
