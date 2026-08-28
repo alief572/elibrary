@@ -2,13 +2,16 @@
 	<div class="d-flex flex-column-fluid">
 		<div class="container">
 			<div class="card card-stretch shadow card-custom">
+				<?php $mode = isset($mode) ? $mode : 'input'; ?>
 				<div class="card-header">
 					<h2 class="mt-5"><i class="<?= $icon; ?> mr-2"></i><?= $title; ?></h2>
+					<?php if ($mode == 'input') : ?>
 					<div class="mt-4 float-right">
 						<a href="<?= base_url('corrective_internal/add'); ?>" class="btn btn-primary" title="Input CAR">
 							<i class="fa fa-plus mr-1"></i>+ Input CAR
 						</a>
 					</div>
+					<?php endif; ?>
 				</div>
 				<div class="card-body">
 					<div class="tab-content mt-3">
@@ -62,11 +65,14 @@
 												</td>
 												<td class="text-center">
 													<a href="<?= base_url('corrective_internal/view/' . $dt->id); ?>" class="btn btn-sm btn-icon rounded-circle btn-info" title="View"><i class="fa fa-eye"></i></a>
-													<?php if (($dt->status == 'draft' || $dt->status == 'reject') && $dt->created_by == $this->auth->user_id()) : ?>
-														<a href="<?= base_url('corrective_internal/add/' . $dt->id); ?>" class="btn btn-sm btn-icon rounded-circle btn-warning" title="Edit"><i class="fa fa-edit"></i></a>
-														<button type="button" class="btn btn-sm btn-icon rounded-circle btn-danger btn-delete" data-id="<?= $dt->id; ?>" title="Delete"><i class="fa fa-trash"></i></button>
-													<?php elseif (($dt->status == 'draft' || $dt->status == 'reject')) : ?>
-														<a href="<?= base_url('corrective_internal/add/' . $dt->id); ?>" class="btn btn-sm btn-icon rounded-circle btn-warning" title="Edit"><i class="fa fa-edit"></i></a>
+													<?php if ($mode == 'input') : ?>
+														<?php if (isset($current_user_id) && $dt->pic_pembuat_id == $current_user_id) : ?>
+															<button type="button" class="btn btn-sm btn-icon rounded-circle btn-danger btn-delete" data-id="<?= $dt->id; ?>" title="Cancel / Hapus"><i class="fa fa-trash"></i></button>
+														<?php endif; ?>
+													<?php else : ?>
+														<?php if (isset($current_user_id) && $dt->pic_car_id == $current_user_id) : ?>
+															<a href="<?= base_url('corrective_internal/add/' . $dt->id); ?>" class="btn btn-sm btn-icon rounded-circle btn-warning" title="Edit"><i class="fa fa-edit"></i></a>
+														<?php endif; ?>
 													<?php endif; ?>
 												</td>
 											</tr>

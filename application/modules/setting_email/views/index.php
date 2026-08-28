@@ -29,12 +29,12 @@
 							<label class="col-md-3 col-form-label font-weight-bold">SMTP App Password</label>
 							<div class="col-md-9">
 								<div class="input-group">
-									<input type="password" name="smtp_pass" id="smtp_pass" class="form-control" placeholder="16 karakter khusus" value="">
+									<input type="password" name="smtp_pass" id="smtp_pass" class="form-control" placeholder="16 karakter khusus" value="<?= isset($settings['smtp_pass_decrypted']) ? htmlspecialchars($settings['smtp_pass_decrypted']) : ''; ?>">
 									<div class="input-group-append">
 										<button type="button" class="btn btn-outline-secondary" id="togglePass"><i class="fa fa-eye"></i></button>
 									</div>
 								</div>
-								<small class="text-muted">Kosongkan jika tidak ingin mengubah password.</small>
+								<small class="text-muted">Password akan dienkripsi saat disimpan.</small>
 							</div>
 						</div>
 						<div class="form-group row">

@@ -22,7 +22,7 @@ class Approval_corrective_internal extends Admin_Controller
             ->join('users u', 'u.id_user = ci.pic_car_id', 'left')
             ->where('ci.company_id', $this->company)
             ->where('ci.deleted_at', null)
-            ->where_in('ci.status', ['waiting_approval', 'closed', 'reject'])
+            ->where('ci.status', 'waiting_approval')
             ->group_by('ci.id')
             ->order_by('ci.id', 'DESC')
             ->get()

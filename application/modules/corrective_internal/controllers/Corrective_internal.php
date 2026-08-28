@@ -7,7 +7,7 @@ class Corrective_internal extends Admin_Controller
     {
         parent::__construct();
         $this->template->set([
-            'title' => 'Corrective Action Internal',
+            'title' => 'Input Corrective Internal',
             'icon' => 'fa fa-check-double'
         ]);
         $this->load->library('upload');
@@ -27,7 +27,34 @@ class Corrective_internal extends Admin_Controller
             ->get()
             ->result();
 
+        $this->template->set('current_user_id', $this->auth->user_id());
+        $this->template->set('mode', 'input');
+
         $this->template->set('data', $data);
+        $this->template->render('index');
+    }
+
+    // Menu "Corrective Action Internal": hanya CAR Open/Overdue (draft), view + edit
+    public function monitoring()
+    {
+        $data = $this->db->select('ci.*, d.department_name, u.full_name as pic_name')
+            ->from('corrective_internal ci')
+            ->join('audit_department d', 'd.id = ci.department_pic_car_id', 'left')
+            ->join('users u', 'u.id_user = ci.pic_car_id', 'left')
+            ->where('ci.company_id', $this->company)
+            ->where('ci.deleted_at', null)
+            ->where_in('ci.status', ['draft', 'reject'])
+            ->group_by('ci.id')
+            ->order_by('ci.id', 'DESC')
+            ->get()
+            ->result();
+
+        $this->template->set([
+            'title' => 'Corrective Action Internal',
+            'current_user_id' => $this->auth->user_id(),
+            'mode' => 'monitoring',
+            'data' => $data,
+        ]);
         $this->template->render('index');
     }
 
@@ -40,8 +67,13 @@ class Corrective_internal extends Admin_Controller
         $details = [];
         if ($id) {
             $data = $this->db->get_where('corrective_internal', ['id' => $id, 'company_id' => $this->company])->row();
-            if ($data && !in_array($data->status, ['draft', 'reject'])) {
+            if (!$data || !in_array($data->status, ['draft', 'reject'])) {
                 redirect('corrective_internal');
+                return;
+            }
+            // Edit hanya untuk PIC CAR (menu Corrective Action Internal)
+            if ($data->pic_car_id != $this->auth->user_id()) {
+                redirect('corrective_internal/monitoring');
                 return;
             }
             $details = $this->db->order_by('urutan', 'ASC')->get_where('corrective_internal_detail', ['corrective_internal_id' => $id])->result();
@@ -79,6 +111,14 @@ class Corrective_internal extends Admin_Controller
         $old_evidence = [];
 
         if ($car_id) {
+            // Otorisasi edit: hanya PIC CAR & status draft
+            $existing = $this->db->get_where('corrective_internal', ['id' => $car_id, 'company_id' => $this->company])->row();
+            if (!$existing || $existing->pic_car_id != $this->auth->user_id() || !in_array($existing->status, ['draft', 'reject'])) {
+                $this->db->trans_rollback();
+                echo json_encode(['status' => 0, 'msg' => 'Anda tidak memiliki akses untuk mengubah CAR ini.']);
+                return;
+            }
+
             // Update existing
             $header['modified_at'] = date('Y-m-d H:i:s');
             $header['modified_by'] = $this->auth->user_id();
@@ -178,8 +218,14 @@ class Corrective_internal extends Admin_Controller
         $id = $this->input->post('id');
         $car = $this->db->get_where('corrective_internal', ['id' => $id, 'company_id' => $this->company])->row();
 
-        if (!$car || !in_array($car->status, ['draft', 'reject'])) {
-            echo json_encode(['status' => 0, 'msg' => 'Data tidak bisa dihapus.']);
+        if (!$car) {
+            echo json_encode(['status' => 0, 'msg' => 'Data tidak ditemukan.']);
+            return;
+        }
+
+        // Hanya PIC Pembuat yang boleh cancel/hapus CAR miliknya
+        if ($car->pic_pembuat_id != $this->auth->user_id()) {
+            echo json_encode(['status' => 0, 'msg' => 'Anda tidak memiliki akses untuk membatalkan CAR ini.']);
             return;
         }
 

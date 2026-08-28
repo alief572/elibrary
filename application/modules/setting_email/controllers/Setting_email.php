@@ -28,6 +28,13 @@ class Setting_email extends Admin_Controller
             $settings[$row->setting_name] = $row->value;
         }
 
+        // Decrypt password for display
+        if (!empty($settings['smtp_pass'])) {
+            $settings['smtp_pass_decrypted'] = $this->_decrypt($settings['smtp_pass']);
+        } else {
+            $settings['smtp_pass_decrypted'] = '';
+        }
+
         $this->template->set('settings', $settings);
         $this->template->render('index');
     }
@@ -56,6 +63,11 @@ class Setting_email extends Admin_Controller
             if ($field === 'smtp_pass') {
                 if ($value !== '') {
                     $value = str_replace(' ', '', $value);
+                    // Check if value is same as current decrypted password, skip re-encrypt
+                    $existing = $this->db->get_where('settings', ['setting_name' => 'smtp_pass'])->row();
+                    if ($existing && $this->_decrypt($existing->value) === $value) {
+                        continue; // Password unchanged, skip
+                    }
                     $value = $this->_encrypt($value);
                 } else {
                     continue; // Keep existing password

@@ -24,7 +24,7 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h2 class="m-0"><i class="fa fa-check-double mr-2"></i>Corrective Action Internal - Form</h2>
-					<a href="<?= base_url('corrective_internal'); ?>" class="btn btn-secondary"><i class="fa fa-arrow-left mr-1"></i>Back</a>
+					<a href="<?= base_url($is_edit ? 'corrective_internal/monitoring' : 'corrective_internal'); ?>" class="btn btn-secondary"><i class="fa fa-arrow-left mr-1"></i>Back</a>
 				</div>
 
 				<div class="card-body">
@@ -489,7 +489,7 @@ $(document).ready(function() {
 			success: function(result) {
 				if (result.status == 1) {
 					Swal.fire({ title: 'Success!', icon: 'success', text: result.msg, timer: 2000 })
-					.then(function() { window.location.href = siteurl + 'corrective_internal'; });
+					.then(function() { window.location.href = siteurl + '<?= $is_edit ? "corrective_internal/monitoring" : "corrective_internal"; ?>'; });
 				} else {
 					Swal.fire({ title: 'Warning!', icon: 'warning', text: result.msg });
 				}
