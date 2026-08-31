@@ -39,18 +39,7 @@ class Dashboard extends Admin_Controller
 
 	public function navigation()
 	{
-		$Data = array();
-		if ($this->db->table_exists('directory')) {
-			$Data = $this->db->get_where('directory', ['status' => 'OPN'])->result();
-		}
-
-		$this->template->set([
-			'title' => 'Navigation',
-			'Data' => $Data,
-			'is_admin' => $this->auth->is_admin(),
-		]);
-
-		$this->template->render('index_v1_backup');
+		redirect('navigation');
 	}
 
 	public function classic()

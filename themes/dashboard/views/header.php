@@ -338,9 +338,9 @@
                       <span class="menu-text text-white h5 my-0"><i class="fa fa-home mr-3 text-white"></i> Dashboard</span>
                     </a>
                   </li>
-                  <li class="menu-item <?= (check_class('dashboard', TRUE) && in_array($this->uri->segment(2), ['navigation', 'v1', 'classic'])) ? 'menu-item-active' : ''; ?>" aria-haspopup="true">
-                    <a href="<?= base_url('/dashboard/navigation'); ?>" class="menu-link" style="border-radius: 14px 1px 14px 1px;">
-                      <span class="menu-text text-white h5 my-0"><i class="fa fa-th-large mr-3 text-white"></i> Navigation</span>
+                  <li class="menu-item <?= (check_class('navigation', TRUE) || (check_class('dashboard', TRUE) && in_array($this->uri->segment(2), ['navigation', 'v1', 'classic']))) ? 'menu-item-active' : ''; ?>" aria-haspopup="true">
+                    <a href="<?= base_url('/navigation'); ?>" class="menu-link" style="border-radius: 14px 1px 14px 1px;">
+                      <span class="menu-text text-white h5 my-0"><i class="fa fa-compass mr-3 text-white"></i> Navigation</span>
                     </a>
                   </li>
                   <li class="menu-item <?= (check_class('monitoring', TRUE)) ? 'menu-item-active' : ''; ?>" aria-haspopup="true">

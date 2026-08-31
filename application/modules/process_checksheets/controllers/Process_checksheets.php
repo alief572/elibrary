@@ -1296,10 +1296,10 @@ class Process_checksheets extends Admin_Controller
 
 							/* NOTES & BUKTI */
 							$fileKey = 'bukti' . $nn . $field;
-							$upload_bukti = null;
+							$upload_bukti = '';
 
 							$checkNote = $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row();
-							if ($checkNote && isset($checkNote->$fieldBukti)) {
+							if ($checkNote && isset($checkNote->$fieldBukti) && $checkNote->$fieldBukti !== null) {
 								$upload_bukti = $checkNote->$fieldBukti;
 							}
 
@@ -1314,7 +1314,7 @@ class Process_checksheets extends Admin_Controller
 								$dataNote = [
 									'data_id'   => $post['id'],
 									'item_id'   => $dt['id'],
-									$fieldNote  => (isset($dt[$fieldNote]) ? $dt[$fieldNote] : null),
+									$fieldNote  => (isset($dt[$fieldNote]) ? $dt[$fieldNote] : ''),
 									$fieldBukti => $upload_bukti
 								];
 
@@ -1327,7 +1327,7 @@ class Process_checksheets extends Admin_Controller
 								$dataNote = [
 									'data_id'   => $post['id'],
 									'item_id'   => $dt['id'],
-									$fieldNote  => null,
+									$fieldNote  => '',
 									$fieldBukti => $upload_bukti
 								];
 
@@ -1362,7 +1362,7 @@ class Process_checksheets extends Admin_Controller
 						if (!$checkBy) {
 							$this->db->insert('checksheet_execution', $dataChecker);
 						} else {
-							$this->db->update('checksheet_execution', $dataChecker, ['data_id' => $post['id'], 'item_id' => $dt['id']]);
+							$this->db->update('checksheet_execution', $dataChecker, ['data_id' => $post['id']]);
 						}
 
 						$nn++;

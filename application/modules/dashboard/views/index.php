@@ -250,11 +250,6 @@ if (!function_exists('render_compliance_donut')) {
 		<div class="container mt-5 mb-10">
 			<div class="d-flex justify-content-between align-items-center mb-4">
 				<h1 class="page-title-text mb-0 mt-0 pt-0 font-weight-bolder">DASHBOARD</h1>
-				<?php if (!empty($is_admin)) : ?>
-					<a href="<?= base_url('dashboard/cards'); ?>" class="btn btn-sm font-weight-bold text-white-50 text-hover-white" title="Kelola Card Dashboard">
-						<i class="fa fa-cog fa-lg"></i>
-					</a>
-				<?php endif; ?>
 			</div>
 
 			<!-- SECTION 1: DOCUMENT CONTROL -->

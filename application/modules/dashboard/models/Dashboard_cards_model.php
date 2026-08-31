@@ -35,6 +35,23 @@ class Dashboard_cards_model extends BF_Model
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
             ");
         }
+
+        if ($this->db->table_exists($this->table_name)) {
+            $count = $this->db->count_all($this->table_name);
+            if ($count === 0) {
+                $defaults = [
+                    ['name' => 'PROSEDUR, FORM, IK DAN RECORD', 'link' => 'list/procedures', 'picture' => 'prosedur.png', 'sort_order' => 1, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'PEMENUHAN', 'link' => 'list/compliances', 'picture' => 'pemenuhan.png', 'sort_order' => 2, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'MATERI TRAINING', 'link' => 'list/materi', 'picture' => 'training.png', 'sort_order' => 3, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'MASTER IK', 'link' => 'list/guides', 'picture' => 'guides.png', 'sort_order' => 4, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'MANUAL & PERATURAN PERUSAHAAN', 'link' => 'list/manual', 'picture' => 'manual-peraturan.png', 'sort_order' => 5, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'STANDARD DAN PERATURAN', 'link' => 'list/2', 'picture' => 'standard.png', 'sort_order' => 6, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'CROSS REFERENCE', 'link' => 'list/cross', 'picture' => 'evaluation.png', 'sort_order' => 7, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                    ['name' => 'CHECKSHEETS', 'link' => 'process_checksheets', 'picture' => 'checksheet.png', 'sort_order' => 8, 'is_active' => 'Y', 'created_at' => date('Y-m-d H:i:s'), 'created_by' => 1],
+                ];
+                $this->db->insert_batch($this->table_name, $defaults);
+            }
+        }
     }
 
     public function get_active_cards()
