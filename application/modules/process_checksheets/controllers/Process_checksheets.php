@@ -516,7 +516,12 @@ class Process_checksheets extends Admin_Controller
 	{
 		if ($id) {
 			$data 			= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
-			$details 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $data->number])->result();
+			$details 		= $this->db->select('d.*, COALESCE(NULLIF(d.upload_standard_check, ""), i.upload_standard_check) as upload_standard_check')
+				->from('checksheet_process_details d')
+				->join('checksheet_data_items i', 'i.id = d.checksheet_item_id', 'left')
+				->where('d.checksheet_process_data_number', $data->number)
+				->get()
+				->result();
 
 			$notes			= $this->db->get_where('checksheet_notes', ['data_id' => $data->id])->result();
 			$execution		= $this->db->get_where('checksheet_execution', ['data_id' => $data->id])->result();
@@ -613,7 +618,12 @@ class Process_checksheets extends Admin_Controller
 	{
 		if ($id) {
 			$data 			= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
-			$details 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $data->number])->result();
+			$details 		= $this->db->select('d.*, COALESCE(NULLIF(d.upload_standard_check, ""), i.upload_standard_check) as upload_standard_check')
+				->from('checksheet_process_details d')
+				->join('checksheet_data_items i', 'i.id = d.checksheet_item_id', 'left')
+				->where('d.checksheet_process_data_number', $data->number)
+				->get()
+				->result();
 
 			$notes			= $this->db->get_where('checksheet_notes', ['data_id' => $data->id])->result();
 			$execution		= $this->db->get_where('checksheet_execution', ['data_id' => $data->id])->result();
@@ -1168,7 +1178,12 @@ class Process_checksheets extends Admin_Controller
 		];
 		$sheet  	= $this->db->get_where('checksheet_process_data', ['id' => $_GET['sheet']])->row();
 		// $details	= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
-		$details	= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
+		$details	= $this->db->select('d.*, COALESCE(NULLIF(d.upload_standard_check, ""), i.upload_standard_check) as upload_standard_check')
+			->from('checksheet_process_details d')
+			->join('checksheet_data_items i', 'i.id = d.checksheet_item_id', 'left')
+			->where('d.checksheet_process_data_number', $sheet->number)
+			->get()
+			->result();
 
 		// $ArrProcess = [];
 		// if ($detailsProcess) {

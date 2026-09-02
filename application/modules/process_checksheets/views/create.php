@@ -82,6 +82,7 @@
 												<input type="hidden" name="details[<?= $n; ?>][item_name]" value="<?= $it->item_name; ?>">
 												<input type="hidden" name="details[<?= $n; ?>][standard_check]" value="<?= $it->standard_check; ?>">
 												<input type="hidden" name="details[<?= $n; ?>][check_type]" value="<?= $it->check_type; ?>">
+												<input type="hidden" name="details[<?= $n; ?>][upload_standard_check]" value="<?= isset($it->upload_standard_check) ? $it->upload_standard_check : ''; ?>">
 											</td>
 											<td><?= $it->item_name; ?></td>
 											<td>

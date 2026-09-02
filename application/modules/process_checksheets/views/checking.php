@@ -170,10 +170,23 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 																<span class="mr-2">
 																	<strong>Standar:</strong> <?= $it->standard_check; ?>
 																</span>
-																<?php if (!empty($it->upload_standard_check) && file_exists($it->upload_standard_check)) : ?>
-																	<a href="<?= base_url($it->upload_standard_check); ?>" target="_blank" class="badge badge-light-primary font-weight-bold" style="font-size: 10px;">
-																		<i class="fa fa-file-pdf mr-1"></i> Dokumen Standar
-																	</a>
+																<?php if (!empty($it->upload_standard_check) && (file_exists($it->upload_standard_check) || file_exists(FCPATH . $it->upload_standard_check))) : 
+																	$fileExt = strtolower(pathinfo($it->upload_standard_check, PATHINFO_EXTENSION));
+																	$isImage = in_array($fileExt, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']);
+																?>
+																	<?php if ($isImage) : ?>
+																		<button type="button" class="btn btn-xs btn-outline-info font-weight-bold btn-preview-standard ml-2 shadow-xs" 
+																			data-image-url="<?= base_url($it->upload_standard_check); ?>" 
+																			data-item-name="<?= htmlspecialchars($it->item_name); ?>" 
+																			data-standard="<?= htmlspecialchars($it->standard_check); ?>"
+																			title="Preview Gambar Standar">
+																			<i class="fa fa-image mr-1 text-info"></i> Preview Gambar Standar
+																		</button>
+																	<?php else : ?>
+																		<a href="<?= base_url($it->upload_standard_check); ?>" target="_blank" class="badge badge-light-primary font-weight-bold ml-2" style="font-size: 11px;">
+																			<i class="fa fa-file-pdf mr-1"></i> Dokumen Standar
+																		</a>
+																	<?php endif; ?>
 																<?php endif; ?>
 															</div>
 														</div>
@@ -248,6 +261,52 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 
 				<?php endif; ?>
 
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Preview Gambar Standar -->
+<div class="modal fade" id="modalPreviewStandard" tabindex="-1" role="dialog" aria-labelledby="modalPreviewStandardLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		<div class="modal-content border-0 shadow-lg">
+			<div class="modal-header bg-primary py-3 px-4">
+				<h5 class="modal-title text-white font-weight-bolder d-flex align-items-center" id="modalPreviewStandardLabel">
+					<i class="fa fa-image mr-2 text-white"></i> Preview Standar Pengecekan
+				</h5>
+				<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body p-4 bg-light">
+				<!-- Card Info Item & Standar -->
+				<div class="card border border-info mb-3 bg-white shadow-xs">
+					<div class="card-body py-2 px-3">
+						<div class="row">
+							<div class="col-12 col-md-6 mb-1 mb-md-0">
+								<small class="text-muted font-weight-bold d-block">Item Pengecekan:</small>
+								<strong class="text-dark" id="modal-preview-item-name" style="font-size: 13px;">-</strong>
+							</div>
+							<div class="col-12 col-md-6">
+								<small class="text-muted font-weight-bold d-block">Standar Acuan:</small>
+								<strong class="text-info" id="modal-preview-standard-text" style="font-size: 13px;">-</strong>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Gambar Container -->
+				<div class="d-flex justify-content-center align-items-center bg-white p-3 rounded border shadow-xs" style="min-height: 250px;">
+					<img id="modal-preview-img" src="" alt="Gambar Standar" class="img-fluid rounded" style="max-height: 60vh; max-width: 100%; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+				</div>
+			</div>
+			<div class="modal-footer py-2 px-4 bg-white d-flex justify-content-between">
+				<a href="#" id="modal-preview-direct-link" target="_blank" class="btn btn-sm btn-light-primary font-weight-bold">
+					<i class="fa fa-external-link-alt mr-1"></i> Buka Ukuran Penuh
+				</a>
+				<button type="button" class="btn btn-sm btn-secondary font-weight-bold px-4" data-dismiss="modal">
+					<i class="fa fa-times mr-1"></i> Tutup
+				</button>
 			</div>
 		</div>
 	</div>
@@ -476,6 +535,20 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 					});
 				}
 			});
+		});
+		// Handler Preview Gambar Standar dalam Modal
+		$(document).on('click', '.btn-preview-standard', function(e) {
+			e.preventDefault();
+			const imgUrl = $(this).data('image-url');
+			const itemName = $(this).data('item-name');
+			const standard = $(this).data('standard');
+
+			$('#modal-preview-item-name').text(itemName || '-');
+			$('#modal-preview-standard-text').text(standard || '-');
+			$('#modal-preview-img').attr('src', imgUrl);
+			$('#modal-preview-direct-link').attr('href', imgUrl);
+
+			$('#modalPreviewStandard').modal('show');
 		});
 	});
 </script>
