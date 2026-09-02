@@ -1284,17 +1284,28 @@ class Process_checksheets extends Admin_Controller
 			$sheetDataCheck = $this->db->get_where('checksheet_process_data', ['id' => $post['id']])->row();
 			if (isset($post['detail'])) {
 				$nn = 1;
-				foreach ($post['detail'] as $dt) {
+				foreach ($post['detail'] as $dtKey => $dt) {
 					if (isset($dt['field'])) {
-						$field 			= $dt['field'];
+						$field = (int)$dt['field'];
+						if ($field <= 0) {
+							$nn++;
+							continue;
+						}
 
 						if ($sheetDataCheck && $sheetDataCheck->frequency_execution == 3 && !empty($sheetDataCheck->periode)) {
-							$tglCheck = date('Y-m', strtotime($sheetDataCheck->periode)) . '-' . sprintf('%02d', $field);
-							$dayNum = (int)date('w', strtotime($tglCheck));
-							$isHoliday = $this->db->get_where('master_holidays', ['holiday_date' => $tglCheck, 'status' => '1'])->row();
-							if ($dayNum === 0 || $dayNum === 6 || $isHoliday) {
-								$nn++;
-								continue;
+							$periodeTime = strtotime($sheetDataCheck->periode);
+							if ($periodeTime !== false && $field >= 1 && $field <= 31) {
+								$year = (int)date('Y', $periodeTime);
+								$month = (int)date('m', $periodeTime);
+								if (checkdate($month, $field, $year)) {
+									$tglCheck = sprintf('%04d-%02d-%02d', $year, $month, $field);
+									$dayNum = (int)date('w', strtotime($tglCheck));
+									$isHoliday = $this->db->get_where('master_holidays', ['holiday_date' => $tglCheck, 'status' => '1'])->row();
+									if ($dayNum === 0 || $dayNum === 6 || $isHoliday) {
+										$nn++;
+										continue;
+									}
+								}
 							}
 						}
 
@@ -1310,7 +1321,15 @@ class Process_checksheets extends Admin_Controller
 							], ['id' => $dt['id']]);
 
 							/* NOTES & BUKTI */
-							$fileKey = 'bukti' . $nn . $field;
+							$itemIndex = $nn;
+							if (strpos((string)$dtKey, '_') !== false) {
+								$parts = explode('_', (string)$dtKey);
+								$itemIndex = $parts[0];
+							}
+							$fileKey = 'bukti' . $itemIndex . $field;
+							if (!isset($_FILES[$fileKey]) && isset($_FILES['bukti' . $nn . $field])) {
+								$fileKey = 'bukti' . $nn . $field;
+							}
 							$upload_bukti = '';
 
 							$checkNote = $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row();
