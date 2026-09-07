@@ -471,7 +471,7 @@ class Records extends Admin_Controller
 			if (isset($_FILES['forms_image']) && $_FILES['forms_image']['name']) {
 				$upload_path = "./directory/RECORDS/$this->company/";
 				if (!is_dir($upload_path)) mkdir($upload_path, 0755, TRUE);
-				$config = ['upload_path' => $upload_path, 'allowed_types' => 'xlsx|xls|pdf', 'encrypt_name' => true];
+				$config = ['upload_path' => $upload_path, 'allowed_types' => 'pdf|xlsx|xls|doc|docx|ppt|pptx|csv', 'encrypt_name' => true];
 				$this->upload->initialize($config);
 				if ($this->upload->do_upload('forms_image')) {
 					$file = $this->upload->data(); $data['size'] = $file['file_size']; $data['ext'] = $file['file_ext']; $data['file_name'] = $file['file_name'];

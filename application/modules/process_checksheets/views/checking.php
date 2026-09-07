@@ -182,9 +182,25 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 																			title="Preview Gambar Standar">
 																			<i class="fa fa-image mr-1 text-info"></i> Preview Gambar Standar
 																		</button>
-																	<?php else : ?>
-																		<a href="<?= base_url($it->upload_standard_check); ?>" target="_blank" class="badge badge-light-primary font-weight-bold ml-2" style="font-size: 11px;">
-																			<i class="fa fa-file-pdf mr-1"></i> Dokumen Standar
+																	<?php else : 
+																		$docIcon = 'fa fa-file';
+																		$docColor = '#6c757d';
+																		if ($fileExt == 'pdf') {
+																			$docIcon = 'fa fa-file-pdf';
+																			$docColor = '#e5252a';
+																		} elseif (in_array($fileExt, ['xls', 'xlsx', 'csv'])) {
+																			$docIcon = 'fa fa-file-excel';
+																			$docColor = '#217346';
+																		} elseif (in_array($fileExt, ['doc', 'docx'])) {
+																			$docIcon = 'fa fa-file-word';
+																			$docColor = '#2b579a';
+																		} elseif (in_array($fileExt, ['ppt', 'pptx'])) {
+																			$docIcon = 'fa fa-file-powerpoint';
+																			$docColor = '#d24726';
+																		}
+																	?>
+																		<a href="<?= base_url($it->upload_standard_check); ?>" target="_blank" class="badge badge-light text-dark font-weight-bold ml-2 border shadow-xs" style="font-size: 11px;">
+																			<i class="<?= $docIcon; ?> mr-1" style="color: <?= $docColor; ?>;"></i> Dokumen Standar
 																		</a>
 																	<?php endif; ?>
 																<?php endif; ?>

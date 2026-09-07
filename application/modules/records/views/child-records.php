@@ -27,17 +27,19 @@
               <i class="fa fa-chevron-right mr-2 toggle-icon" style="transition: transform 0.2s;"></i>
               <i class="fa fa-folder text-warning fa-2x mr-3"></i>
             <?php elseif (isset($form->link_url) && $form->link_url) : ?>
-              <i class="fa fa-link text-info fa-2x mr-3 ml-4"></i>
+              <i class="fa fa-link text-info mr-3 ml-4"></i>
             <?php else : 
               $ext = isset($form->ext) && $form->ext ? strtolower(str_replace('.', '', $form->ext)) : (isset($form->file_name) ? strtolower(pathinfo($form->file_name, PATHINFO_EXTENSION)) : '');
-              if ($ext == 'pdf') { $icon = 'fas fa-file-pdf text-danger'; }
-              elseif (in_array($ext, ['xls', 'xlsx'])) { $icon = 'fas fa-file-excel text-success'; }
-              elseif (in_array($ext, ['doc', 'docx'])) { $icon = 'fas fa-file-word text-primary'; }
-              elseif (in_array($ext, ['ppt', 'pptx'])) { $icon = 'fas fa-file-powerpoint text-warning'; }
-              elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) { $icon = 'fas fa-file-image text-info'; }
-              else { $icon = 'fas fa-file-alt text-success'; }
+              if ($ext == 'pdf') { $icon = 'fas fa-file-pdf'; $iconColor = '#e5252a'; }
+              elseif (in_array($ext, ['xls', 'xlsx', 'csv'])) { $icon = 'fas fa-file-excel'; $iconColor = '#217346'; }
+              elseif (in_array($ext, ['doc', 'docx'])) { $icon = 'fas fa-file-word'; $iconColor = '#2b579a'; }
+              elseif (in_array($ext, ['ppt', 'pptx'])) { $icon = 'fas fa-file-powerpoint'; $iconColor = '#d24726'; }
+              elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'])) { $icon = 'fas fa-file-image'; $iconColor = '#17a2b8'; }
+              elseif (in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz'])) { $icon = 'fas fa-file-archive'; $iconColor = '#ffc107'; }
+              elseif (in_array($ext, ['txt', 'rtf'])) { $icon = 'fas fa-file-alt'; $iconColor = '#6c757d'; }
+              else { $icon = 'fas fa-file-alt'; $iconColor = '#6c757d'; }
             ?>
-              <i class="<?= $icon ?> fa-2x mr-3 ml-4"></i>
+              <i class="<?= $icon ?> mr-3 ml-4" style="color: <?= $iconColor ?>;"></i>
             <?php endif; ?>
             <span class="text-name mt-3 h5"><?= $form->name; ?></span>
           </div>
@@ -64,7 +66,7 @@
                 <?php elseif (isset($form->link_url) && $form->link_url) : ?>
                   <a class="dropdown-item" href="<?= $form->link_url; ?>" target="_blank" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
                 <?php else : ?>
-                  <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf text-primary' ?> mr-2"></i> View Document</a>
+                  <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf' ?> mr-2" style="color: <?= isset($iconColor) ? $iconColor : '#2b579a' ?>;"></i> View Document</a>
                 <?php endif; ?>
                 <?php if (isset($user_confidential) && $user_confidential == '1' && !$is_locked) : ?>
                 <a class="dropdown-item toggle-confidential" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-value="<?= $form->flag_confidential; ?>">

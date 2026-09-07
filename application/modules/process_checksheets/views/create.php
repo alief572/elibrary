@@ -89,8 +89,27 @@
 											<?= $it->standard_check; ?>
 												<?php 
 													if(!empty($it->upload_standard_check) && file_exists($it->upload_standard_check)) {
+														$fileExt = strtolower(pathinfo($it->upload_standard_check, PATHINFO_EXTENSION));
+														$docIcon = 'fa fa-file';
+														$docColor = '#6c757d';
+														if ($fileExt == 'pdf') {
+															$docIcon = 'fa fa-file-pdf';
+															$docColor = '#e5252a';
+														} elseif (in_array($fileExt, ['xls', 'xlsx', 'csv'])) {
+															$docIcon = 'fa fa-file-excel';
+															$docColor = '#217346';
+														} elseif (in_array($fileExt, ['doc', 'docx'])) {
+															$docIcon = 'fa fa-file-word';
+															$docColor = '#2b579a';
+														} elseif (in_array($fileExt, ['ppt', 'pptx'])) {
+															$docIcon = 'fa fa-file-powerpoint';
+															$docColor = '#d24726';
+														} elseif (in_array($fileExt, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
+															$docIcon = 'fa fa-image';
+															$docColor = '#17a2b8';
+														}
 														echo '<br>';
-														echo '<a href="'.base_url($it->upload_standard_check).'" class="btn btn-sm btn-primary" target="_blank"><i class="fa fa-file"></i> View File</a>';
+														echo '<a href="'.base_url($it->upload_standard_check).'" class="btn btn-xs btn-light font-weight-bold mt-1 shadow-xs border" target="_blank"><i class="' . $docIcon . ' mr-1" style="color: ' . $docColor . ';"></i> View File</a>';
 													}
 												?>
 											</td>

@@ -60,7 +60,7 @@
                         <?php if ($ext == '.pdf') : ?>
                             <!-- Mobile View PDF: technical explanation + download button -->
                             <div class="text-center py-4 px-3 d-block d-md-none">
-                                <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                                <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
                                 <h5 class="mb-2"><?= isset($file->name) ? $file->name : (isset($file->file_name) ? $file->file_name : 'Dokumen PDF'); ?></h5>
                                 <div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
                                     <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
@@ -80,7 +80,7 @@
                             <div class="d-none d-md-block">
                                 <iframe src="<?= $file_url; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="500px"></iframe>
                             </div>
-                        <?php elseif (in_array($ext, ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx'])) : ?>
+                        <?php elseif (in_array($ext, ['.xlsx', '.xls', '.doc', '.docx', '.ppt', '.pptx', '.csv'])) : ?>
                             <div class="d-none d-md-block">
                                 <iframe src="<?= $file_url; ?>" frameborder="0" width="100%" height="500px"></iframe>
                                 <div class="text-center mt-3">
@@ -88,7 +88,18 @@
                                 </div>
                             </div>
                             <div class="text-center py-4 px-3 d-block d-md-none">
-                                <i class="fas fa-file-excel fa-4x text-success mb-3"></i>
+                                <?php 
+                                $officeIcon = 'fas fa-file-excel';
+                                $officeColor = '#217346';
+                                if (in_array($ext, ['.doc', '.docx'])) {
+                                    $officeIcon = 'fas fa-file-word';
+                                    $officeColor = '#2b579a';
+                                } elseif (in_array($ext, ['.ppt', '.pptx'])) {
+                                    $officeIcon = 'fas fa-file-powerpoint';
+                                    $officeColor = '#d24726';
+                                }
+                                ?>
+                                <i class="<?= $officeIcon; ?> fa-3x mb-3" style="color: <?= $officeColor ?>;"></i>
                                 <h5 class="mb-2"><?= isset($file->name) ? $file->name : (isset($file->file_name) ? $file->file_name : 'Document'); ?></h5>
                                 <div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
                                     <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
