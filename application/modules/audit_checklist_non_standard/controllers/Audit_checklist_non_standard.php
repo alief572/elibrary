@@ -26,7 +26,36 @@ class Audit_checklist_non_standard extends Admin_Controller
      */
     public function index()
     {
-        $schedules = $this->model->getAllSchedules();
+        // Tampilkan 1 jadwal audit (program) sebagai 1 baris
+        $programs = $this->model->getActivePrograms();
+        $this->template->set('programs', $programs);
+        $this->template->render('index');
+    }
+
+    /**
+     * Schedules - daftar proses/checklist untuk satu program audit
+     *
+     * @param string $program_id
+     */
+    public function schedules($program_id = null)
+    {
+        if (!$program_id) {
+            show_404();
+            return;
+        }
+
+        $program = $this->db->select('audit_program.*, audit_auditor_consultant.name as auditor_name')
+            ->from('audit_program')
+            ->join('audit_auditor_consultant', 'audit_auditor_consultant.id = audit_program.lead_auditor_id', 'left')
+            ->where('audit_program.id', $program_id)
+            ->get()->row();
+
+        if (!$program) {
+            show_404();
+            return;
+        }
+
+        $schedules = $this->model->getSchedulesByProgram($program_id);
 
         // Check which schedules already have checklist data
         $has_checklist = [];
@@ -34,9 +63,10 @@ class Audit_checklist_non_standard extends Admin_Controller
             $has_checklist[$s->schedule_id] = $this->model->countChecklistByScheduleId($s->schedule_id) > 0;
         }
 
+        $this->template->set('program', $program);
         $this->template->set('schedules', $schedules);
         $this->template->set('has_checklist', $has_checklist);
-        $this->template->render('index');
+        $this->template->render('schedules');
     }
 
     /**

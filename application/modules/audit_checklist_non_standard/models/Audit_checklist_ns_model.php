@@ -20,6 +20,59 @@ class Audit_checklist_ns_model extends BF_Model
     }
 
     /**
+     * Get all active audit programs with lead auditor name (for index page)
+     * Each program is shown as one row (1 jadwal audit = 1 baris)
+     *
+     * @return array
+     */
+    public function getActivePrograms()
+    {
+        return $this->db->select('audit_program.*, audit_auditor_consultant.name as auditor_name')
+            ->from('audit_program')
+            ->join('audit_auditor_consultant', 'audit_auditor_consultant.id = audit_program.lead_auditor_id', 'left')
+            ->where('audit_program.status', '1')
+            ->order_by('audit_program.created_at', 'DESC')
+            ->get()
+            ->result();
+    }
+
+    /**
+     * Get schedules (proses audit) for a specific program
+     *
+     * @param string $program_id
+     * @return array
+     */
+    public function getSchedulesByProgram($program_id)
+    {
+        return $this->db->select('
+                audit_program_schedule.id as schedule_id,
+                audit_program_schedule.program_id,
+                audit_program_schedule.process_id,
+                audit_program_schedule.requirement_id,
+                audit_program_schedule.audit_date,
+                audit_program_schedule.start_time,
+                audit_program_schedule.end_time,
+                audit_program_schedule.process_name_free,
+                procedures.name as process_name,
+                requirements.name as requirement_name,
+                audit_auditor_consultant.name as auditor_name,
+                COALESCE(audit_department.department_name, audit_program_schedule.auditee_name_free) as department_name
+            ')
+            ->from('audit_program_schedule')
+            ->join('procedures', 'procedures.id = audit_program_schedule.process_id', 'left')
+            ->join('requirements', 'requirements.id = audit_program_schedule.requirement_id', 'left')
+            ->join('audit_auditor_consultant', 'audit_auditor_consultant.id = audit_program_schedule.auditor_id', 'left')
+            ->join('audit_program_schedule_auditee', 'audit_program_schedule_auditee.schedule_id = audit_program_schedule.id', 'left')
+            ->join('audit_department', 'audit_department.id = audit_program_schedule_auditee.department_id', 'left')
+            ->where('audit_program_schedule.program_id', $program_id)
+            ->where('audit_program_schedule.status', '1')
+            ->order_by('audit_program_schedule.audit_date', 'ASC')
+            ->order_by('audit_program_schedule.start_time', 'ASC')
+            ->get()
+            ->result();
+    }
+
+    /**
      * Get all active schedules from all active audit programs
      * Joins with procedures, auditor, department, and program
      *
