@@ -119,11 +119,13 @@ class Process_checksheets extends Admin_Controller
 			$this->db->order_by('created_at', 'desc');
 			$dir = $this->db->get()->row();
 
-			$this->db->select('*');
-			$this->db->from('checksheet_process_data');
-			$this->db->where('dir_id', $_GET['checksheet']);
-			$this->db->where('company_id', $this->company);
-			$this->db->order_by('created_at', 'desc');
+			$this->db->select('d.*, e.id as execution_id');
+			$this->db->from('checksheet_process_data d');
+			$this->db->join('checksheet_execution e', 'e.data_id = d.id', 'left');
+			$this->db->where('d.dir_id', $_GET['checksheet']);
+			$this->db->where('d.company_id', $this->company);
+			$this->db->group_by('d.id');
+			$this->db->order_by('d.created_at', 'desc');
 			$data = $this->db->get()->result();
 
 			$fExecution 	= [

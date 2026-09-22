@@ -62,10 +62,17 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 								if ($data) foreach ($data as $dt) : $n++; ?>
 									<?php
 									$diss = '';
-									if (date('d', strtotime($dt->updated_at)) == date('d')) {
-										$diss = 'table-warning';
-									}
-									if ($dt->frequency_execution != 1) {
+									$is_once_time = ($dt->frequency_execution == 1);
+									$is_once_time_filled = ($is_once_time && (!empty($dt->updated_at) || !empty($dt->execution_id)));
+
+									if ($is_once_time) {
+										if ($is_once_time_filled) {
+											$diss = 'table-light';
+										}
+									} else {
+										if (date('d', strtotime($dt->updated_at)) == date('d')) {
+											$diss = 'table-warning';
+										}
 										if ($fChecking[$dt->frequency_checking] == 'Daily') {
 											if (date('m') > date('m', strtotime($dt->periode))) {
 												$diss = 'bg-disabled';
@@ -97,6 +104,17 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 														<span class="badge badge-light font-weight-bold text-dark mr-2 mb-1">
 															<i class="fa fa-calendar-alt mr-1 text-muted"></i><?= $dt->periode; ?>
 														</span>
+														<?php if ($is_once_time) : ?>
+															<?php if ($is_once_time_filled) : ?>
+																<span class="badge badge-light-success font-weight-bold text-success mr-2 mb-1">
+																	<i class="fa fa-check-circle mr-1 text-success"></i>Sudah Diisi (Selesai)
+																</span>
+															<?php else : ?>
+																<span class="badge badge-light-warning font-weight-bold text-warning mr-2 mb-1">
+																	<i class="fa fa-clock mr-1 text-warning"></i>Belum Diisi
+																</span>
+															<?php endif; ?>
+														<?php endif; ?>
 														<?php if (!empty($dt->checker_status)) : ?>
 															<?php if ($dt->checker_status == 'Approved') : ?>
 																<span class="badge badge-light-success font-weight-bold text-success mr-2 mb-1">
@@ -123,17 +141,17 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 											<button type="button" data-toggle="dropdown" class="btn dropdown-toggle btn-xs py-1 px-2 btn-primary"><i class="fa fa-cog"></i></button>
 											<div class="dropdown-menu text-center px-2 w-50 w-lg-auto" aria-labelledby="triggerId">
 												<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-primary view" title="View Detail"><i class="fa fa-eye"></i></button>
-												<?php if ($menus_perm['update'] == '1' && $period_active == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
+												<?php if ($menus_perm['update'] == '1' && $period_active == '1' && ($diss == '' || $diss == 'table-warning' || $diss == 'table-light')) : ?>
 													<a href="<?= base_url($this->uri->segment(1) . '/edit_checkhseet/' . $dt->id); ?>" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-warning" title="Edit Checksheet"><i class="fa fa-pen"></i></a>
 												<?php endif; ?>
-												<?php if ($period_active == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
-													<a href="<?= base_url($this->uri->segment(1) . '/checking/?sheet=' . $dt->id); ?>" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-info exec" title="Eksekusi Checksheet"><i class="fas fa-arrow-right"></i></a>
+												<?php if ($period_active == '1' && ($diss == '' || $diss == 'table-warning' || $diss == 'table-light')) : ?>
+													<a href="<?= base_url($this->uri->segment(1) . '/checking/?sheet=' . $dt->id); ?>" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-info exec" title="<?= ($is_once_time && $is_once_time_filled) ? 'Tinjau / Perbarui Checksheet' : 'Eksekusi Checksheet'; ?>"><i class="fas fa-arrow-right"></i></a>
 													<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-success check" title="Checker / Verifikasi"><i class="fas fa-user-check"></i></button>
 												<?php endif; ?>
-												<?php if ($menus_perm['delete'] == '1' && $period_active == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
+												<?php if ($menus_perm['delete'] == '1' && $period_active == '1' && ($diss == '' || $diss == 'table-warning' || $diss == 'table-light')) : ?>
 													<button type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-danger delete" title="Hapus"><i class="fa fa-trash"></i></button>
 												<?php endif; ?>
-												<?php if ($period_active == '1' && ($diss == '' || $diss == 'table-warning')) : ?>
+												<?php if ($period_active == '1' && ($diss == '' || $diss == 'table-warning' || $diss == 'table-light')) : ?>
 													<a target="_blank" href="<?= base_url($this->uri->segment(1) . '/print_sheet/?sheet=' . $dt->id); ?>" type="button" data-id="<?= $dt->id; ?>" class="btn btn-xs btn-icon btn-secondary" title="Print"><i class="fa fa-print"></i></a>
 												<?php endif; ?>
 											</div>

@@ -42,6 +42,39 @@ if ($exec == 1) {
 		$activeCol = (int)date('m');
 	}
 }
+
+// Deteksi apakah Once Time sudah pernah diisi sebelumnya
+$isOnceTimeFilled = false;
+$onceTimeFilledDate = '';
+if ($exec == 1) {
+	if (!empty($data->updated_at)) {
+		$isOnceTimeFilled = true;
+		$onceTimeFilledDate = date('d M Y H:i', strtotime($data->updated_at));
+	}
+	if (!empty($checking_date)) {
+		for ($cd = 1; $cd <= 31; $cd++) {
+			$fld = "date" . $cd;
+			if (!empty($checking_date->$fld)) {
+				$isOnceTimeFilled = true;
+				if (empty($onceTimeFilledDate)) {
+					$onceTimeFilledDate = date('d M Y H:i', strtotime($checking_date->$fld));
+				}
+				break;
+			}
+		}
+	}
+	if (!$isOnceTimeFilled && !empty($details)) {
+		foreach ($details as $dtlCheck) {
+			for ($cd = 1; $cd <= 31; $cd++) {
+				$fld = "n" . $cd;
+				if (isset($dtlCheck->$fld) && $dtlCheck->$fld !== '' && $dtlCheck->$fld !== null) {
+					$isOnceTimeFilled = true;
+					break 2;
+				}
+			}
+		}
+	}
+}
 ?>
 
 <div class="content d-flex flex-column flex-column-fluid">
@@ -100,7 +133,11 @@ if ($exec == 1) {
 										<?= ($exec == 1) ? 'Once Time' : (($exec == 5 && is_array($name_col)) ? $name_col[$activeCol] : ($exec == 2 ? 'Hari Ke-' . $activeCol . ' (' . $dayNamesIndo[$todayDayNum] . ')' : 'Hari Ke-' . $activeCol)); ?>
 									</strong>
 								</div>
-								<span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 10px;">AKTIF</span>
+								<?php if ($exec == 1 && $isOnceTimeFilled) : ?>
+									<span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 10px;">SELESAI</span>
+								<?php else : ?>
+									<span class="badge badge-primary font-weight-bold px-2 py-1" style="font-size: 10px;">AKTIF</span>
+								<?php endif; ?>
 							</div>
 						</div>
 					</div>
@@ -119,6 +156,20 @@ if ($exec == 1) {
 						</div>
 					</div>
 				<?php else : ?>
+
+					<?php if ($exec == 1 && $isOnceTimeFilled) : ?>
+						<div class="card-body py-3 px-3 px-md-4 bg-light-success border-bottom">
+							<div class="d-flex align-items-center">
+								<i class="fa fa-check-circle text-success mr-3" style="font-size: 22px;"></i>
+								<div>
+									<strong class="text-success d-block" style="font-size: 13px;">Checksheet Once Time Sudah Selesai Diisi</strong>
+									<span class="text-dark" style="font-size: 11px;">
+										Checksheet ini telah diisi sebelumnya<?= (!empty($onceTimeFilledDate)) ? " pada <strong>$onceTimeFilledDate</strong>" : ""; ?>. Seluruh hasil inputan sebelumnya telah dimuat di bawah. Anda tetap dapat meninjau atau memperbarui data jika diperlukan.
+									</span>
+								</div>
+							</div>
+						</div>
+					<?php endif; ?>
 
 					<!-- 3. Quick Actions & Live Progress Bar -->
 					<div class="card-body py-3 px-3 px-md-4 bg-light border-bottom">
@@ -298,7 +349,7 @@ if ($exec == 1) {
 									<i class="fa fa-reply mr-1"></i> Batal / Kembali
 								</a>
 								<button type="submit" class="btn btn-primary font-weight-bolder px-5 py-3" id="save" style="font-size: 14px;">
-									<i class="fa fa-save mr-1"></i> Simpan Eksekusi Checksheet
+									<i class="fa fa-save mr-1"></i> <?= ($exec == 1 && $isOnceTimeFilled) ? 'Perbarui Eksekusi Checksheet' : 'Simpan Eksekusi Checksheet'; ?>
 								</button>
 							</div>
 
