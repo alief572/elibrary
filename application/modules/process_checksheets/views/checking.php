@@ -18,12 +18,29 @@ $todayIsOff = ($exec == 3 && ($todayIsWeekend || $todayIsHoliday));
 
 // Menentukan kolom hari aktif (active day column)
 $activeCol = 1;
-if ($fChecking[$data->frequency_checking] == 'Daily') {
+if ($exec == 1) {
+	// Once Time: Hanya dieksekusi 1 kali (kolom 1)
+	$activeCol = 1;
+} elseif ($exec == 2) {
+	// Weekly~Daily: 7 hari dalam seminggu (1=Senin s/d 7=Minggu)
+	$activeCol = (int)date('N');
+} elseif ($exec == 3) {
+	// Monthly~Daily: hari ke-1 s/d ke-31 dalam bulan
 	$activeCol = (int)date('d');
-} elseif ($fChecking[$data->frequency_checking] == 'Weekly') {
+} elseif ($exec == 4) {
+	// Weekly~Monthly: minggu ke-1 s/d ke-5 dalam bulan
 	$activeCol = (int)$weekOfMonth;
-} elseif ($fChecking[$data->frequency_checking] == 'Monthly') {
+} elseif ($exec == 5) {
+	// Yearly~Monthly: bulan ke-1 s/d ke-12 dalam tahun
 	$activeCol = (int)date('m');
+} elseif (isset($fChecking[$data->frequency_checking])) {
+	if ($fChecking[$data->frequency_checking] == 'Daily') {
+		$activeCol = (int)date('d');
+	} elseif ($fChecking[$data->frequency_checking] == 'Weekly') {
+		$activeCol = (int)$weekOfMonth;
+	} elseif ($fChecking[$data->frequency_checking] == 'Monthly') {
+		$activeCol = (int)date('m');
+	}
 }
 ?>
 
@@ -78,9 +95,9 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 						<div class="col-12 col-md-4 text-md-right text-left">
 							<div class="d-inline-flex align-items-center bg-light rounded px-3 py-2 border">
 								<div class="text-left mr-3">
-									<small class="text-muted d-block font-weight-bold" style="font-size: 10px; line-height: 1;">JADWAL HARI AKTIF</small>
+									<small class="text-muted d-block font-weight-bold" style="font-size: 10px; line-height: 1;">JADWAL AKTIF</small>
 									<strong class="text-dark" style="font-size: 13px;">
-										<?= ($data->frequency_execution == 5 && is_array($name_col)) ? $name_col[$activeCol] : 'Hari Ke-' . $activeCol; ?>
+										<?= ($exec == 1) ? 'Once Time' : (($exec == 5 && is_array($name_col)) ? $name_col[$activeCol] : ($exec == 2 ? 'Hari Ke-' . $activeCol . ' (' . $dayNamesIndo[$todayDayNum] . ')' : 'Hari Ke-' . $activeCol)); ?>
 									</strong>
 								</div>
 								<span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 10px;">AKTIF</span>
@@ -148,6 +165,19 @@ if ($fChecking[$data->frequency_checking] == 'Daily') {
 									$currentVal = isset($it->$nn) ? $it->$nn : '';
 									$currentNote = isset($ArrNote[$it->id]->$Nn) ? $ArrNote[$it->id]->$Nn : '';
 									$currentBukti = isset($ArrNote[$it->id]->$NBukti) ? $ArrNote[$it->id]->$NBukti : '';
+
+									// Fallback recovery untuk Once Time jika n1 kosong tetapi ada nilai di kolom lain (n2..n31)
+									if ($exec == 1 && ($currentVal === '' || $currentVal === null)) {
+										for ($col = 1; $col <= 31; $col++) {
+											$checkCol = "n" . $col;
+											if (isset($it->$checkCol) && $it->$checkCol !== '' && $it->$checkCol !== null) {
+												$currentVal = $it->$checkCol;
+												$currentNote = isset($ArrNote[$it->id]->{"note" . $col}) ? $ArrNote[$it->id]->{"note" . $col} : '';
+												$currentBukti = isset($ArrNote[$it->id]->{"bukti_" . $col}) ? $ArrNote[$it->id]->{"bukti_" . $col} : '';
+												break;
+											}
+										}
+									}
 								?>
 									<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][id]" value="<?= $it->id; ?>">
 									<input type="hidden" name="detail[<?= $n . "_" . $i; ?>][field]" value="<?= $i; ?>">

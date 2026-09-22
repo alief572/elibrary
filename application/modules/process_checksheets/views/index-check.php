@@ -65,14 +65,16 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 									if (date('d', strtotime($dt->updated_at)) == date('d')) {
 										$diss = 'table-warning';
 									}
-									if ($fChecking[$dt->frequency_checking] == 'Daily') {
-										if (date('m') > date('m', strtotime($dt->periode))) {
-											$diss = 'bg-disabled';
+									if ($dt->frequency_execution != 1) {
+										if ($fChecking[$dt->frequency_checking] == 'Daily') {
+											if (date('m') > date('m', strtotime($dt->periode))) {
+												$diss = 'bg-disabled';
+											}
 										}
-									}
-									if ($fChecking[$dt->frequency_checking] == 'Monthly') {
-										if (date('Y') > date('Y', strtotime($dt->periode))) {
-											$diss = 'bg-disabled';
+										if ($fChecking[$dt->frequency_checking] == 'Monthly') {
+											if (date('Y') > date('Y', strtotime($dt->periode))) {
+												$diss = 'bg-disabled';
+											}
 										}
 									}
 									?>

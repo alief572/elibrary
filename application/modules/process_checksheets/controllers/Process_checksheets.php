@@ -1237,8 +1237,8 @@ class Process_checksheets extends Admin_Controller
 		}
 
 		$notes			= $this->db->get_where('checksheet_notes', ['data_id' => $sheet->id])->result();
-		$execution		= $this->db->get_where('checksheet_execution', ['item_id' => $sheet->id])->row();
-		$execution_date	= $this->db->get_where('checksheet_execution_date', ['item_id' => $sheet->id])->row();
+		$execution		= $this->db->get_where('checksheet_execution', ['data_id' => $sheet->id])->row();
+		$execution_date	= $this->db->get_where('checksheet_execution_date', ['data_id' => $sheet->id])->row();
 
 		$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $sheet->sub_id])->row();
 
@@ -1290,6 +1290,18 @@ class Process_checksheets extends Admin_Controller
 						if ($field <= 0) {
 							$nn++;
 							continue;
+						}
+
+						// Jika Once Time, selalu gunakan field 1 dan petakan data ke n1 / note1
+						if ($sheetDataCheck && $sheetDataCheck->frequency_execution == 1) {
+							$oldField = $field;
+							$field = 1;
+							if (!isset($dt['n1']) && isset($dt['n' . $oldField])) {
+								$dt['n1'] = $dt['n' . $oldField];
+							}
+							if (!isset($dt['note1']) && isset($dt['note' . $oldField])) {
+								$dt['note1'] = $dt['note' . $oldField];
+							}
 						}
 
 						if ($sheetDataCheck && $sheetDataCheck->frequency_execution == 3 && !empty($sheetDataCheck->periode)) {

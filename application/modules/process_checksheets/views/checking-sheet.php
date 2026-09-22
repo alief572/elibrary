@@ -95,6 +95,8 @@ $dayNamesIndo = [
 								<?php endif; ?>
 							<?php elseif ($data->frequency_execution == 5 && is_array($name_col)) : ?>
 								<?= $name_col[$i]; ?>
+							<?php elseif ($data->frequency_execution == 1) : ?>
+								Hasil Pengecekan
 							<?php else : ?>
 								<?= $name_col . " " . $i; ?>
 							<?php endif; ?>
@@ -159,6 +161,18 @@ $dayNamesIndo = [
 							$nn = "n" . $i;
 							$Nn = "note" . $i;
 							$val = isset($it->$nn) ? $it->$nn : '';
+
+							// Fallback recovery untuk Once Time jika n1 kosong tetapi ada nilai di n2..n31
+							if ($data->frequency_execution == 1 && ($val === '' || $val === null)) {
+								for ($c = 1; $c <= 31; $c++) {
+									$colN = "n" . $c;
+									if (isset($it->$colN) && $it->$colN !== '' && $it->$colN !== null) {
+										$val = $it->$colN;
+										$Nn = "note" . $c;
+										break;
+									}
+								}
+							}
 						?>
 							<td class="text-center align-middle p-2 <?= $isOff ? 'table-danger' : '' ?> <?= ($val == '' && !$isOff) ? 'bg-light' : ''; ?>" style="min-width: 200px; width: 200px; ">
 								<?php if ($isOff) : ?>
@@ -202,6 +216,17 @@ $dayNamesIndo = [
 								$isOff = true;
 							}
 						}
+
+						// Fallback recovery untuk Once Time jika eksekutor day1 belum terisi
+						if ($data->frequency_execution == 1 && (!isset($ArrExe[$data->id]->$dayCheck) || !$ArrExe[$data->id]->$dayCheck)) {
+							for ($c = 1; $c <= 31; $c++) {
+								if (isset($ArrExe[$data->id]->{"day" . $c}) && $ArrExe[$data->id]->{"day" . $c}) {
+									$dayCheck = 'day' . $c;
+									$dateCheck = 'date' . $c;
+									break;
+								}
+							}
+						}
 					?>
 						<td class="text-center align-middle p-2 <?= $isOff ? 'table-danger' : '' ?>" style="min-width: 200px; width: 200px; ">
 							<?php if ($isOff) : ?>
@@ -236,6 +261,18 @@ $dayNamesIndo = [
 							$dayNum = (int)date('w', strtotime($tanggalkolom));
 							if ($dayNum === 0 || $dayNum === 6 || (isset($ArrHolidays) && isset($ArrHolidays[$tanggalkolom]))) {
 								$isOff = true;
+							}
+						}
+
+						// Fallback recovery untuk Once Time jika verifikasi checker check1 belum terisi
+						if ($data->frequency_execution == 1 && (!isset($ArrCheckVal[$data->id]->$checkValCol) || !$ArrCheckVal[$data->id]->$checkValCol) && (!isset($ArrCheck[$data->id]->$dayCheck) || !$ArrCheck[$data->id]->$dayCheck)) {
+							for ($c = 1; $c <= 31; $c++) {
+								if ((isset($ArrCheckVal[$data->id]->{"check" . $c}) && $ArrCheckVal[$data->id]->{"check" . $c}) || (isset($ArrCheck[$data->id]->{"day" . $c}) && $ArrCheck[$data->id]->{"day" . $c})) {
+									$dayCheck = 'day' . $c;
+									$dateCheck = 'date' . $c;
+									$checkValCol = 'check' . $c;
+									break;
+								}
 							}
 						}
 
@@ -286,6 +323,17 @@ $dayNamesIndo = [
 								$isOff = true;
 							}
 						}
+
+						// Fallback recovery untuk Once Time jika catatan checker day1 belum terisi
+						if ($data->frequency_execution == 1 && (!isset($ArrCheckNote[$data->id]->$dayNoteCol) || !$ArrCheckNote[$data->id]->$dayNoteCol)) {
+							for ($c = 1; $c <= 31; $c++) {
+								if (isset($ArrCheckNote[$data->id]->{"day" . $c}) && $ArrCheckNote[$data->id]->{"day" . $c}) {
+									$dayNoteCol = 'day' . $c;
+									break;
+								}
+							}
+						}
+
 						$currentNote = isset($ArrCheckNote[$data->id]->$dayNoteCol) ? $ArrCheckNote[$data->id]->$dayNoteCol : '';
 						$currentCheckVal = (isset($ArrCheckVal[$data->id]->$checkValCol)) ? strtolower($ArrCheckVal[$data->id]->$checkValCol) : '';
 						$isNoteDisabled = ($currentCheckVal !== 'no');
