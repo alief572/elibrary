@@ -61,9 +61,20 @@ class Pelaksanaan_audit extends Admin_Controller
             $has_audit[$s->schedule_id] = $this->model->countAuditByScheduleId($s->schedule_id) > 0;
         }
 
+        // Load audit risk assessments for this program
+        $risk_assessments = $this->db->select('audit_program_risk_assessment.*, users.full_name as pic_name, users.username as pic_username')
+            ->from('audit_program_risk_assessment')
+            ->join('users', 'users.id_user = audit_program_risk_assessment.pic_id', 'left')
+            ->where('audit_program_risk_assessment.program_id', $program_id)
+            ->where('audit_program_risk_assessment.status', '1')
+            ->order_by('audit_program_risk_assessment.id', 'ASC')
+            ->get()
+            ->result();
+
         $this->template->set('program', $program);
         $this->template->set('schedules', $schedules);
         $this->template->set('has_audit', $has_audit);
+        $this->template->set('risk_assessments', $risk_assessments);
         $this->template->render('schedules');
     }
 

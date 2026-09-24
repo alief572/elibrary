@@ -40,10 +40,13 @@ class Audit_preparation extends Admin_Controller
         $data['temuan'] = $this->audit_program_model->getActiveTemuan();
         $data['departments'] = $this->audit_program_model->getDepartments($this->company);
         $data['requirements'] = $this->audit_program_model->getPublishedRequirements();
+        $data['users'] = $this->audit_program_model->getActiveUsers();
         $data['program'] = null;
         $data['evaluations'] = [];
         $data['critical_issues'] = [];
         $data['opportunities'] = [];
+        $data['risk_assessments'] = $this->audit_program_model->getDefaultRiskAssessments();
+        $data['default_subjects'] = $this->audit_program_model->getDefaultRiskSubjects();
         $data['schedules'] = [];
 
         $this->template->set($data);
@@ -72,12 +75,16 @@ class Audit_preparation extends Admin_Controller
         $data['temuan'] = $this->audit_program_model->getActiveTemuan();
         $data['departments'] = $this->audit_program_model->getDepartments($this->company);
         $data['requirements'] = $this->audit_program_model->getPublishedRequirements();
+        $data['users'] = $this->audit_program_model->getActiveUsers();
 
         // Load existing program and child records
         $data['program'] = $program;
         $data['evaluations'] = $this->audit_program_model->getEvaluations($id);
         $data['critical_issues'] = $this->audit_program_model->getCriticalIssues($id);
         $data['opportunities'] = $this->audit_program_model->getOpportunities($id);
+        $existingRisks = $this->audit_program_model->getRiskAssessments($id);
+        $data['risk_assessments'] = !empty($existingRisks) ? $existingRisks : $this->audit_program_model->getDefaultRiskAssessments();
+        $data['default_subjects'] = $this->audit_program_model->getDefaultRiskSubjects();
 
         // Load schedules with auditees for each schedule row
         $schedules = $this->audit_program_model->getSchedules($id);
@@ -116,237 +123,367 @@ class Audit_preparation extends Admin_Controller
         }
 
         $userId = $this->auth->user_id();
-        $now = date('Y-m-d H:i:s');
         $isNew = empty($data['id']);
+        $lockName = $isNew ? 'audit_program_save_lock' : ('audit_program_edit_' . trim($data['id']));
 
-        $this->db->trans_begin();
-
-        // 1. Save/update header
         $headerData = [
             'company'         => trim($data['company']),
             'lead_auditor_id' => $data['lead_auditor_id'],
             'audit_scope'     => $data['audit_scope'],
         ];
 
-        if ($isNew) {
-            $program_id = $this->_getId();
-            $headerData['id'] = $program_id;
-            $headerData['status'] = '1';
-            $headerData['created_at'] = $now;
-            $headerData['created_by'] = $userId;
-            $this->db->insert('audit_program', $headerData);
+        $maxAttempts = 5;
+        $saved = false;
+        $savedProgramId = null;
+        $lastErrorMsg = 'Data gagal disimpan. Silakan coba lagi.';
+
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            $lockAcquired = false;
+            $now = date('Y-m-d H:i:s');
+
+            // 1. Acquire named lock before transaction to ensure fresh snapshot across concurrent users
+            $lockRow = $this->db->query("SELECT GET_LOCK(?, 15) as lk", [$lockName])->row();
+            $lockAcquired = ($lockRow && $lockRow->lk == 1);
+
+            if (!$lockAcquired) {
+                // If lock could not be acquired within 15 seconds, brief delay and retry
+                usleep(rand(100000, 300000));
+                continue;
+            }
+
+            // 2. Start database transaction
+            $this->db->trans_begin();
+
+            try {
+                // 1. Save/update header
+                if ($isNew) {
+                    $program_id = $this->_getId();
+                    $headerData['id'] = $program_id;
+                    $headerData['status'] = '1';
+                    $headerData['created_at'] = $now;
+                    $headerData['created_by'] = $userId;
+
+                    // Insert header with duplicate key error detection
+                    $prevDebug = $this->db->db_debug;
+                    $this->db->db_debug = false;
+                    $inserted = $this->db->insert('audit_program', $headerData);
+                    $dbErr = $this->db->error();
+                    $this->db->db_debug = $prevDebug;
+
+                    if (!$inserted) {
+                        $this->db->trans_rollback();
+                        $this->db->query("SELECT RELEASE_LOCK(?)", [$lockName]);
+                        $lockAcquired = false;
+
+                        if (isset($dbErr['code']) && $dbErr['code'] == 1062) {
+                            // Duplicate entry collision: retry with next sequence after brief backoff
+                            usleep(rand(50000, 150000));
+                            continue;
+                        } else {
+                            $lastErrorMsg = !empty($dbErr['message']) ? $dbErr['message'] : 'Gagal menyimpan header program audit.';
+                            break;
+                        }
+                    }
+                } else {
+                    $program_id = $data['id'];
+                    $headerData['modified_at'] = $now;
+                    $headerData['modified_by'] = $userId;
+                    $this->db->update('audit_program', $headerData, ['id' => $program_id]);
+                }
+
+                // 2. Process evaluations
+                // Soft-delete all existing evaluations for this program
+                if (!$isNew) {
+                    $this->db->update('audit_program_evaluation', ['status' => '0'], ['program_id' => $program_id]);
+                }
+                // Insert new evaluation entries from form
+                if (!empty($data['evaluations'])) {
+                    foreach ($data['evaluations'] as $eval) {
+                        $evalData = [
+                            'program_id'           => $program_id,
+                            'audit_temuan_id'      => $eval['audit_temuan_id'],
+                            'temuan_detail_id'     => isset($eval['temuan_detail_id']) ? $eval['temuan_detail_id'] : null,
+                            'weakness_description' => isset($eval['weakness_description']) ? $eval['weakness_description'] : null,
+                            'improvement_action'   => isset($eval['improvement_action']) ? $eval['improvement_action'] : null,
+                            'status'               => '1',
+                            'created_at'           => $now,
+                            'created_by'           => $userId,
+                        ];
+                        $this->db->insert('audit_program_evaluation', $evalData);
+                    }
+                }
+
+                // 3. Process critical issues
+                $criticalIds = isset($data['critical_id']) ? $data['critical_id'] : [];
+                $issueDescs = isset($data['issue_desc']) ? $data['issue_desc'] : [];
+                $mgmtInputs = isset($data['management_input']) ? $data['management_input'] : [];
+
+                // Collect submitted IDs that already exist
+                $submittedCriticalIds = array_filter($criticalIds);
+
+                // Soft-delete records not in submitted list
+                if (!$isNew) {
+                    $this->db->where('program_id', $program_id);
+                    $this->db->where('status', '1');
+                    if (!empty($submittedCriticalIds)) {
+                        $this->db->where_not_in('id', $submittedCriticalIds);
+                    }
+                    $this->db->update('audit_program_critical_issue', ['status' => '0']);
+                }
+
+                // Insert or update critical issue entries
+                if (!empty($issueDescs)) {
+                    foreach ($issueDescs as $k => $issueDesc) {
+                        if (trim($issueDesc) === '') continue;
+                        $recordId = isset($criticalIds[$k]) ? $criticalIds[$k] : '';
+                        $issueData = [
+                            'program_id'        => $program_id,
+                            'issue_description' => trim($issueDesc),
+                            'management_input'  => isset($mgmtInputs[$k]) ? trim($mgmtInputs[$k]) : null,
+                            'status'            => '1',
+                        ];
+
+                        if (!empty($recordId)) {
+                            // Update existing
+                            $issueData['modified_at'] = $now;
+                            $issueData['modified_by'] = $userId;
+                            $this->db->update('audit_program_critical_issue', $issueData, ['id' => $recordId]);
+                        } else {
+                            // Insert new
+                            $issueData['created_at'] = $now;
+                            $issueData['created_by'] = $userId;
+                            $this->db->insert('audit_program_critical_issue', $issueData);
+                        }
+                    }
+                }
+
+                // 4. Process opportunities
+                $oppIds = isset($data['opp_id']) ? $data['opp_id'] : [];
+                $oppIssues = isset($data['opp_issue_text']) ? $data['opp_issue_text'] : [];
+                $oppProcIds = isset($data['opp_procedure_id']) ? $data['opp_procedure_id'] : [];
+                $oppInvestigations = isset($data['opp_investigation']) ? $data['opp_investigation'] : [];
+
+                // Collect submitted IDs that already exist
+                $submittedOppIds = array_filter($oppIds);
+
+                // Soft-delete records not in submitted list
+                if (!$isNew) {
+                    $this->db->where('program_id', $program_id);
+                    $this->db->where('status', '1');
+                    if (!empty($submittedOppIds)) {
+                        $this->db->where_not_in('id', $submittedOppIds);
+                    }
+                    $this->db->update('audit_program_opportunity', ['status' => '0']);
+                }
+
+                // Insert or update opportunity entries
+                if (!empty($oppProcIds)) {
+                    foreach ($oppProcIds as $k => $procId) {
+                        if (empty($procId)) continue;
+                        $recordId = isset($oppIds[$k]) ? $oppIds[$k] : '';
+                        $oppData = [
+                            'program_id'    => $program_id,
+                            'procedure_id'  => $procId,
+                            'description'   => isset($oppIssues[$k]) ? trim($oppIssues[$k]) : '',
+                            'investigation' => isset($oppInvestigations[$k]) ? trim($oppInvestigations[$k]) : '',
+                            'status'        => '1',
+                        ];
+
+                        if (!empty($recordId)) {
+                            // Update existing
+                            $oppData['modified_at'] = $now;
+                            $oppData['modified_by'] = $userId;
+                            $this->db->update('audit_program_opportunity', $oppData, ['id' => $recordId]);
+                        } else {
+                            // Insert new
+                            $oppData['created_at'] = $now;
+                            $oppData['created_by'] = $userId;
+                            $this->db->insert('audit_program_opportunity', $oppData);
+                        }
+                    }
+                }
+
+                // 5. Process risk assessments
+                $riskIds = isset($data['risk_id']) ? $data['risk_id'] : [];
+                $riskSubjects = isset($data['risk_subject']) ? $data['risk_subject'] : [];
+                $riskOpportunities = isset($data['risk_opportunity']) ? $data['risk_opportunity'] : [];
+                $riskMitigations = isset($data['risk_mitigation']) ? $data['risk_mitigation'] : [];
+                $riskPicIds = isset($data['risk_pic_id']) ? $data['risk_pic_id'] : [];
+                $riskDueDates = isset($data['risk_due_date']) ? $data['risk_due_date'] : [];
+
+                // Collect submitted IDs that already exist
+                $submittedRiskIds = array_filter($riskIds);
+
+                // Soft-delete records not in submitted list
+                if (!$isNew) {
+                    $this->db->where('program_id', $program_id);
+                    $this->db->where('status', '1');
+                    if (!empty($submittedRiskIds)) {
+                        $this->db->where_not_in('id', $submittedRiskIds);
+                    }
+                    $this->db->update('audit_program_risk_assessment', ['status' => '0']);
+                }
+
+                // Insert or update risk assessment entries
+                if (!empty($riskSubjects)) {
+                    foreach ($riskSubjects as $k => $subj) {
+                        $subject = trim($subj);
+                        $riskOpp = isset($riskOpportunities[$k]) ? trim($riskOpportunities[$k]) : '';
+                        $mitigation = isset($riskMitigations[$k]) ? trim($riskMitigations[$k]) : '';
+                        $picId = (isset($riskPicIds[$k]) && $riskPicIds[$k] !== '') ? $riskPicIds[$k] : null;
+                        $dueDate = (isset($riskDueDates[$k]) && $riskDueDates[$k] !== '') ? $riskDueDates[$k] : null;
+
+                        // Skip row if all fields are empty
+                        if ($subject === '' && $riskOpp === '' && $mitigation === '' && empty($picId) && empty($dueDate)) {
+                            continue;
+                        }
+
+                        $recordId = isset($riskIds[$k]) ? $riskIds[$k] : '';
+                        $riskData = [
+                            'program_id'       => $program_id,
+                            'subject_risk'     => $subject,
+                            'risk_opportunity' => $riskOpp,
+                            'mitigation'       => $mitigation,
+                            'pic_id'           => $picId,
+                            'due_date'         => $dueDate,
+                            'status'           => '1',
+                        ];
+
+                        if (!empty($recordId)) {
+                            // Update existing
+                            $riskData['modified_at'] = $now;
+                            $riskData['modified_by'] = $userId;
+                            $this->db->update('audit_program_risk_assessment', $riskData, ['id' => $recordId]);
+                        } else {
+                            // Insert new
+                            $riskData['created_at'] = $now;
+                            $riskData['created_by'] = $userId;
+                            $this->db->insert('audit_program_risk_assessment', $riskData);
+                        }
+                    }
+                }
+
+                // 6. Process schedules
+                $schedRecordIds = isset($data['schedule_record_id']) ? $data['schedule_record_id'] : [];
+                $schedProcessIds = isset($data['schedule_process_id']) ? $data['schedule_process_id'] : [];
+                $schedProcessFree = isset($data['schedule_process_name_free']) ? $data['schedule_process_name_free'] : [];
+                $schedRequirementIds = isset($data['schedule_requirement_id']) ? $data['schedule_requirement_id'] : [];
+                $schedAuditorIds = isset($data['schedule_auditor_id']) ? $data['schedule_auditor_id'] : [];
+                $schedAuditeeIds = isset($data['schedule_auditee_id']) ? $data['schedule_auditee_id'] : [];
+                $schedAuditeeFree = isset($data['schedule_auditee_name_free']) ? $data['schedule_auditee_name_free'] : [];
+                $schedDates = isset($data['schedule_date']) ? $data['schedule_date'] : [];
+                $schedStartTimes = isset($data['schedule_start_time']) ? $data['schedule_start_time'] : [];
+                $schedEndTimes = isset($data['schedule_end_time']) ? $data['schedule_end_time'] : [];
+
+                // Collect submitted IDs that already exist
+                $submittedSchedIds = array_filter($schedRecordIds);
+
+                // Soft-delete records not in submitted list + remove their auditee junctions
+                if (!$isNew) {
+                    $this->db->select('id');
+                    $this->db->where('program_id', $program_id);
+                    $this->db->where('status', '1');
+                    if (!empty($submittedSchedIds)) {
+                        $this->db->where_not_in('id', $submittedSchedIds);
+                    }
+                    $deletedSchedules = $this->db->get('audit_program_schedule')->result();
+                    foreach ($deletedSchedules as $ds) {
+                        $this->db->delete('audit_program_schedule_auditee', ['schedule_id' => $ds->id]);
+                    }
+                    $this->db->where('program_id', $program_id);
+                    $this->db->where('status', '1');
+                    if (!empty($submittedSchedIds)) {
+                        $this->db->where_not_in('id', $submittedSchedIds);
+                    }
+                    $this->db->update('audit_program_schedule', ['status' => '0']);
+                }
+
+                // Insert or update schedule entries
+                if (!empty($schedProcessIds)) {
+                    foreach ($schedProcessIds as $k => $processId) {
+                        $freeText = isset($schedProcessFree[$k]) ? trim($schedProcessFree[$k]) : '';
+                        $requirementId = isset($schedRequirementIds[$k]) ? trim($schedRequirementIds[$k]) : '';
+                        // Skip row if process_id, free text, and requirement_id are all empty
+                        if (empty($processId) && empty($freeText) && empty($requirementId)) continue;
+
+                        $recordId = isset($schedRecordIds[$k]) ? $schedRecordIds[$k] : '';
+                        $auditeeFreeText = isset($schedAuditeeFree[$k]) ? trim($schedAuditeeFree[$k]) : '';
+                        $schedData = [
+                            'program_id'        => $program_id,
+                            'process_id'        => !empty($processId) ? $processId : null,
+                            'process_name_free' => $freeText,
+                            'requirement_id'    => !empty($requirementId) ? $requirementId : null,
+                            'auditor_id'        => isset($schedAuditorIds[$k]) ? $schedAuditorIds[$k] : null,
+                            'audit_date'        => isset($schedDates[$k]) ? $schedDates[$k] : null,
+                            'start_time'        => isset($schedStartTimes[$k]) ? $schedStartTimes[$k] : null,
+                            'end_time'          => isset($schedEndTimes[$k]) ? $schedEndTimes[$k] : null,
+                            'auditee_name_free' => $auditeeFreeText,
+                            'status'            => '1',
+                        ];
+
+                        if (!empty($recordId)) {
+                            // Update existing
+                            $schedData['modified_at'] = $now;
+                            $schedData['modified_by'] = $userId;
+                            $this->db->update('audit_program_schedule', $schedData, ['id' => $recordId]);
+                            $scheduleId = $recordId;
+
+                            // Replace auditee for this schedule
+                            $this->db->delete('audit_program_schedule_auditee', ['schedule_id' => $scheduleId]);
+                        } else {
+                            // Insert new
+                            $schedData['created_at'] = $now;
+                            $schedData['created_by'] = $userId;
+                            $this->db->insert('audit_program_schedule', $schedData);
+                            $scheduleId = $this->db->insert_id();
+                        }
+
+                        // Insert auditee record for this schedule row (single department)
+                        $deptId = isset($schedAuditeeIds[$k]) ? $schedAuditeeIds[$k] : '';
+                        if (!empty($deptId)) {
+                            $this->db->insert('audit_program_schedule_auditee', [
+                                'schedule_id'   => $scheduleId,
+                                'department_id' => $deptId,
+                            ]);
+                        }
+                    }
+                }
+
+                // Commit or rollback based on transaction status
+                if ($this->db->trans_status() === FALSE) {
+                    $this->db->trans_rollback();
+                    $this->db->query("SELECT RELEASE_LOCK(?)", [$lockName]);
+                    $lockAcquired = false;
+                    usleep(rand(50000, 150000));
+                    continue;
+                } else {
+                    $this->db->trans_commit();
+                    $this->db->query("SELECT RELEASE_LOCK(?)", [$lockName]);
+                    $lockAcquired = false;
+                    $saved = true;
+                    $savedProgramId = $program_id;
+                    break;
+                }
+            } catch (Exception $e) {
+                $this->db->trans_rollback();
+                if ($lockAcquired) {
+                    $this->db->query("SELECT RELEASE_LOCK(?)", [$lockName]);
+                    $lockAcquired = false;
+                }
+                $lastErrorMsg = $e->getMessage();
+                usleep(rand(50000, 150000));
+            } finally {
+                if ($lockAcquired) {
+                    $this->db->query("SELECT RELEASE_LOCK(?)", [$lockName]);
+                    $lockAcquired = false;
+                }
+            }
+        }
+
+        if ($saved) {
+            echo json_encode(['status' => 1, 'msg' => 'Audit Program berhasil disimpan.', 'id' => $savedProgramId]);
         } else {
-            $program_id = $data['id'];
-            $headerData['modified_at'] = $now;
-            $headerData['modified_by'] = $userId;
-            $this->db->update('audit_program', $headerData, ['id' => $program_id]);
-        }
-
-        // 2. Process evaluations
-        // Soft-delete all existing evaluations for this program
-        if (!$isNew) {
-            $this->db->update('audit_program_evaluation', ['status' => '0'], ['program_id' => $program_id]);
-        }
-        // Insert new evaluation entries from form
-        if (!empty($data['evaluations'])) {
-            foreach ($data['evaluations'] as $eval) {
-                $evalData = [
-                    'program_id'           => $program_id,
-                    'audit_temuan_id'      => $eval['audit_temuan_id'],
-                    'temuan_detail_id'     => isset($eval['temuan_detail_id']) ? $eval['temuan_detail_id'] : null,
-                    'weakness_description' => isset($eval['weakness_description']) ? $eval['weakness_description'] : null,
-                    'improvement_action'   => isset($eval['improvement_action']) ? $eval['improvement_action'] : null,
-                    'status'               => '1',
-                    'created_at'           => $now,
-                    'created_by'           => $userId,
-                ];
-                $this->db->insert('audit_program_evaluation', $evalData);
-            }
-        }
-
-        // 3. Process critical issues
-        $criticalIds = isset($data['critical_id']) ? $data['critical_id'] : [];
-        $issueDescs = isset($data['issue_desc']) ? $data['issue_desc'] : [];
-        $mgmtInputs = isset($data['management_input']) ? $data['management_input'] : [];
-
-        // Collect submitted IDs that already exist
-        $submittedCriticalIds = array_filter($criticalIds);
-
-        // Soft-delete records not in submitted list
-        if (!$isNew) {
-            $this->db->where('program_id', $program_id);
-            $this->db->where('status', '1');
-            if (!empty($submittedCriticalIds)) {
-                $this->db->where_not_in('id', $submittedCriticalIds);
-            }
-            $this->db->update('audit_program_critical_issue', ['status' => '0']);
-        }
-
-        // Insert or update critical issue entries
-        if (!empty($issueDescs)) {
-            foreach ($issueDescs as $k => $issueDesc) {
-                if (trim($issueDesc) === '') continue;
-                $recordId = isset($criticalIds[$k]) ? $criticalIds[$k] : '';
-                $issueData = [
-                    'program_id'        => $program_id,
-                    'issue_description' => trim($issueDesc),
-                    'management_input'  => isset($mgmtInputs[$k]) ? trim($mgmtInputs[$k]) : null,
-                    'status'            => '1',
-                ];
-
-                if (!empty($recordId)) {
-                    // Update existing
-                    $issueData['modified_at'] = $now;
-                    $issueData['modified_by'] = $userId;
-                    $this->db->update('audit_program_critical_issue', $issueData, ['id' => $recordId]);
-                } else {
-                    // Insert new
-                    $issueData['created_at'] = $now;
-                    $issueData['created_by'] = $userId;
-                    $this->db->insert('audit_program_critical_issue', $issueData);
-                }
-            }
-        }
-
-        // 4. Process opportunities
-        $oppIds = isset($data['opp_id']) ? $data['opp_id'] : [];
-        $oppIssues = isset($data['opp_issue_text']) ? $data['opp_issue_text'] : [];
-        $oppProcIds = isset($data['opp_procedure_id']) ? $data['opp_procedure_id'] : [];
-        $oppInvestigations = isset($data['opp_investigation']) ? $data['opp_investigation'] : [];
-
-        // Collect submitted IDs that already exist
-        $submittedOppIds = array_filter($oppIds);
-
-        // Soft-delete records not in submitted list
-        if (!$isNew) {
-            $this->db->where('program_id', $program_id);
-            $this->db->where('status', '1');
-            if (!empty($submittedOppIds)) {
-                $this->db->where_not_in('id', $submittedOppIds);
-            }
-            $this->db->update('audit_program_opportunity', ['status' => '0']);
-        }
-
-        // Insert or update opportunity entries
-        if (!empty($oppProcIds)) {
-            foreach ($oppProcIds as $k => $procId) {
-                if (empty($procId)) continue;
-                $recordId = isset($oppIds[$k]) ? $oppIds[$k] : '';
-                $oppData = [
-                    'program_id'    => $program_id,
-                    'procedure_id'  => $procId,
-                    'description'   => isset($oppIssues[$k]) ? trim($oppIssues[$k]) : '',
-                    'investigation' => isset($oppInvestigations[$k]) ? trim($oppInvestigations[$k]) : '',
-                    'status'        => '1',
-                ];
-
-                if (!empty($recordId)) {
-                    // Update existing
-                    $oppData['modified_at'] = $now;
-                    $oppData['modified_by'] = $userId;
-                    $this->db->update('audit_program_opportunity', $oppData, ['id' => $recordId]);
-                } else {
-                    // Insert new
-                    $oppData['created_at'] = $now;
-                    $oppData['created_by'] = $userId;
-                    $this->db->insert('audit_program_opportunity', $oppData);
-                }
-            }
-        }
-
-        // 5. Process schedules
-        $schedRecordIds = isset($data['schedule_record_id']) ? $data['schedule_record_id'] : [];
-        $schedProcessIds = isset($data['schedule_process_id']) ? $data['schedule_process_id'] : [];
-        $schedProcessFree = isset($data['schedule_process_name_free']) ? $data['schedule_process_name_free'] : [];
-        $schedRequirementIds = isset($data['schedule_requirement_id']) ? $data['schedule_requirement_id'] : [];
-        $schedAuditorIds = isset($data['schedule_auditor_id']) ? $data['schedule_auditor_id'] : [];
-        $schedAuditeeIds = isset($data['schedule_auditee_id']) ? $data['schedule_auditee_id'] : [];
-        $schedAuditeeFree = isset($data['schedule_auditee_name_free']) ? $data['schedule_auditee_name_free'] : [];
-        $schedDates = isset($data['schedule_date']) ? $data['schedule_date'] : [];
-        $schedStartTimes = isset($data['schedule_start_time']) ? $data['schedule_start_time'] : [];
-        $schedEndTimes = isset($data['schedule_end_time']) ? $data['schedule_end_time'] : [];
-
-        // Collect submitted IDs that already exist
-        $submittedSchedIds = array_filter($schedRecordIds);
-
-        // Soft-delete records not in submitted list + remove their auditee junctions
-        if (!$isNew) {
-            $this->db->select('id');
-            $this->db->where('program_id', $program_id);
-            $this->db->where('status', '1');
-            if (!empty($submittedSchedIds)) {
-                $this->db->where_not_in('id', $submittedSchedIds);
-            }
-            $deletedSchedules = $this->db->get('audit_program_schedule')->result();
-            foreach ($deletedSchedules as $ds) {
-                $this->db->delete('audit_program_schedule_auditee', ['schedule_id' => $ds->id]);
-            }
-            $this->db->where('program_id', $program_id);
-            $this->db->where('status', '1');
-            if (!empty($submittedSchedIds)) {
-                $this->db->where_not_in('id', $submittedSchedIds);
-            }
-            $this->db->update('audit_program_schedule', ['status' => '0']);
-        }
-
-        // Insert or update schedule entries
-        if (!empty($schedProcessIds)) {
-            foreach ($schedProcessIds as $k => $processId) {
-                $freeText = isset($schedProcessFree[$k]) ? trim($schedProcessFree[$k]) : '';
-                $requirementId = isset($schedRequirementIds[$k]) ? trim($schedRequirementIds[$k]) : '';
-                // Skip row if process_id, free text, and requirement_id are all empty
-                if (empty($processId) && empty($freeText) && empty($requirementId)) continue;
-
-                $recordId = isset($schedRecordIds[$k]) ? $schedRecordIds[$k] : '';
-                $auditeeFreeText = isset($schedAuditeeFree[$k]) ? trim($schedAuditeeFree[$k]) : '';
-                $schedData = [
-                    'program_id'        => $program_id,
-                    'process_id'        => !empty($processId) ? $processId : null,
-                    'process_name_free' => $freeText,
-                    'requirement_id'    => !empty($requirementId) ? $requirementId : null,
-                    'auditor_id'        => isset($schedAuditorIds[$k]) ? $schedAuditorIds[$k] : null,
-                    'audit_date'        => isset($schedDates[$k]) ? $schedDates[$k] : null,
-                    'start_time'        => isset($schedStartTimes[$k]) ? $schedStartTimes[$k] : null,
-                    'end_time'          => isset($schedEndTimes[$k]) ? $schedEndTimes[$k] : null,
-                    'auditee_name_free' => $auditeeFreeText,
-                    'status'            => '1',
-                ];
-
-                if (!empty($recordId)) {
-                    // Update existing
-                    $schedData['modified_at'] = $now;
-                    $schedData['modified_by'] = $userId;
-                    $this->db->update('audit_program_schedule', $schedData, ['id' => $recordId]);
-                    $scheduleId = $recordId;
-
-                    // Replace auditee for this schedule
-                    $this->db->delete('audit_program_schedule_auditee', ['schedule_id' => $scheduleId]);
-                } else {
-                    // Insert new
-                    $schedData['created_at'] = $now;
-                    $schedData['created_by'] = $userId;
-                    $this->db->insert('audit_program_schedule', $schedData);
-                    $scheduleId = $this->db->insert_id();
-                }
-
-                // Insert auditee record for this schedule row (single department)
-                $deptId = isset($schedAuditeeIds[$k]) ? $schedAuditeeIds[$k] : '';
-                if (!empty($deptId)) {
-                    $this->db->insert('audit_program_schedule_auditee', [
-                        'schedule_id'   => $scheduleId,
-                        'department_id' => $deptId,
-                    ]);
-                }
-            }
-        }
-
-        // Commit or rollback based on transaction status
-        if ($this->db->trans_status() === FALSE) {
-            $this->db->trans_rollback();
-            echo json_encode(['status' => 0, 'msg' => 'Data gagal disimpan. Silakan coba lagi.']);
-        } else {
-            $this->db->trans_commit();
-            echo json_encode(['status' => 1, 'msg' => 'Audit Program berhasil disimpan.', 'id' => $program_id]);
+            echo json_encode(['status' => 0, 'msg' => $lastErrorMsg]);
         }
     }
 
@@ -358,15 +495,7 @@ class Audit_preparation extends Admin_Controller
      */
     private function _getId()
     {
-        $count = 1;
-        $ym = date('ym');
-        $prefix = "APR" . $ym . "-";
-        $result = $this->db->query("SELECT MAX(RIGHT(id, 3)) as max_seq FROM audit_program WHERE SUBSTR(id, 4, 4) = ?", [$ym])->row();
-
-        if ($result && $result->max_seq > 0) {
-            $count = $result->max_seq + 1;
-        }
-        return $prefix . sprintf("%03d", $count);
+        return $this->audit_program_model->generateId();
     }
 
     /**
@@ -573,6 +702,7 @@ class Audit_preparation extends Admin_Controller
         $evaluations = $this->audit_program_model->getEvaluations($id);
         $critical_issues = $this->audit_program_model->getCriticalIssues($id);
         $opportunities = $this->audit_program_model->getOpportunities($id);
+        $risk_assessments = $this->audit_program_model->getRiskAssessments($id);
 
         // Load schedules with auditees for each schedule row
         $schedules = $this->audit_program_model->getSchedules($id);
@@ -581,11 +711,12 @@ class Audit_preparation extends Admin_Controller
         }
 
         $this->template->set([
-            'program'         => $program,
-            'evaluations'     => $evaluations,
-            'critical_issues' => $critical_issues,
-            'opportunities'   => $opportunities,
-            'schedules'       => $schedules,
+            'program'          => $program,
+            'evaluations'      => $evaluations,
+            'critical_issues'  => $critical_issues,
+            'opportunities'    => $opportunities,
+            'risk_assessments' => $risk_assessments,
+            'schedules'        => $schedules,
         ]);
 
         $this->template->render('view');
@@ -709,6 +840,24 @@ class Audit_preparation extends Admin_Controller
         $opportunities = $this->audit_program_model->getOpportunities($program_id);
 
         echo json_encode(['status' => 1, 'data' => $opportunities]);
+    }
+
+    /**
+     * Get saved risk assessments for a program (AJAX)
+     * Returns JSON array of risk assessment records
+     *
+     * @param string $program_id Program ID
+     */
+    public function get_risk_assessments($program_id = null)
+    {
+        if (!$program_id) {
+            echo json_encode(['status' => 0, 'data' => []]);
+            return;
+        }
+
+        $risk_assessments = $this->audit_program_model->getRiskAssessments($program_id);
+
+        echo json_encode(['status' => 1, 'data' => $risk_assessments]);
     }
 
     /**

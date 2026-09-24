@@ -195,10 +195,48 @@ class Audit_program_model extends BF_Model
      */
     public function getDepartments($company_id = null)
     {
-        return $this->db->select('id, department_name as name')
-            ->where('status', '1')
-            ->order_by('department_name', 'ASC')
-            ->get('audit_department')
+        $this->db->select('id, name')
+            ->where('status', '1');
+        if ($company_id) {
+            $this->db->where('company_id', $company_id);
+        }
+        $result = $this->db->order_by('name', 'ASC')
+            ->get('departements')
+            ->result();
+
+        if (empty($result) && $company_id) {
+            $result = $this->db->select('id, name')
+                ->where('status', '1')
+                ->order_by('name', 'ASC')
+                ->get('departements')
+                ->result();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get active users associated with company SSC for PIC selection
+     *
+     * @param string $company_code Company initial/code (default: 'ssc')
+     * @return array
+     */
+    public function getActiveUsers($company_code = 'ssc')
+    {
+        $comp = $this->db->get_where('companies', ['inisial' => $company_code])->row();
+        $companyId = $comp ? $comp->id_perusahaan : 1;
+
+        return $this->db->select('DISTINCT(users.id_user), users.full_name, users.username')
+            ->from('users')
+            ->join('user_groups', 'user_groups.user_id = users.id_user AND user_groups.company_id = ' . (int)$companyId, 'left')
+            ->join('assign_company', 'assign_company.user_id = users.id_user AND assign_company.company_id = ' . (int)$companyId, 'left')
+            ->where('users.status', 'ACT')
+            ->group_start()
+                ->where('user_groups.company_id', $companyId)
+                ->or_where('assign_company.company_id', $companyId)
+            ->group_end()
+            ->order_by('users.full_name', 'ASC')
+            ->get()
             ->result();
     }
 
@@ -255,6 +293,69 @@ class Audit_program_model extends BF_Model
     }
 
     /**
+     * Get risk assessments for a specific program
+     *
+     * @param string $program_id Program ID
+     * @return array
+     */
+    public function getRiskAssessments($program_id)
+    {
+        return $this->db->select('audit_program_risk_assessment.*, users.full_name as pic_name, users.username as pic_username')
+            ->from('audit_program_risk_assessment')
+            ->join('users', 'users.id_user = audit_program_risk_assessment.pic_id', 'left')
+            ->where('audit_program_risk_assessment.program_id', $program_id)
+            ->where('audit_program_risk_assessment.status', '1')
+            ->order_by('audit_program_risk_assessment.id', 'ASC')
+            ->get()
+            ->result();
+    }
+
+    /**
+     * Get 11 default fix subjects for Audit Risk Assessment
+     *
+     * @return array
+     */
+    public function getDefaultRiskSubjects()
+    {
+        return [
+            'Planning',
+            'Resources',
+            'Selection of audit team',
+            'Communication',
+            'Implementation',
+            'Documented information',
+            'Monitoring, review and improvement',
+            'Auditee cooperation and availability',
+            'Audit methods, remote and ICT',
+            'Information security and confidentiality',
+            'Peluang penggunaan data ERP',
+        ];
+    }
+
+    /**
+     * Get default initial rows for Audit Risk Assessment
+     *
+     * @return array Array of objects with default 11 subjects and empty fields
+     */
+    public function getDefaultRiskAssessments()
+    {
+        $subjects = $this->getDefaultRiskSubjects();
+        $list = [];
+        foreach ($subjects as $subject) {
+            $list[] = (object)[
+                'id'               => '',
+                'subject_risk'     => $subject,
+                'risk_opportunity' => '',
+                'mitigation'       => '',
+                'pic_id'           => '',
+                'due_date'         => '',
+                'is_default'       => 1,
+            ];
+        }
+        return $list;
+    }
+
+    /**
      * Get schedules for a specific program
      *
      * @param string $program_id Program ID
@@ -296,9 +397,9 @@ class Audit_program_model extends BF_Model
      */
     public function getScheduleAuditees($schedule_id)
     {
-        return $this->db->select('audit_program_schedule_auditee.*, audit_department.department_name as department_name')
+        return $this->db->select('audit_program_schedule_auditee.*, departements.name as department_name')
             ->from('audit_program_schedule_auditee')
-            ->join('audit_department', 'audit_department.id = audit_program_schedule_auditee.department_id', 'left')
+            ->join('departements', 'departements.id = audit_program_schedule_auditee.department_id', 'left')
             ->where('audit_program_schedule_auditee.schedule_id', $schedule_id)
             ->get()
             ->result();
@@ -320,10 +421,10 @@ class Audit_program_model extends BF_Model
         $ym = date('ym');
         $prefix = "APR" . $ym . "-";
 
-        $result = $this->db->query("SELECT MAX(RIGHT(id, 3)) as max_seq FROM audit_program WHERE SUBSTR(id, 4, 4) = ?", [$ym])->row();
+        $result = $this->db->query("SELECT MAX(CAST(SUBSTRING_INDEX(id, '-', -1) AS UNSIGNED)) as max_seq FROM audit_program WHERE SUBSTR(id, 4, 4) = ?", [$ym])->row();
 
-        if ($result && $result->max_seq > 0) {
-            $count = $result->max_seq + 1;
+        if ($result && (int)$result->max_seq > 0) {
+            $count = (int)$result->max_seq + 1;
         }
 
         return $prefix . sprintf("%03d", $count);

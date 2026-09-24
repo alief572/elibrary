@@ -158,6 +158,41 @@
 						<?php endif; ?>
 					</div>
 
+					<!-- Section: Audit Risk Assessment -->
+					<div class="mb-5">
+						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-shield-alt text-primary mr-2"></i>Audit Risk Assessment</h5>
+						<?php if (!empty($risk_assessments)) : ?>
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm table-hover" style="min-width:700px;">
+								<thead class="table-light">
+									<tr class="text-center">
+										<th width="40">No</th>
+										<th width="20%">Subject risk</th>
+										<th width="25%">Risiko/ Oppotrunity</th>
+										<th width="25%">Mitigasi</th>
+										<th width="18%">PIC</th>
+										<th width="12%">Due date</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php foreach ($risk_assessments as $k => $risk) : ?>
+										<tr>
+											<td class="text-center"><?= $k + 1; ?></td>
+											<td><?= htmlspecialchars($risk->subject_risk); ?></td>
+											<td><?= nl2br(htmlspecialchars($risk->risk_opportunity)); ?></td>
+											<td><?= nl2br(htmlspecialchars($risk->mitigation)); ?></td>
+											<td><?= !empty($risk->pic_name) ? htmlspecialchars($risk->pic_name) : (!empty($risk->pic_username) ? htmlspecialchars($risk->pic_username) : '-'); ?></td>
+											<td class="text-center"><?= !empty($risk->due_date) ? date('d-m-Y', strtotime($risk->due_date)) : '-'; ?></td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+							</div>
+						<?php else : ?>
+							<p class="text-muted"><em>Tidak ada audit risk assessment.</em></p>
+						<?php endif; ?>
+					</div>
+
 					<!-- Section 5: Jadwal Audit -->
 					<div class="mb-5">
 						<h5 class="font-weight-bold border-bottom pb-2"><i class="fa fa-calendar-alt text-primary mr-2"></i>Jadwal Audit</h5>
