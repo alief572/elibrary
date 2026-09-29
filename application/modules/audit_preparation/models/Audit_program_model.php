@@ -256,26 +256,19 @@ class Audit_program_model extends BF_Model
     }
 
     /**
-     * Get active users associated with company SSC for PIC selection
+     * Get active users assigned to the current company for PIC selection.
      *
-     * @param string $company_code Company initial/code (default: 'ssc')
+     * @param int|string $companyId
      * @return array
      */
-    public function getActiveUsers($company_code = 'ssc')
+    public function getActiveUsers($companyId)
     {
-        $comp = $this->db->get_where('companies', ['inisial' => $company_code])->row();
-        $companyId = $comp ? $comp->id_perusahaan : 1;
-
-        return $this->db->select('DISTINCT(users.id_user), users.full_name, users.username')
-            ->from('users')
-            ->join('user_groups', 'user_groups.user_id = users.id_user AND user_groups.company_id = ' . (int)$companyId, 'left')
-            ->join('assign_company', 'assign_company.user_id = users.id_user AND assign_company.company_id = ' . (int)$companyId, 'left')
-            ->where('users.status', 'ACT')
-            ->group_start()
-                ->where('user_groups.company_id', $companyId)
-                ->or_where('assign_company.company_id', $companyId)
-            ->group_end()
-            ->order_by('users.full_name', 'ASC')
+        return $this->db->distinct()
+            ->select('id_user, full_name, username')
+            ->from('view_users')
+            ->where('company_id', $companyId)
+            ->where('status', 'ACT')
+            ->order_by('full_name', 'ASC')
             ->get()
             ->result();
     }

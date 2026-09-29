@@ -40,7 +40,7 @@ class Audit_preparation extends Admin_Controller
         $data['temuan'] = $this->audit_program_model->getActiveTemuan();
         $data['departments'] = $this->audit_program_model->getDepartments($this->company);
         $data['requirements'] = $this->audit_program_model->getPublishedRequirements();
-        $data['users'] = $this->audit_program_model->getActiveUsers();
+        $data['users'] = $this->audit_program_model->getActiveUsers($this->company);
         $data['program'] = null;
         $data['evaluations'] = [];
         $data['critical_issues'] = [];
@@ -75,7 +75,7 @@ class Audit_preparation extends Admin_Controller
         $data['temuan'] = $this->audit_program_model->getActiveTemuan();
         $data['departments'] = $this->audit_program_model->getDepartments($this->company);
         $data['requirements'] = $this->audit_program_model->getPublishedRequirements();
-        $data['users'] = $this->audit_program_model->getActiveUsers();
+        $data['users'] = $this->audit_program_model->getActiveUsers($this->company);
 
         // Load existing program and child records
         $data['program'] = $program;
