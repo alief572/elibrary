@@ -175,8 +175,11 @@ $(document).ready(function() {
 		reindexRiskRows();
 	});
 
-	// Initialize select2 on existing rows
-	initRiskSelect2();
+	// Only initialize immediately when this tab is already visible.
+	// Hidden-tab Select2 instances are initialized by form.php on shown.bs.tab.
+	if ($('#tab-risk').hasClass('active') || $('#tab-risk').is(':visible')) {
+		initRiskSelect2();
+	}
 	reindexRiskRows();
 });
 </script>
