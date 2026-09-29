@@ -528,9 +528,9 @@ class Dashboard extends Admin_Controller
 			$redirect_url = base_url('corrective_internal');
 			$title = 'CAR Internal Open';
 			$data = $this->db->query(
-				"SELECT ci.id, ci.nomor_car, ci.tanggal_car, ci.deadline_car, ci.status, d.department_name as department_name
+				"SELECT ci.id, ci.nomor_car, ci.tanggal_car, ci.deadline_car, ci.status, d.name as department_name
 				FROM corrective_internal ci
-				LEFT JOIN audit_department d ON d.id = ci.department_pic_car_id
+				LEFT JOIN departements d ON d.id = ci.department_pic_car_id
 				WHERE ci.company_id = ? AND ci.deleted_at IS NULL AND ci.status IN ('draft', 'reject')
 				ORDER BY ci.id DESC LIMIT 10",
 				[$this->company]
@@ -547,7 +547,7 @@ class Dashboard extends Admin_Controller
 				$data = $this->db->query(
 					"SELECT pa.id as number,
 						COALESCE(p.name, aps.process_name_free) as name,
-						COALESCE(ad.department_name, aps.auditee_name_free) as departement_name,
+						COALESCE(ad.name, aps.auditee_name_free) as departement_name,
 						aps.audit_date as date,
 						CASE WHEN ca.id IS NULL THEN 'draft' ELSE ca.status_ca END as status
 					FROM pelaksanaan_audit pa
@@ -555,7 +555,7 @@ class Dashboard extends Admin_Controller
 					LEFT JOIN audit_program_schedule aps ON aps.id = pa.schedule_id
 					LEFT JOIN procedures p ON p.id = aps.process_id
 					LEFT JOIN audit_program_schedule_auditee apsa ON apsa.schedule_id = aps.id
-					LEFT JOIN audit_department ad ON ad.id = apsa.department_id
+					LEFT JOIN departements ad ON ad.id = apsa.department_id
 					LEFT JOIN corrective_action ca ON ca.pelaksanaan_id = pa.id AND ca.deleted = '0'
 					WHERE pa.status = '1'
 					AND (ca.id IS NULL OR ca.status_ca NOT IN ('approved', 'closed'))

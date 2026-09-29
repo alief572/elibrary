@@ -195,24 +195,64 @@ class Audit_program_model extends BF_Model
      */
     public function getDepartments($company_id = null)
     {
-        $this->db->select('id, name')
-            ->where('status', '1');
-        if ($company_id) {
-            $this->db->where('company_id', $company_id);
-        }
-        $result = $this->db->order_by('name', 'ASC')
-            ->get('departements')
-            ->result();
+        // 1. Try 'departements' table first
+        if ($this->db->table_exists('departements')) {
+            $hasCompanyId = $this->db->field_exists('company_id', 'departements');
+            $hasStatus = $this->db->field_exists('status', 'departements');
 
-        if (empty($result) && $company_id) {
-            $result = $this->db->select('id, name')
-                ->where('status', '1')
-                ->order_by('name', 'ASC')
-                ->get('departements')
-                ->result();
+            $this->db->select('id, name');
+            if ($hasStatus) {
+                $this->db->where('status', '1');
+            }
+            if ($company_id && $hasCompanyId) {
+                $this->db->where('company_id', $company_id);
+            }
+            $query = $this->db->order_by('name', 'ASC')->get('departements');
+            $result = ($query && is_object($query) && method_exists($query, 'result')) ? $query->result() : [];
+
+            if (empty($result) && $company_id && $hasCompanyId) {
+                $this->db->select('id, name');
+                if ($hasStatus) {
+                    $this->db->where('status', '1');
+                }
+                $query = $this->db->order_by('name', 'ASC')->get('departements');
+                $result = ($query && is_object($query) && method_exists($query, 'result')) ? $query->result() : [];
+            }
+
+            if (!empty($result)) {
+                return $result;
+            }
         }
 
-        return $result;
+        // 2. Fallback to 'audit_department' table
+        if ($this->db->table_exists('audit_department')) {
+            $hasStatus = $this->db->field_exists('status', 'audit_department');
+            $this->db->select('id, department_name as name');
+            if ($hasStatus) {
+                $this->db->where('status', '1');
+            }
+            $query = $this->db->order_by('department_name', 'ASC')->get('audit_department');
+            $result = ($query && is_object($query) && method_exists($query, 'result')) ? $query->result() : [];
+            if (!empty($result)) {
+                return $result;
+            }
+        }
+
+        // 3. Fallback to 'departments' table
+        if ($this->db->table_exists('departments')) {
+            $hasStatus = $this->db->field_exists('status', 'departments');
+            $this->db->select('id, name');
+            if ($hasStatus) {
+                $this->db->where('status', '1');
+            }
+            $query = $this->db->order_by('name', 'ASC')->get('departments');
+            $result = ($query && is_object($query) && method_exists($query, 'result')) ? $query->result() : [];
+            if (!empty($result)) {
+                return $result;
+            }
+        }
+
+        return [];
     }
 
     /**
@@ -397,12 +437,34 @@ class Audit_program_model extends BF_Model
      */
     public function getScheduleAuditees($schedule_id)
     {
-        return $this->db->select('audit_program_schedule_auditee.*, departements.name as department_name')
-            ->from('audit_program_schedule_auditee')
-            ->join('departements', 'departements.id = audit_program_schedule_auditee.department_id', 'left')
-            ->where('audit_program_schedule_auditee.schedule_id', $schedule_id)
-            ->get()
-            ->result();
+        $deptTable = null;
+        $deptNameCol = 'name';
+
+        if ($this->db->table_exists('departements')) {
+            $deptTable = 'departements';
+            $deptNameCol = 'departements.name';
+        } elseif ($this->db->table_exists('audit_department')) {
+            $deptTable = 'audit_department';
+            $deptNameCol = 'audit_department.department_name';
+        } elseif ($this->db->table_exists('departments')) {
+            $deptTable = 'departments';
+            $deptNameCol = 'departments.name';
+        }
+
+        if ($deptTable) {
+            $query = $this->db->select('audit_program_schedule_auditee.*, ' . $deptNameCol . ' as department_name')
+                ->from('audit_program_schedule_auditee')
+                ->join($deptTable, $deptTable . '.id = audit_program_schedule_auditee.department_id', 'left')
+                ->where('audit_program_schedule_auditee.schedule_id', $schedule_id)
+                ->get();
+        } else {
+            $query = $this->db->select('audit_program_schedule_auditee.*, "" as department_name')
+                ->from('audit_program_schedule_auditee')
+                ->where('audit_program_schedule_auditee.schedule_id', $schedule_id)
+                ->get();
+        }
+
+        return ($query && is_object($query) && method_exists($query, 'result')) ? $query->result() : [];
     }
 
     // =========================================================================
