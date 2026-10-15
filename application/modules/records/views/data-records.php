@@ -3,6 +3,12 @@
 <table class="table table-hover" id="records-tree-table">
   <thead>
     <tr>
+      <th class="py-0 text-center" width="40">
+        <label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+          <input type="checkbox" id="check-all-records" title="Select All">
+          <span></span>
+        </label>
+      </th>
       <th class="py-0">File or Folder Name</th>
       <th class="py-0 text-left">Description</th>
       <th class="py-0 text-right">Last Update</th>
@@ -33,6 +39,12 @@
         }
       ?>
         <tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
+          <td class="py-1 text-center align-middle" width="40">
+            <label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+              <input type="checkbox" class="record-checkbox" value="<?= $form->id; ?>" data-type="<?= $form->flag_type; ?>" data-name="<?= htmlspecialchars($form->name); ?>">
+              <span></span>
+            </label>
+          </td>
           <td class="py-1">
             <a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
               <div class="d-flex justify-content-start align-items-center">
@@ -99,11 +111,13 @@
                     <?php if ($this->uri->segment(1) == 'records') : ?>
                       <a class="dropdown-item add-folder-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
                       <a class="dropdown-item add-record-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
+                      <a class="dropdown-item paste-into-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" style="display:none;"><i class="fa fa-paste text-success mr-2"></i> Paste into this folder</a>
                       <div class="dropdown-divider"></div>
                     <?php endif; ?>
                     <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
                   <?php endif; ?>
                   <?php if (!($form->flag_type == 'FILE' && $is_locked)) : ?>
+                  <a class="dropdown-item copy-single-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" data-type="<?= $form->flag_type; ?>"><i class="fa fa-copy text-info mr-2"></i> Copy</a>
                   <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item delete-record text-danger" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i> Delete</a>
@@ -116,7 +130,7 @@
       <?php endforeach; ?>
     <?php else : ?>
       <tr>
-        <td colspan="4" class="text-center py-5">
+        <td colspan="5" class="text-center py-5">
           <i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
           <h5 class="text-muted">~ Folder Kosong ~</h5>
           <button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Create Folder</button>

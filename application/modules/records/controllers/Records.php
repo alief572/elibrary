@@ -372,7 +372,15 @@ class Records extends Admin_Controller
 	{
 		$Data = $this->input->post();
 		$id = $Data['folder_id'] ?: uniqid(date('m'));
-		$Data['id'] = $id; $Data['name'] = $Data['folder_name']; $Data['parent_id'] = $Data['parent_id'] ?: null;
+		$is_new = empty($Data['folder_id']);
+		$Data['id'] = $id;
+		$Data['name'] = $Data['folder_name'];
+		if ($is_new) {
+			$Data['parent_id'] = !empty($Data['parent_id']) ? $Data['parent_id'] : null;
+		} else {
+			// Do NOT overwrite parent_id on edit
+			unset($Data['parent_id']);
+		}
 		unset($Data['folder_id'], $Data['folder_name']);
 		$success = $this->RecModel->saveFolder($Data, $this->auth->user_id(), $this->company);
 		echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Folder successfully saved.' : 'Folder failed to save.'), 'id' => $Data['procedure_id']]);
@@ -461,6 +469,9 @@ class Records extends Admin_Controller
 			$data['status'] = 'PUB';
 			if ($is_new) {
 				$data['confidential_group_ids'] = $this->group_id;
+				$data['parent_id'] = !empty($data['parent_id']) ? $data['parent_id'] : null;
+			} else {
+				unset($data['parent_id']); // Preserve existing parent_id on edit
 			}
 			unset($data['old_file'], $data['type']);
 			$success = $this->RecModel->saveFile('dir_records', $data, $this->auth->user_id());
@@ -487,6 +498,9 @@ class Records extends Admin_Controller
 			$data['status'] = 'PUB';
 			if ($is_new) {
 				$data['confidential_group_ids'] = $this->group_id;
+				$data['parent_id'] = !empty($data['parent_id']) ? $data['parent_id'] : null;
+			} else {
+				unset($data['parent_id']); // Preserve existing parent_id on edit
 			}
 			unset($data['old_file'], $data['type']);
 			$data['link_url'] = null;
@@ -570,6 +584,77 @@ class Records extends Admin_Controller
 			}
 			echo json_encode(['status' => ($success ? 1 : 0), 'msg' => ($success ? 'Move successfully.' : 'Move failed.')]);
 		}
+	}
+
+	public function destination_modal()
+	{
+		$action = $this->input->get('action') ?: 'move';
+		$procedure_id = $this->input->get('procedure_id');
+		$ids_str = $this->input->get('ids') ?: '';
+		$ids = array_filter(explode(',', $ids_str));
+
+		if (empty($procedure_id) && !empty($ids)) {
+			$firstRecord = $this->RecModel->getFileById('dir_records', reset($ids));
+			if ($firstRecord) {
+				$procedure_id = $firstRecord->procedure_id;
+			}
+		}
+
+		$folders = $this->RecModel->getFolderHierarchy($procedure_id);
+		$descendants = [];
+		$records = [];
+
+		foreach ($ids as $id) {
+			$rec = $this->RecModel->getFileById('dir_records', $id);
+			if ($rec) {
+				$records[] = $rec;
+				if ($rec->flag_type == 'FOLDER' && $action == 'move') {
+					$descendants[] = $rec->id;
+					$descendants = array_merge($descendants, $this->RecModel->getDescendants($rec->id));
+				}
+			}
+		}
+
+		$descendants = array_unique($descendants);
+
+		$this->template->set([
+			'action'       => $action,
+			'records'      => $records,
+			'folders'      => $folders,
+			'descendants'  => $descendants,
+			'procedure_id' => $procedure_id,
+			'ids_str'      => $ids_str
+		]);
+		$this->template->render('destination_modal');
+	}
+
+	public function batch_paste()
+	{
+		$action = $this->input->post('action'); // 'copy' or 'move'
+		$target_folder_id = $this->input->post('target_folder_id');
+		$record_ids = $this->input->post('record_ids');
+
+		if (is_string($record_ids)) {
+			$record_ids = array_filter(explode(',', $record_ids));
+		}
+
+		if (empty($record_ids) || !is_array($record_ids)) {
+			echo json_encode(['status' => 0, 'msg' => 'No items selected to ' . ($action ?: 'process') . '.']);
+			return;
+		}
+
+		if (empty($target_folder_id)) {
+			echo json_encode(['status' => 0, 'msg' => 'Target folder is required.']);
+			return;
+		}
+
+		if ($action === 'copy') {
+			$result = $this->RecModel->batchCopyRecords($record_ids, $target_folder_id, $this->auth->user_id(), $this->company);
+		} else {
+			$result = $this->RecModel->batchMoveRecords($record_ids, $target_folder_id, $this->auth->user_id());
+		}
+
+		echo json_encode($result);
 	}
 
 	public function printOut($id = null)

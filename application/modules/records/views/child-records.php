@@ -20,6 +20,12 @@
     }
   ?>
     <tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="<?= $parent_id; ?>" data-depth="<?= $depth; ?>" data-loaded="false">
+      <td class="py-1 text-center align-middle" width="40">
+        <label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+          <input type="checkbox" class="record-checkbox" value="<?= $form->id; ?>" data-type="<?= $form->flag_type; ?>" data-name="<?= htmlspecialchars($form->name); ?>">
+          <span></span>
+        </label>
+      </td>
       <td class="py-1">
         <a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
           <div class="d-flex justify-content-start align-items-center" style="padding-left: <?= $depth * 30 ?>px;">
@@ -86,11 +92,13 @@
                 <?php if ($this->uri->segment(1) == 'records') : ?>
                   <a class="dropdown-item add-folder-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
                   <a class="dropdown-item add-record-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
+                  <a class="dropdown-item paste-into-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" style="display:none;"><i class="fa fa-paste text-success mr-2"></i> Paste into this folder</a>
                   <div class="dropdown-divider"></div>
                 <?php endif; ?>
                 <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
               <?php endif; ?>
               <?php if (!($form->flag_type == 'FILE' && $is_locked)) : ?>
+              <a class="dropdown-item copy-single-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" data-type="<?= $form->flag_type; ?>"><i class="fa fa-copy text-info mr-2"></i> Copy</a>
               <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item delete-record text-danger" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i> Delete</a>
@@ -103,7 +111,7 @@
   <?php endforeach; ?>
 <?php else: ?>
   <tr class="tree-row empty-folder" data-parent-id="<?= $parent_id; ?>">
-    <td colspan="4" class="py-2 text-muted" style="padding-left: <?= ($depth * 30) + 40 ?>px;">
+    <td colspan="5" class="py-2 text-muted" style="padding-left: <?= ($depth * 30) + 40 ?>px;">
       <em>Folder is empty</em>
     </td>
   </tr>

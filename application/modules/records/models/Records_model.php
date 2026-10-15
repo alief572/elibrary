@@ -99,12 +99,14 @@ class Records_model extends BF_Model
 
     public function getRecordsByProcedure($procedureId)
     {
-        return $this->db->order_by('name', 'ASC')->get_where('dir_records', [
-            'procedure_id' => $procedureId,
-            'status !=' => 'DEL',
-            'flag_type' => 'FOLDER',
-            'parent_id' => null
-        ])->result();
+        return $this->db
+            ->order_by("(CASE WHEN flag_type = 'FOLDER' THEN 0 ELSE 1 END)", 'ASC', false)
+            ->order_by('name', 'ASC')
+            ->get_where('dir_records', [
+                'procedure_id' => $procedureId,
+                'status !='    => 'DEL',
+                'parent_id'    => null
+            ])->result();
     }
 
     public function getDirectoryLog($id)
@@ -114,11 +116,14 @@ class Records_model extends BF_Model
 
     public function getSubRecords($procedureId, $parentId)
     {
-        return $this->db->order_by('name', 'ASC')->get_where('dir_records', [
-            'procedure_id' => $procedureId,
-            'parent_id'    => $parentId,
-            'status !='    => 'DEL'
-        ])->result();
+        return $this->db
+            ->order_by("(CASE WHEN flag_type = 'FOLDER' THEN 0 ELSE 1 END)", 'ASC', false)
+            ->order_by('name', 'ASC')
+            ->get_where('dir_records', [
+                'procedure_id' => $procedureId,
+                'parent_id'    => $parentId,
+                'status !='    => 'DEL'
+            ])->result();
     }
 
     public function searchRecords($procedureId, $keyword)
@@ -126,6 +131,7 @@ class Records_model extends BF_Model
         $this->db->where('procedure_id', $procedureId);
         $this->db->where('status !=', 'DEL');
         $this->db->like('name', $keyword);
+        $this->db->order_by("(CASE WHEN flag_type = 'FOLDER' THEN 0 ELSE 1 END)", 'ASC', false);
         $this->db->order_by('name', 'ASC');
         return $this->db->get('dir_records')->result();
     }
@@ -244,8 +250,12 @@ class Records_model extends BF_Model
         if (intval($check) == 0) {
             $data['created_by'] = $userId;
             $data['created_at'] = date('Y-m-d H:i:s');
+            if (isset($data['parent_id'])) {
+                $data['parent_id'] = !empty($data['parent_id']) ? $data['parent_id'] : null;
+            }
             $res = $this->db->insert($table, $data);
-        } else {
+            // NEVER overwrite parent_id on update, preserving folder hierarchy (moving is handled via move/paste)
+            unset($data['parent_id']);
             $data['modified_by'] = $userId;
             $data['modified_at'] = date('Y-m-d H:i:s');
             $res = $this->db->update($table, $data, ['id' => $data['id']]);
@@ -294,8 +304,11 @@ class Records_model extends BF_Model
             $data['created_by'] = $userId;
             $data['created_at'] = date('Y-m-d H:i:s');
             $data['status']     = 'PUB';
+            $data['parent_id']  = !empty($data['parent_id']) ? $data['parent_id'] : null;
             $res = $this->db->insert('dir_records', $data);
         } else {
+            // NEVER overwrite parent_id when editing existing folder, preserving its folder hierarchy
+            unset($data['parent_id']);
             $data['modified_by'] = $userId;
             $data['modified_at'] = date('Y-m-d H:i:s');
             $res = $this->db->update('dir_records', $data, ['id' => $data['id']]);
@@ -374,5 +387,189 @@ class Records_model extends BF_Model
                 $this->deleteDescendants($child->id, $userId);
             }
         }
+    }
+
+    public function batchMoveRecords($recordIds, $targetFolderId, $userId)
+    {
+        if (empty($recordIds) || !is_array($recordIds)) {
+            return ['status' => 0, 'msg' => 'No items selected to move.'];
+        }
+
+        $targetParentId = ($targetFolderId === 'root') ? null : $targetFolderId;
+
+        if ($targetParentId !== null) {
+            $targetFolder = $this->getFileById('dir_records', $targetParentId);
+            if (!$targetFolder || $targetFolder->status == 'DEL' || $targetFolder->flag_type != 'FOLDER') {
+                return ['status' => 0, 'msg' => 'Target folder is invalid or does not exist.'];
+            }
+        }
+
+        $movedCount = 0;
+        $errors = [];
+
+        foreach ($recordIds as $id) {
+            $record = $this->getFileById('dir_records', $id);
+            if (!$record || $record->status == 'DEL') {
+                continue;
+            }
+
+            if ($record->id == $targetParentId) {
+                $errors[] = "Cannot move \"{$record->name}\" into itself.";
+                continue;
+            }
+
+            if ($record->flag_type == 'FOLDER' && $targetParentId !== null) {
+                $descendants = $this->getDescendants($record->id);
+                if (in_array($targetParentId, $descendants)) {
+                    $errors[] = "Cannot move folder \"{$record->name}\" into one of its subfolders.";
+                    continue;
+                }
+            }
+
+            if ($record->parent_id == $targetParentId) {
+                continue;
+            }
+
+            $success = $this->moveRecord($record->id, $targetFolderId, $userId);
+            if ($success) {
+                $movedCount++;
+                $this->updateHistory([
+                    'directory_id' => $record->id,
+                    'new_status'   => $record->status,
+                    'doc_type'     => ($record->flag_type == 'FOLDER' ? 'Folder' : 'Record'),
+                    'note'         => 'Move ' . ($record->flag_type == 'FOLDER' ? 'Folder' : 'File') . ' to ' . ($targetFolderId == 'root' ? 'Root' : 'another folder')
+                ]);
+            }
+        }
+
+        if ($movedCount == 0 && !empty($errors)) {
+            return ['status' => 0, 'msg' => implode("<br>", $errors)];
+        }
+
+        $msg = "Successfully moved $movedCount item(s).";
+        if (!empty($errors)) {
+            $msg .= "<br>Some items could not be moved:<br>" . implode("<br>", $errors);
+        }
+
+        return ['status' => 1, 'msg' => $msg, 'moved_count' => $movedCount];
+    }
+
+    public function copyRecord($recordId, $targetParentId, $userId, $companyId)
+    {
+        $record = $this->getFileById('dir_records', $recordId);
+        if (!$record || $record->status == 'DEL') {
+            return false;
+        }
+
+        $parentId = ($targetParentId === 'root') ? null : $targetParentId;
+
+        // Snapshot children BEFORE insert to prevent infinite loop on self/descendant copy
+        $children = [];
+        if ($record->flag_type == 'FOLDER') {
+            $children = $this->db->get_where('dir_records', [
+                'parent_id' => $recordId,
+                'status !=' => 'DEL'
+            ])->result();
+        }
+
+        // Generate unique 15-character ID
+        $newId = uniqid(date('m'));
+        while ($this->db->get_where('dir_records', ['id' => $newId])->num_rows() > 0) {
+            usleep(2000);
+            $newId = uniqid(date('m'));
+        }
+
+        // Duplicate physical file if FILE
+        $newFileName = null;
+        if ($record->flag_type == 'FILE' && !empty($record->file_name)) {
+            $upload_path = "./directory/RECORDS/" . $companyId . "/";
+            $orig_file = $upload_path . $record->file_name;
+            if (file_exists($orig_file)) {
+                $ext = pathinfo($record->file_name, PATHINFO_EXTENSION);
+                $newFileName = md5(uniqid(rand(), true)) . ($ext ? '.' . $ext : '');
+                if (!is_dir($upload_path)) {
+                    mkdir($upload_path, 0755, true);
+                }
+                copy($orig_file, $upload_path . $newFileName);
+            } else {
+                $newFileName = $record->file_name;
+            }
+        }
+
+        $newName = $record->name;
+        if ($record->parent_id == $parentId) {
+            $newName = $record->name . ' - Copy';
+        }
+
+        $newData = [
+            'id'                     => $newId,
+            'parent_id'              => $parentId,
+            'procedure_id'           => $record->procedure_id,
+            'flag_type'              => $record->flag_type,
+            'flag_confidential'      => $record->flag_confidential,
+            'confidential_group_ids' => $record->confidential_group_ids,
+            'name'                   => $newName,
+            'description'            => $record->description,
+            'doc'                    => $record->doc,
+            'file_name'              => $newFileName,
+            'link_url'               => $record->link_url,
+            'ext'                    => $record->ext,
+            'active'                 => $record->active,
+            'size'                   => $record->size,
+            'company_id'             => $companyId,
+            'status'                 => 'PUB',
+            'created_by'             => $userId,
+            'created_at'             => date('Y-m-d H:i:s'),
+            'modified_by'            => null,
+            'modified_at'            => null,
+            'number'                 => $record->number,
+            'determination_date'     => $record->determination_date,
+            'about'                  => $record->about,
+            'doc_status'             => $record->doc_status,
+            'publisher'              => $record->publisher
+        ];
+
+        $this->db->insert('dir_records', $newData);
+
+        $this->updateHistory([
+            'directory_id' => $newId,
+            'new_status'   => 'PUB',
+            'doc_type'     => ($record->flag_type == 'FOLDER' ? 'Folder' : 'Record'),
+            'note'         => 'Copy ' . ($record->flag_type == 'FOLDER' ? 'Folder' : 'File') . ' from ' . $record->name
+        ]);
+
+        if (!empty($children)) {
+            foreach ($children as $child) {
+                $this->copyRecord($child->id, $newId, $userId, $companyId);
+            }
+        }
+
+        return $newId;
+    }
+
+    public function batchCopyRecords($recordIds, $targetFolderId, $userId, $companyId)
+    {
+        if (empty($recordIds) || !is_array($recordIds)) {
+            return ['status' => 0, 'msg' => 'No items selected to copy.'];
+        }
+
+        $targetParentId = ($targetFolderId === 'root') ? null : $targetFolderId;
+
+        if ($targetParentId !== null) {
+            $targetFolder = $this->getFileById('dir_records', $targetParentId);
+            if (!$targetFolder || $targetFolder->status == 'DEL' || $targetFolder->flag_type != 'FOLDER') {
+                return ['status' => 0, 'msg' => 'Target folder is invalid or does not exist.'];
+            }
+        }
+
+        $copiedCount = 0;
+        foreach ($recordIds as $id) {
+            $res = $this->copyRecord($id, $targetFolderId, $userId, $companyId);
+            if ($res) {
+                $copiedCount++;
+            }
+        }
+
+        return ['status' => 1, 'msg' => "Successfully copied $copiedCount item(s).", 'copied_count' => $copiedCount];
     }
 }

@@ -10,6 +10,16 @@
 	tr:hover .text-name {
 		color: #0bb783;
 	}
+
+	.cut-item {
+		opacity: 0.55 !important;
+		background-color: #fff8dd !important;
+		border-left: 3px dashed #ffa800 !important;
+	}
+
+	tr.table-active {
+		background-color: #f1faff !important;
+	}
 </style>
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
 	<div class="d-flex flex-column-fluid">
@@ -25,18 +35,66 @@
 
 					<div class="card-body pt-3">
 						<div class="d-flex justify-content-between align-items-center mb-3">
-							<button type="button" class="btn btn-warning add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
-							<div class="input-group" style="width: 300px;">
-								<div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-search"></i></span></div>
-								<input type="text" class="form-control" id="search-record" placeholder="Search files or folders...">
+							<div class="d-flex align-items-center flex-wrap">
+								<button type="button" class="btn btn-warning add_folder mr-2"><i class="fa fa-folder-plus"></i> Add Folder</button>
+								<div id="selection-actions" style="display:none;" class="btn-group">
+									<button type="button" class="btn btn-outline-primary" id="btn-copy-selected" title="Copy selected items">
+										<i class="fa fa-copy"></i> Copy (<span class="selected-count">0</span>)
+									</button>
+									<button type="button" class="btn btn-outline-warning" id="btn-move-selected" title="Move selected items">
+										<i class="fa fa-cut"></i> Move (<span class="selected-count">0</span>)
+									</button>
+									<button type="button" class="btn btn-outline-secondary" id="btn-choose-dest-selection" title="Choose destination...">
+										<i class="fa fa-folder-open"></i> To...
+									</button>
+									<button type="button" class="btn btn-clean text-danger" id="btn-clear-selection" title="Clear selection">
+										<i class="fa fa-times"></i>
+									</button>
+								</div>
+							</div>
+							<div class="d-flex align-items-center">
+								<button type="button" class="btn btn-success mr-2 font-weight-bold" id="btn-paste-toolbar" style="display:none;">
+									<i class="fa fa-paste"></i> Paste (<span id="clipboard-count">0</span>)
+								</button>
+								<div class="input-group" style="width: 300px;">
+									<div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-search"></i></span></div>
+									<input type="text" class="form-control" id="search-record" placeholder="Search files or folders...">
+								</div>
 							</div>
 						</div>
+
+						<!-- Clipboard Notification Bar -->
+						<div id="clipboard-bar" class="alert alert-custom alert-light-success fade show mb-3" style="display:none; border: 1px dashed #1bc5bd;">
+							<div class="alert-icon"><i class="fa fa-clipboard-check fa-2x text-success"></i></div>
+							<div class="alert-text">
+								<span class="font-weight-bolder h6 mb-0 d-block" id="clipboard-title">0 Item(s) in clipboard</span>
+								<span class="text-muted small" id="clipboard-desc">Ready to paste. Click "Paste Here" or pick destination.</span>
+							</div>
+							<div class="alert-close d-flex align-items-center">
+								<button type="button" class="btn btn-sm btn-success font-weight-bold mr-2" id="btn-paste-current">
+									<i class="fa fa-paste"></i> Paste Here (Root)
+								</button>
+								<button type="button" class="btn btn-sm btn-primary font-weight-bold mr-2" id="btn-choose-dest">
+									<i class="fa fa-folder-open"></i> Choose Destination...
+								</button>
+								<button type="button" class="btn btn-sm btn-secondary font-weight-bold" id="btn-cancel-clipboard">
+									<i class="fa fa-times"></i> Cancel
+								</button>
+							</div>
+						</div>
+
 						<hr>
 						<div id="data-records">
 							<input type="hidden" id="refresh_id" value="">
 							<table id="records-tree-table" class="table table-hover">
 								<thead>
 									<tr>
+										<th class="py-0 text-center" width="40">
+											<label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+												<input type="checkbox" id="check-all-records" title="Select All">
+												<span></span>
+											</label>
+										</th>
 										<th class="py-0">File or Folder Name</th>
 										<th class="py-0 text-left">Description</th>
 										<th class="py-0 text-right">Last Update</th>
@@ -66,6 +124,12 @@
 											}
 										?>
 											<tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
+												<td class="py-1 text-center align-middle" width="40">
+													<label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+														<input type="checkbox" class="record-checkbox" value="<?= $form->id; ?>" data-type="<?= $form->flag_type; ?>" data-name="<?= htmlspecialchars($form->name); ?>">
+														<span></span>
+													</label>
+												</td>
 												<td class="py-1">
 													<a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
 														<div class="d-flex justify-content-start align-items-center">
@@ -130,10 +194,12 @@
 																<?php else: ?>
 																	<a href="javascript:void(0)" class="dropdown-item add-folder-inside" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
 																	<a href="javascript:void(0)" class="dropdown-item add-record-inside" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
+																	<a href="javascript:void(0)" class="dropdown-item paste-into-folder" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" style="display:none;"><i class="fa fa-paste text-success mr-2"></i> Paste into this folder</a>
 																	<div class="dropdown-divider"></div>
 																	<a href="javascript:void(0)" class="dropdown-item edit-folder" title="Edit Folder" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit</a>
 																<?php endif; ?>
 																<?php if (!($form->flag_type == 'FILE' && $is_locked)) : ?>
+																<a href="javascript:void(0)" class="dropdown-item copy-single-record" title="Copy" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" data-type="<?= $form->flag_type; ?>"><i class="fa fa-copy text-info mr-2"></i> Copy</a>
 																<a href="javascript:void(0)" class="dropdown-item move-record" title="Move" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
 																<div class="dropdown-divider"></div>
 																<a href="javascript:void(0)" class="dropdown-item delete-record" title="Delete" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i>Delete</a>
@@ -146,7 +212,7 @@
 										<?php endforeach; ?>
 									<?php else : ?>
 										<tr>
-											<td colspan="3" class="text-center py-5">
+											<td colspan="5" class="text-center py-5">
 												<i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
 												<h5 class="text-muted">~ Folder Kosong ~</h5>
 												<button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Add Folder</button>
@@ -1496,6 +1562,7 @@
 						row.after(html);
 						row.data('loaded', 'true');
 						row.attr('data-loaded', 'true');
+						renderClipboardUI();
 					});
 				} else {
 					showChildren(folder_id);
@@ -1644,11 +1711,347 @@
 			if (keyword.length > 2) {
 				$.post(siteurl + 'records/search_records', { procedure_id: procedure_id, keyword: keyword }, function(html) {
 					$('#data-records').html(html);
+					renderClipboardUI();
 				});
 			} else if (keyword.length == 0) {
-				$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id);
+				$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id, function() {
+					renderClipboardUI();
+				});
 			}
 		});
+
+		/* ==========================================================
+		   MULTI-SELECT, COPY, MOVE, AND BATCH PASTE FEATURE
+		   ========================================================== */
+
+		function getClipboard() {
+			try {
+				const data = sessionStorage.getItem('records_clipboard');
+				return data ? JSON.parse(data) : null;
+			} catch (e) {
+				return null;
+			}
+		}
+
+		function setClipboard(action, ids, names) {
+			const procedure_id = $('#procedure_id').val();
+			const payload = {
+				action: action,
+				ids: ids,
+				names: names,
+				procedure_id: procedure_id,
+				time: new Date().getTime()
+			};
+			sessionStorage.setItem('records_clipboard', JSON.stringify(payload));
+			renderClipboardUI();
+		}
+
+		function clearClipboard() {
+			sessionStorage.removeItem('records_clipboard');
+			renderClipboardUI();
+		}
+
+		function updateSelectionUI() {
+			const checked = $('.record-checkbox:checked');
+			const count = checked.length;
+			$('.selected-count').text(count);
+
+			if (count > 0) {
+				$('#selection-actions').show();
+			} else {
+				$('#selection-actions').hide();
+				$('#check-all-records').prop('checked', false);
+			}
+
+			// Highlight selected rows
+			$('.tree-row').each(function() {
+				const isChecked = $(this).find('.record-checkbox').is(':checked');
+				if (isChecked) {
+					$(this).addClass('table-active');
+				} else {
+					$(this).removeClass('table-active');
+				}
+			});
+		}
+
+		function renderClipboardUI() {
+			const clip = getClipboard();
+			const procedure_id = $('#procedure_id').val();
+
+			// Remove all cut highlights first
+			$('.tree-row').removeClass('cut-item');
+
+			if (clip && clip.ids && clip.ids.length > 0 && clip.procedure_id == procedure_id) {
+				const count = clip.ids.length;
+				const actionText = (clip.action === 'copy') ? 'Copy' : 'Move';
+				const badgeClass = (clip.action === 'copy') ? 'alert-light-primary border-primary' : 'alert-light-warning border-warning';
+
+				$('#clipboard-bar').removeClass('alert-light-primary alert-light-warning border-primary border-warning')
+					.addClass(badgeClass).show();
+
+				$('#clipboard-title').html(`<strong>${count} item(s) siap di-paste</strong> (${actionText})`);
+				$('#clipboard-desc').text(`Mode: ${actionText}. Klik "Paste Here" di bawah, buka/klik opsi folder target, atau klik "Choose Destination".`);
+				$('#btn-paste-toolbar').show().find('#clipboard-count').text(count);
+				
+				// Show paste action in folder dropdowns
+				$('.paste-into-folder').show();
+
+				// If action is move, mark cut rows visually
+				if (clip.action === 'move') {
+					clip.ids.forEach(function(id) {
+						$(`tr.tree-row[data-id="${id}"]`).addClass('cut-item');
+					});
+				}
+			} else {
+				$('#clipboard-bar').hide();
+				$('#btn-paste-toolbar').hide();
+				$('.paste-into-folder').hide();
+			}
+		}
+
+		// Initial render of clipboard UI on load
+		renderClipboardUI();
+
+		// Checkbox toggle
+		$(document).on('change', '.record-checkbox', function(e) {
+			e.stopPropagation();
+			updateSelectionUI();
+		});
+
+		// Check all toggle
+		$(document).on('change', '#check-all-records', function() {
+			const isChecked = $(this).is(':checked');
+			$('.record-checkbox:visible').prop('checked', isChecked);
+			updateSelectionUI();
+		});
+
+		// Clear selection
+		$(document).on('click', '#btn-clear-selection', function() {
+			$('.record-checkbox').prop('checked', false);
+			$('#check-all-records').prop('checked', false);
+			updateSelectionUI();
+		});
+
+		// Copy Selected button
+		$(document).on('click', '#btn-copy-selected', function() {
+			const ids = [];
+			const names = [];
+			$('.record-checkbox:checked').each(function() {
+				ids.push($(this).val());
+				names.push($(this).data('name'));
+			});
+
+			if (ids.length === 0) {
+				Swal.fire('Warning', 'Pilih minimal 1 item untuk disalin!', 'warning');
+				return;
+			}
+
+			setClipboard('copy', ids, names);
+			$('.record-checkbox').prop('checked', false);
+			$('#check-all-records').prop('checked', false);
+			updateSelectionUI();
+
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'info',
+				title: `${ids.length} item disalin ke clipboard! Pilih folder tujuan lalu klik Paste.`,
+				showConfirmButton: false,
+				timer: 3000
+			});
+		});
+
+		// Move Selected button
+		$(document).on('click', '#btn-move-selected', function() {
+			const ids = [];
+			const names = [];
+			$('.record-checkbox:checked').each(function() {
+				ids.push($(this).val());
+				names.push($(this).data('name'));
+			});
+
+			if (ids.length === 0) {
+				Swal.fire('Warning', 'Pilih minimal 1 item untuk dipindahkan!', 'warning');
+				return;
+			}
+
+			setClipboard('move', ids, names);
+			$('.record-checkbox').prop('checked', false);
+			$('#check-all-records').prop('checked', false);
+			updateSelectionUI();
+
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'warning',
+				title: `${ids.length} item siap dipindahkan! Pilih folder tujuan lalu klik Paste.`,
+				showConfirmButton: false,
+				timer: 3000
+			});
+		});
+
+		// Single item Copy from dropdown
+		$(document).on('click', '.copy-single-record', function() {
+			const id = $(this).data('id');
+			const name = $(this).data('name');
+			if (id) {
+				setClipboard('copy', [id], [name]);
+				Swal.fire({
+					toast: true,
+					position: 'top-end',
+					icon: 'info',
+					title: `"${name}" disalin ke clipboard! Pilih folder tujuan lalu klik Paste.`,
+					showConfirmButton: false,
+					timer: 3000
+				});
+			}
+		});
+
+		// Cancel clipboard
+		$(document).on('click', '#btn-cancel-clipboard', function() {
+			clearClipboard();
+			Swal.fire({
+				toast: true,
+				position: 'top-end',
+				icon: 'secondary',
+				title: 'Clipboard dibatalkan.',
+				showConfirmButton: false,
+				timer: 2000
+			});
+		});
+
+		// Choose destination modal (from clipboard banner or selection toolbar)
+		$(document).on('click', '#btn-choose-dest, #btn-choose-dest-selection', function() {
+			let action = 'copy';
+			let ids = [];
+
+			if ($(this).attr('id') === 'btn-choose-dest-selection') {
+				$('.record-checkbox:checked').each(function() {
+					ids.push($(this).val());
+				});
+				if (ids.length === 0) {
+					Swal.fire('Warning', 'Pilih minimal 1 item terlebih dahulu!', 'warning');
+					return;
+				}
+				action = 'move';
+			} else {
+				const clip = getClipboard();
+				if (!clip || !clip.ids || clip.ids.length === 0) {
+					Swal.fire('Warning', 'Clipboard kosong!', 'warning');
+					return;
+				}
+				action = clip.action;
+				ids = clip.ids;
+			}
+
+			const procedure_id = $('#procedure_id').val();
+			$('.modal-title').html((action === 'copy' ? 'Copy' : 'Move') + ' ' + ids.length + ' Item(s)');
+			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-lg');
+			$('#content_modal').load(siteurl + active_controller + 'destination_modal?action=' + action + '&ids=' + ids.join(',') + '&procedure_id=' + procedure_id);
+			$('#modelId').modal('show');
+		});
+
+		// Submit from destination modal
+		$(document).on('click', '#btn-submit-destination-modal', function() {
+			const action = $('#modal_action').val();
+			const ids_str = $('#modal_record_ids').val();
+			const target_folder_id = $('#modal_target_folder_id').val();
+			const ids = ids_str.split(',');
+
+			if (!target_folder_id) {
+				Swal.fire('Warning', 'Pilih folder tujuan!', 'warning');
+				return;
+			}
+
+			$('#modelId').modal('hide');
+			executePaste(action, target_folder_id, ids);
+		});
+
+		// Paste into folder from folder row dropdown
+		$(document).on('click', '.paste-into-folder', function() {
+			const clip = getClipboard();
+			if (!clip || !clip.ids || clip.ids.length === 0) {
+				Swal.fire('Warning', 'Clipboard kosong!', 'warning');
+				return;
+			}
+			const targetFolderId = $(this).data('id');
+			const targetFolderName = $(this).data('name') || 'Folder ini';
+			executePaste(clip.action, targetFolderId, clip.ids, targetFolderName);
+		});
+
+		// Paste in current / root toolbar button
+		$(document).on('click', '#btn-paste-toolbar, #btn-paste-current', function() {
+			const clip = getClipboard();
+			if (!clip || !clip.ids || clip.ids.length === 0) {
+				Swal.fire('Warning', 'Clipboard kosong!', 'warning');
+				return;
+			}
+
+			const currentFolderId = $('#refresh_id').val() || 'root';
+			const folderName = (currentFolderId === 'root') ? 'Root (/)' : 'Folder saat ini';
+			executePaste(clip.action, currentFolderId, clip.ids, folderName);
+		});
+
+		function executePaste(action, targetFolderId, recordIds, targetName) {
+			if (!recordIds || recordIds.length === 0) {
+				Swal.fire('Warning', 'Tidak ada item yang dipilih!', 'warning');
+				return;
+			}
+
+			const displayTarget = targetName || ((targetFolderId === 'root') ? 'Root (/)' : 'Folder Target');
+			const actionTitle = (action === 'copy') ? 'Salin / Copy' : 'Pindahkan / Move';
+
+			Swal.fire({
+				title: `${actionTitle} ${recordIds.length} item?`,
+				html: `Tujuan: <strong>${displayTarget}</strong>`,
+				icon: 'question',
+				showCancelButton: true,
+				confirmButtonText: `<i class="fa fa-paste"></i> Ya, ${actionTitle}`,
+				cancelButtonText: 'Batal',
+				confirmButtonColor: (action === 'copy') ? '#1bc5bd' : '#ffa800'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					Swal.fire({
+						title: 'Sedang memproses...',
+						text: 'Mohon tunggu sebentar',
+						allowOutsideClick: false,
+						didOpen: () => {
+							Swal.showLoading();
+						}
+					});
+
+					$.ajax({
+						url: siteurl + active_controller + 'batch_paste',
+						type: 'POST',
+						data: {
+							action: action,
+							target_folder_id: targetFolderId,
+							record_ids: recordIds,
+							procedure_id: $('#procedure_id').val()
+						},
+						dataType: 'JSON',
+						success: function(res) {
+							if (res.status == 1) {
+								clearClipboard();
+								Swal.fire({
+									title: 'Berhasil!',
+									html: res.msg,
+									icon: 'success',
+									timer: 2000
+								}).then(() => {
+									location.reload();
+								});
+							} else {
+								Swal.fire('Peringatan!', res.msg, 'warning');
+							}
+						},
+						error: function() {
+							Swal.fire('Error!', 'Terjadi kesalahan komunikasi dengan server.', 'error');
+						}
+					});
+				}
+			});
+		}
 
 	})
 
