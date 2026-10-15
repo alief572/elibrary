@@ -421,7 +421,13 @@ class Records extends Admin_Controller
 		} else {
 			$getRecords = $this->RecModel->getRecordsByProcedure($procedure_id); $EOF = true;
 		}
-		$this->template->set(['getRecords' => $getRecords, 'parent_id' => ($id == 'null' ? '' : $id), 'EOF' => $EOF]);
+		$this->template->set([
+			'getRecords' => $getRecords,
+			'parent_id' => ($id == 'null' ? '' : $id),
+			'EOF' => $EOF,
+			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+			'user_group_id' => $this->group_id,
+		]);
 		$this->template->render('data-records');
 	}
 
@@ -430,7 +436,13 @@ class Records extends Admin_Controller
 		$procedure_id = $this->input->post('procedure_id');
 		$keyword = $this->input->post('keyword');
 		$getRecords = $this->RecModel->searchRecords($procedure_id, $keyword);
-		$this->template->set(['getRecords' => $getRecords, 'parent_id' => '', 'EOF' => true]);
+		$this->template->set([
+			'getRecords' => $getRecords,
+			'parent_id' => '',
+			'EOF' => true,
+			'user_confidential' => isset($this->user_data->flag_access_confidential) ? $this->user_data->flag_access_confidential : '0',
+			'user_group_id' => $this->group_id,
+		]);
 		$this->template->render('data-records');
 	}
 

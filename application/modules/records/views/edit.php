@@ -20,6 +20,14 @@
 	tr.table-active {
 		background-color: #f1faff !important;
 	}
+
+	tr.tree-row {
+		transition: background-color 0.5s ease;
+	}
+
+	tr.tree-row.row-updated {
+		background-color: #d4edda !important;
+	}
 </style>
 <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
 	<div class="d-flex flex-column-fluid">
@@ -307,6 +315,18 @@
 			width: "100%",
 			allowClear: true
 		})
+
+		// Restore tree expansion on initial load
+		try {
+			const savedExpanded = JSON.parse(sessionStorage.getItem('records_expanded_' + $('#procedure_id').val()) || '[]');
+			if (savedExpanded && savedExpanded.length > 0) {
+				setTimeout(function() {
+					restoreExpandedFolders(savedExpanded);
+				}, 200);
+			}
+		} catch (e) {
+			console.error('Error restoring expanded tree state:', e);
+		}
 
 		function handlePromise(promiseList) {
 			return promiseList.map(promise =>
@@ -1244,6 +1264,12 @@
 				}
 			}
 
+			const recordId = $('#form-records input[name="forms[id]"]').val() || '';
+			const isEdit = (recordId !== '');
+			const recordName = $('#name').val() || '';
+			const parentId = $('#form-records input[name="forms[parent_id]"]').val() || '';
+			const desc = $('#description').val();
+
 			$.ajax({
 				url: siteurl + active_controller + 'saveFileRecord',
 				data: formdata,
@@ -1262,14 +1288,35 @@
 				},
 				success: function(result) {
 					if (result.status == 1) {
+						$('#modalRecord').modal('hide');
 						Swal.fire({
 							title: 'Success!',
 							icon: 'success',
 							text: result.msg,
-							timer: 2000
-						})
-						$('#modalRecord').modal('hide')
-						location.reload();
+							timer: 1500,
+							showConfirmButton: false
+						});
+
+						if (isEdit) {
+							const row = $(`#records-tree-table tr.tree-row[data-id="${recordId}"]`);
+							if (row.length > 0) {
+								row.find('.text-name').first().text(recordName);
+								row.find('.edit-record').data('name', recordName).attr('data-name', recordName);
+								row.find('.record-checkbox').data('name', recordName).attr('data-name', recordName);
+								row.find('.copy-single-record').data('name', recordName).attr('data-name', recordName);
+								if (desc !== undefined) {
+									row.find('td:nth-child(3) span').text(desc || '-');
+								}
+								row.addClass('row-updated');
+								setTimeout(() => row.removeClass('row-updated'), 1500);
+							}
+						} else {
+							if (parentId) {
+								reloadFolder(parentId);
+							} else {
+								refreshRootTree();
+							}
+						}
 					} else {
 						Swal.fire({
 							title: 'Warning!',
@@ -1311,13 +1358,16 @@
 									title: 'Success!!',
 									text: result.msg,
 									icon: 'success',
-									timer: 1500
+									timer: 1500,
+									showConfirmButton: false
 								});
-								$(btn).parents('tr').fadeOut(1000);
-								setTimeout(function() {
-									$(btn).parents('tr').remove();
-									window.reload()
-								}, 1200)
+								const row = $(btn).closest('tr.tree-row');
+								const recordId = id || row.data('id');
+								removeDescendants(recordId);
+								row.fadeOut(350, function() {
+									$(this).remove();
+									saveExpandedState();
+								});
 
 							} else {
 								Swal.fire('Warning', "Can't delete data. Please try again!", 'warning', 2000)
@@ -1412,9 +1462,19 @@
 				success: function(res) {
 					if (res.status == '1') {
 						$('#modelId').modal('hide');
-						Swal.fire({ title: 'Success!', text: res.msg, icon: 'success', timer: 1500 }).then(function() {
-							location.reload();
-						});
+						Swal.fire({ title: 'Success!', text: res.msg, icon: 'success', timer: 1500, showConfirmButton: false });
+						const row = $(`#records-tree-table tr.tree-row[data-id="${id}"]`);
+						if (row.length > 0) {
+							const confLink = row.find('.toggle-confidential');
+							confLink.data('value', flag).attr('data-value', flag);
+							if (flag === '1') {
+								confLink.html('<i class="fa fa-lock text-dark mr-2"></i> Confidential <span class="label label-inline label-danger ml-2">ON</span>');
+							} else {
+								confLink.html('<i class="fa fa-lock text-dark mr-2"></i> Confidential <span class="label label-inline label-secondary ml-2">OFF</span>');
+							}
+							row.addClass('row-updated');
+							setTimeout(() => row.removeClass('row-updated'), 1500);
+						}
 					} else {
 						Swal.fire('Warning', res.msg, 'warning');
 					}
@@ -1428,6 +1488,7 @@
 		/* FOLDER RECORDS */
 
 		$(document).on('click', '.add_folder', function() {
+			$('#refresh_id').val('');
 			$('#modelId .modal-dialog').removeClass('modal-xl modal-lg').addClass('modal-md');
 			$('#modelId').modal('show');
 			$('.modal-title').text('Add Folder');
@@ -1437,6 +1498,7 @@
 					<div class="col-md-12">
 						<div class="form-group mb-0">
 							<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+							<input type="hidden" id="folder_parent_id" value="">
 							<input type="text" name="folder_name" id="folder_name" class="form-control" placeholder="Folder Name">
 							<span class="invalid-feedback">Folder Name is required</span>
 						</div>
@@ -1474,21 +1536,186 @@
 			</div>`);
 		})
 
+		/* ==========================================================
+		   TREE STATE PRESERVATION & DYNAMIC RELOADING HELPERS
+		   ========================================================== */
+
+		function getExpandedFolderIds() {
+			const list = [];
+			$('#records-tree-table tr.tree-row.expanded').each(function() {
+				const id = $(this).data('id');
+				if (id && !list.includes(id)) {
+					list.push(id);
+				}
+			});
+			return list;
+		}
+
+		function saveExpandedState() {
+			const expanded = getExpandedFolderIds();
+			sessionStorage.setItem('records_expanded_' + $('#procedure_id').val(), JSON.stringify(expanded));
+		}
+
+		function removeDescendants(parentId) {
+			$('#records-tree-table tr.tree-row[data-parent-id="' + parentId + '"]').each(function() {
+				const id = $(this).data('id');
+				if (id) {
+					removeDescendants(id);
+				}
+				$(this).remove();
+			});
+		}
+
+		function expandFolderDirectly(folderId, callback) {
+			const row = $(`#records-tree-table tr.tree-row[data-id="${folderId}"]`);
+			if (row.length === 0) {
+				if (callback) callback();
+				return;
+			}
+
+			if (row.hasClass('expanded')) {
+				showChildren(folderId);
+				if (callback) callback();
+				return;
+			}
+
+			const procedure_id = $('#procedure_id').val();
+			const depth = parseInt(row.data('depth')) || 0;
+			const isLoaded = row.data('loaded');
+			const icon = row.find('.toggle-icon');
+
+			row.addClass('expanded');
+			icon.css('transform', 'rotate(90deg)');
+
+			if (!isLoaded || isLoaded === "false" || isLoaded === false) {
+				$.get(siteurl + 'records/child_rows/' + folderId + "/" + procedure_id + "/" + (depth + 1), function(html) {
+					row.after(html);
+					row.data('loaded', 'true');
+					row.attr('data-loaded', 'true');
+					renderClipboardUI();
+					if (callback) callback();
+				}).fail(function() {
+					if (callback) callback();
+				});
+			} else {
+				showChildren(folderId);
+				if (callback) callback();
+			}
+		}
+
+		function restoreExpandedFolders(folderIds, onDone) {
+			if (!folderIds || folderIds.length === 0) {
+				if (onDone) onDone();
+				return;
+			}
+
+			const queue = [...new Set(folderIds)];
+
+			function processQueue() {
+				if (queue.length === 0) {
+					saveExpandedState();
+					if (onDone) onDone();
+					return;
+				}
+
+				let foundIndex = -1;
+				for (let i = 0; i < queue.length; i++) {
+					const id = queue[i];
+					const row = $(`#records-tree-table tr.tree-row[data-id="${id}"]`);
+					if (row.length > 0 && !row.hasClass('expanded')) {
+						foundIndex = i;
+						break;
+					}
+				}
+
+				if (foundIndex === -1) {
+					saveExpandedState();
+					if (onDone) onDone();
+					return;
+				}
+
+				const folderId = queue.splice(foundIndex, 1)[0];
+				expandFolderDirectly(folderId, function() {
+					processQueue();
+				});
+			}
+
+			processQueue();
+		}
+
+		function reloadFolder(folderId, callback) {
+			if (!folderId || folderId === 'root' || folderId === 'null') {
+				refreshRootTree(callback);
+				return;
+			}
+
+			const row = $(`#records-tree-table tr.tree-row[data-id="${folderId}"]`);
+			if (row.length === 0) {
+				refreshRootTree(callback);
+				return;
+			}
+
+			const openDescendants = [];
+			$('#records-tree-table tr.tree-row.expanded').each(function() {
+				const id = $(this).data('id');
+				if (id && id !== folderId) {
+					openDescendants.push(id);
+				}
+			});
+
+			const procedure_id = $('#procedure_id').val();
+			const depth = parseInt(row.data('depth')) || 0;
+			const icon = row.find('.toggle-icon');
+
+			removeDescendants(folderId);
+
+			$.get(siteurl + 'records/child_rows/' + folderId + "/" + procedure_id + "/" + (depth + 1), function(html) {
+				row.after(html);
+				row.addClass('expanded');
+				row.data('loaded', 'true');
+				row.attr('data-loaded', 'true');
+				icon.css('transform', 'rotate(90deg)');
+				renderClipboardUI();
+
+				restoreExpandedFolders(openDescendants, function() {
+					saveExpandedState();
+					if (callback) callback();
+				});
+			}).fail(function() {
+				if (callback) callback();
+			});
+		}
+
+		function refreshRootTree(callback) {
+			const procedure_id = $('#procedure_id').val();
+			const openFolders = getExpandedFolderIds();
+
+			$.get(siteurl + 'records/refresh/null/' + procedure_id, function(html) {
+				$('#data-records').html(html);
+				renderClipboardUI();
+				restoreExpandedFolders(openFolders, function() {
+					saveExpandedState();
+					if (callback) callback();
+				});
+			}).fail(function() {
+				if (callback) callback();
+			});
+		}
+
 		$(document).on('click', '.save-folder', function() {
-			const folder_id = $('#folder_id').val() || ''
-			const procedure_id = $('#procedure_id').val()
-			const parent_id = $('#refresh_id').val() || ''
-			const btn = $(this)
-			const folder_name = $('#folder_name').val()
+			const folder_id = $('#folder_id').val() || '';
+			const procedure_id = $('#procedure_id').val();
+			const parent_id = $('#folder_parent_id').length ? $('#folder_parent_id').val() : ($('#refresh_id').val() || '');
+			const btn = $(this);
+			const folder_name = $('#folder_name').val();
 
 			if (folder_name !== undefined && (folder_name == '' || folder_name == null)) {
-				$('#folder_name').addClass('is-invalid')
+				$('#folder_name').addClass('is-invalid');
 				Swal.fire({
 					title: "Error Message!",
 					text: 'Empty Folder name, please input folder name first.....',
 					icon: "warning"
 				});
-
 				return false;
 			}
 
@@ -1503,43 +1730,62 @@
 				type: 'POST',
 				dataType: 'JSON',
 				beforeSend: function() {
-					btn.attr('disabled', true)
-					btn.html('<i class="spinner spinner-border-sm mr-3"></i> Loading...')
+					btn.attr('disabled', true);
+					btn.html('<i class="spinner spinner-border-sm mr-3"></i> Loading...');
 				},
 				complete: function() {
-					btn.attr('disabled', false)
-					btn.html('<i class="fa fa-save"></i> Save')
+					btn.attr('disabled', false);
+					btn.html('<i class="fa fa-save"></i> Save');
 				},
 				success: function(result) {
 					if (result.status == 1) {
+						$('#modelId').modal('hide');
 						Swal.fire({
 							title: 'Success!',
 							icon: 'success',
 							text: result.msg,
-							timer: 2000
-						}).then(function() {
-							$('#modelId').modal('hide')
-							location.reload();
-						})
+							timer: 1500,
+							showConfirmButton: false
+						});
+
+						if (folder_id) {
+							// In-place edit
+							const row = $(`#records-tree-table tr.tree-row[data-id="${folder_id}"]`);
+							if (row.length > 0) {
+								row.find('.text-name').first().text(folder_name);
+								row.find('.edit-folder').data('name', folder_name).attr('data-name', folder_name);
+								row.find('.record-checkbox').data('name', folder_name).attr('data-name', folder_name);
+								row.find('.copy-single-record').data('name', folder_name).attr('data-name', folder_name);
+								row.addClass('row-updated');
+								setTimeout(() => row.removeClass('row-updated'), 1500);
+							}
+						} else {
+							// New folder added
+							if (parent_id) {
+								reloadFolder(parent_id);
+							} else {
+								refreshRootTree();
+							}
+						}
 					} else {
 						Swal.fire({
 							title: 'Warning!',
 							icon: 'warning',
 							text: result.msg,
 							timer: 2000
-						})
+						});
 					}
 				},
 				error: function(result) {
 					Swal.fire({
 						title: 'Error!',
 						icon: 'error',
-						text: 'Server timeout, becuase error!',
+						text: 'Server timeout, because error!',
 						timer: 4000
-					})
+					});
 				}
-			})
-		})
+			});
+		});
 
 		$(document).on('click', '.folder', function() {
 			const procedure_id = $('#procedure_id').val();
@@ -1553,6 +1799,7 @@
 				row.removeClass('expanded');
 				icon.css('transform', 'rotate(0deg)');
 				hideDescendants(folder_id);
+				saveExpandedState();
 			} else {
 				row.addClass('expanded');
 				icon.css('transform', 'rotate(90deg)');
@@ -1563,9 +1810,11 @@
 						row.data('loaded', 'true');
 						row.attr('data-loaded', 'true');
 						renderClipboardUI();
+						saveExpandedState();
 					});
 				} else {
 					showChildren(folder_id);
+					saveExpandedState();
 				}
 			}
 		});
@@ -1601,6 +1850,7 @@
 							<div class="col-md-12">
 								<div class="form-group mb-0">
 									<label for="folder_name" class="font-weight-bold">Folder Name <span class="text-danger">*</span></label>
+									<input type="hidden" id="folder_parent_id" value="` + parent_id + `">
 									<input type="text" name="folder_name" id="folder_name" class="form-control" placeholder="Folder Name">
 									<span class="invalid-feedback">Folder Name is required</span>
 								</div>
@@ -1627,8 +1877,7 @@
 		});
 
 		$(document).on('click', '#refresh', function() {
-			const procedure_id = $('#procedure_id').val()
-			$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id)
+			refreshRootTree();
 		});
 		$(document).on('click', '.move-record', function() {
 			const id = $(this).data('id')
@@ -1663,15 +1912,24 @@
 				},
 				success: function(result) {
 					if (result.status == 1) {
+						$('#modelId').modal('hide');
 						Swal.fire({
 							title: 'Success!',
 							icon: 'success',
 							text: result.msg,
-							timer: 2000
-						}).then(function() {
-							$('#modelId').modal('hide')
-							location.reload();
-						})
+							timer: 1500,
+							showConfirmButton: false
+						});
+
+						const oldRow = $(`#records-tree-table tr.tree-row[data-id="${record_id}"]`);
+						removeDescendants(record_id);
+						oldRow.remove();
+
+						if (target_folder_id && target_folder_id !== 'root' && target_folder_id !== 'null') {
+							reloadFolder(target_folder_id);
+						} else {
+							refreshRootTree();
+						}
 					} else {
 						Swal.fire({
 							title: 'Warning!',
@@ -1714,9 +1972,7 @@
 					renderClipboardUI();
 				});
 			} else if (keyword.length == 0) {
-				$('#data-records').load(siteurl + 'records/refresh/null/' + procedure_id, function() {
-					renderClipboardUI();
-				});
+				refreshRootTree();
 			}
 		});
 
@@ -2037,10 +2293,22 @@
 									title: 'Berhasil!',
 									html: res.msg,
 									icon: 'success',
-									timer: 2000
-								}).then(() => {
-									location.reload();
+									timer: 1500,
+									showConfirmButton: false
 								});
+
+								if (action === 'move') {
+									recordIds.forEach(function(recId) {
+										removeDescendants(recId);
+										$(`#records-tree-table tr.tree-row[data-id="${recId}"]`).remove();
+									});
+								}
+
+								if (targetFolderId && targetFolderId !== 'root' && targetFolderId !== 'null') {
+									reloadFolder(targetFolderId);
+								} else {
+									refreshRootTree();
+								}
 							} else {
 								Swal.fire('Peringatan!', res.msg, 'warning');
 							}
