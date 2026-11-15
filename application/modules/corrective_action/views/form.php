@@ -202,10 +202,60 @@ $(document).ready(function() {
 		autoResizeTextarea(this);
 	});
 
+	// Helper to extract JSON from any response text
+	function parseResponse(xhr) {
+		if (xhr && xhr.responseJSON && typeof xhr.responseJSON === 'object') {
+			return xhr.responseJSON;
+		}
+		if (xhr && xhr.responseText) {
+			var raw = xhr.responseText.trim();
+			try {
+				return JSON.parse(raw);
+			} catch(e1) {
+				var match = raw.match(/\{[\s\S]*\}/);
+				if (match) {
+					try {
+						return (new Function("return " + match[0]))();
+					} catch(e2) {}
+				}
+			}
+		}
+		return null;
+	}
+
 	// Save function (AJAX with FormData)
 	function saveCA(callback) {
 		var formData = new FormData($('#form-ca')[0]);
 		var btn = $('#btn-save');
+
+		// Helper to process successful save result
+		function handleSaveSuccess(result) {
+			if (result && (result.status == 1 || result.status === '1')) {
+				// Set ca_id for subsequent operations
+				if (result.ca_id && !$('#ca_id').length) {
+					$('#form-ca').append('<input type="hidden" name="ca_id" id="ca_id" value="' + result.ca_id + '">');
+				} else if (result.ca_id) {
+					$('#ca_id').val(result.ca_id);
+				}
+
+				if (typeof callback === 'function') {
+					callback(result);
+				} else {
+					Swal.fire({
+						title: 'Success!',
+						icon: 'success',
+						text: result.msg || 'Data Corrective Action berhasil disimpan.',
+						timer: 2000
+					});
+				}
+			} else {
+				Swal.fire({
+					title: 'Warning!',
+					icon: 'warning',
+					text: (result && result.msg) ? result.msg : 'Gagal menyimpan data.'
+				});
+			}
+		}
 
 		$.ajax({
 			url: '<?= site_url("corrective_action/save"); ?>',
@@ -226,38 +276,25 @@ $(document).ready(function() {
 				$('#btn-submit').attr('disabled', false);
 			},
 			success: function(result) {
-				if (result.status == 1) {
-					// Set ca_id for subsequent operations
-					if (result.ca_id && !$('#ca_id').length) {
-						$('#form-ca').append('<input type="hidden" name="ca_id" id="ca_id" value="' + result.ca_id + '">');
-					} else if (result.ca_id) {
-						$('#ca_id').val(result.ca_id);
-					}
-
-					if (typeof callback === 'function') {
-						callback(result);
-					} else {
-						Swal.fire({
-							title: 'Success!',
-							icon: 'success',
-							text: result.msg,
-							timer: 2000
-						});
-					}
-				} else {
-					Swal.fire({
-						title: 'Warning!',
-						icon: 'warning',
-						text: result.msg
-					});
-				}
+				handleSaveSuccess(result);
 			},
-			error: function() {
+			error: function(xhr) {
+				var result = parseResponse(xhr);
+				if (result && (result.status == 1 || result.status === '1')) {
+					handleSaveSuccess(result);
+					return;
+				}
+
+				var errMsg = 'Server error. Please try again.';
+				if (result && result.msg) {
+					errMsg = result.msg;
+				} else if (xhr && xhr.responseText) {
+					errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
+				}
 				Swal.fire({
 					title: 'Error!',
 					icon: 'error',
-					text: 'Server error. Please try again.',
-					timer: 4000
+					text: errMsg
 				});
 			}
 		});
@@ -297,11 +334,11 @@ $(document).ready(function() {
 						type: 'POST',
 						dataType: 'JSON',
 						success: function(result) {
-							if (result.status == 1) {
+							if (result && (result.status == 1 || result.status === '1')) {
 								Swal.fire({
 									title: 'Success!',
 									icon: 'success',
-									text: result.msg,
+									text: result.msg || 'Corrective Action berhasil diajukan untuk approval.',
 									timer: 2000
 								}).then(function() {
 									window.location.href = '<?= site_url("corrective_action"); ?>';
@@ -310,16 +347,35 @@ $(document).ready(function() {
 								Swal.fire({
 									title: 'Warning!',
 									icon: 'warning',
-									text: result.msg
+									text: (result && result.msg) ? result.msg : 'Gagal mengajukan.'
 								});
 							}
 						},
-						error: function() {
+						error: function(xhr) {
+							var result = parseResponse(xhr);
+							if (result && (result.status == 1 || result.status === '1')) {
+								Swal.fire({
+									title: 'Success!',
+									icon: 'success',
+									text: result.msg || 'Corrective Action berhasil diajukan untuk approval.',
+									timer: 2000
+								}).then(function() {
+									window.location.href = '<?= site_url("corrective_action"); ?>';
+								});
+								return;
+							} else if (result && result.msg) {
+								Swal.fire({ title: 'Warning!', icon: 'warning', text: result.msg });
+								return;
+							}
+
+							var errMsg = 'Server error. Please try again.';
+							if (xhr && xhr.responseText) {
+								errMsg += ' (Detail: ' + xhr.responseText.substring(0, 200) + ')';
+							}
 							Swal.fire({
 								title: 'Error!',
 								icon: 'error',
-								text: 'Server error. Please try again.',
-								timer: 4000
+								text: errMsg
 							});
 						}
 					});

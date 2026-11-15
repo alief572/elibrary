@@ -119,11 +119,13 @@ class Process_checksheets extends Admin_Controller
 			$this->db->order_by('created_at', 'desc');
 			$dir = $this->db->get()->row();
 
-			$this->db->select('*');
-			$this->db->from('checksheet_process_data');
-			$this->db->where('dir_id', $_GET['checksheet']);
-			$this->db->where('company_id', $this->company);
-			$this->db->order_by('created_at', 'desc');
+			$this->db->select('d.*, e.id as execution_id');
+			$this->db->from('checksheet_process_data d');
+			$this->db->join('checksheet_execution e', 'e.data_id = d.id', 'left');
+			$this->db->where('d.dir_id', $_GET['checksheet']);
+			$this->db->where('d.company_id', $this->company);
+			$this->db->group_by('d.id');
+			$this->db->order_by('d.created_at', 'desc');
 			$data = $this->db->get()->result();
 
 			$fExecution 	= [
@@ -234,11 +236,28 @@ class Process_checksheets extends Admin_Controller
 	{
 		if ($id) {
 			$sheet 		= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
-			$dataDir 	= $this->db->get_where('view_checksheet_process_dir', ['id' => $sheet->dir_id])->row();
-			$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row();
-			// $items 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
-			$items 		= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
-			// $items 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
+			if (!$sheet) {
+				echo "Data not found..";
+				return false;
+			}
+
+			$dataDir = $this->db->select('
+					d.*,
+					d.name as dir_name,
+					p.name as process_name,
+					s.name as sub_name,
+					s2.name as sub_name2,
+					s2.id_sub
+				')
+				->from('checksheet_process_dir d')
+				->join('checksheet_process_sub2 s2', 's2.id = d.sub_id', 'left')
+				->join('checksheet_process_sub s', 's.id = s2.id_sub', 'left')
+				->join('checksheet_process p', 'p.id = d.process_id', 'left')
+				->where('d.id', $sheet->dir_id)
+				->get()
+				->row();
+
+			$get_sub2 = ($dataDir && $dataDir->sub_id) ? $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row() : null;
 			$items 		= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
 
 			$fExecution 	= [
@@ -288,9 +307,24 @@ class Process_checksheets extends Admin_Controller
 				'2' => 'Weekly',
 				'3' => 'Monthly',
 			];
-			$dataDir = $this->db->get_where('view_checksheet_process_dir', ['id' => $dir])->row();
 
-			$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row();
+			$dataDir = $this->db->select('
+					d.*,
+					d.name as dir_name,
+					p.name as process_name,
+					s.name as sub_name,
+					s2.name as sub_name2,
+					s2.id_sub
+				')
+				->from('checksheet_process_dir d')
+				->join('checksheet_process_sub2 s2', 's2.id = d.sub_id', 'left')
+				->join('checksheet_process_sub s', 's.id = s2.id_sub', 'left')
+				->join('checksheet_process p', 'p.id = d.process_id', 'left')
+				->where('d.id', $dir)
+				->get()
+				->row();
+
+			$get_sub2 = ($dataDir && $dataDir->sub_id) ? $this->db->get_where('checksheet_process_sub2', ['id' => $dataDir->sub_id])->row() : null;
 
 			$this->template->set(
 				[
@@ -299,7 +333,7 @@ class Process_checksheets extends Admin_Controller
 					'fExecution' 	=> $fExecution,
 					'fChecking' 	=> $fChecking,
 					'dataDir' 		=> $dataDir,
-					'sub_id'		=> $get_sub2->id_sub
+					'sub_id'		=> (!empty($get_sub2) && isset($get_sub2->id_sub)) ? $get_sub2->id_sub : (isset($dataDir->id_sub) ? $dataDir->id_sub : '')
 				]
 			);
 
@@ -484,7 +518,12 @@ class Process_checksheets extends Admin_Controller
 	{
 		if ($id) {
 			$data 			= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
-			$details 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $data->number])->result();
+			$details 		= $this->db->select('d.*, COALESCE(NULLIF(d.upload_standard_check, ""), i.upload_standard_check) as upload_standard_check')
+				->from('checksheet_process_details d')
+				->join('checksheet_data_items i', 'i.id = d.checksheet_item_id', 'left')
+				->where('d.checksheet_process_data_number', $data->number)
+				->get()
+				->result();
 
 			$notes			= $this->db->get_where('checksheet_notes', ['data_id' => $data->id])->result();
 			$execution		= $this->db->get_where('checksheet_execution', ['data_id' => $data->id])->result();
@@ -493,6 +532,8 @@ class Process_checksheets extends Admin_Controller
 
 			$checkers		= $this->db->get_where('checksheet_checkers', ['data_id' => $data->id])->result();
 			$checking_date	= $this->db->get_where('checksheet_checking_date', ['data_id' => $data->id])->result();
+			$checking_note	= $this->db->get_where('checksheet_checker_note', ['data_id' => $data->id])->result();
+			$checking_val	= $this->db->get_where('checksheet_checker_values', ['data_id' => $data->id])->result();
 
 			$ArrNotes 		= $this->_makeArray($notes, 'item_id');
 			$ArrUsers 		= $this->_makeArray($users, 'id_user', 'full_name');
@@ -501,6 +542,13 @@ class Process_checksheets extends Admin_Controller
 
 			$ArrCheck   	= $this->_makeArray($checkers, 'data_id');
 			$ArrCheckDate 	= $this->_makeArray($checking_date, 'data_id');
+			$ArrCheckNote 	= $this->_makeArray($checking_note, 'data_id');
+			$ArrCheckVal 	= $this->_makeArray($checking_val, 'data_id');
+
+			$ArrUsers = [];
+			foreach ($users as $usr) {
+				$ArrUsers[$usr->id_user] = $usr->full_name;
+			}
 
 			$fExecution 	= [
 				'1' => 'Once Time',
@@ -529,7 +577,7 @@ class Process_checksheets extends Admin_Controller
 				$name_col 	= 'Day';
 			} elseif ($data->frequency_execution == 3) {
 				$width 		= '170%';
-				$count 		= 31;
+				$count 		= (!empty($data->periode) && strtotime($data->periode)) ? (int)date('t', strtotime($data->periode)) : 31;
 				$name_col 	= 'Day';
 				$col_width 	= '30%';
 			} elseif ($data->frequency_execution == 4) {
@@ -559,6 +607,9 @@ class Process_checksheets extends Admin_Controller
 				'ArrExeDate' 	=> $ArrExeDate,
 				'ArrCheck' 		=> $ArrCheck,
 				'ArrCheckDate' 	=> $ArrCheckDate,
+				'ArrCheckNote' 	=> $ArrCheckNote,
+				'ArrCheckVal' 	=> $ArrCheckVal,
+				'ArrHolidays' 	=> $this->_get_holidays($data->periode),
 			]);
 
 			$this->template->render('view-sheet');
@@ -569,7 +620,12 @@ class Process_checksheets extends Admin_Controller
 	{
 		if ($id) {
 			$data 			= $this->db->get_where('checksheet_process_data', ['id' => $id])->row();
-			$details 		= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $data->number])->result();
+			$details 		= $this->db->select('d.*, COALESCE(NULLIF(d.upload_standard_check, ""), i.upload_standard_check) as upload_standard_check')
+				->from('checksheet_process_details d')
+				->join('checksheet_data_items i', 'i.id = d.checksheet_item_id', 'left')
+				->where('d.checksheet_process_data_number', $data->number)
+				->get()
+				->result();
 
 			$notes			= $this->db->get_where('checksheet_notes', ['data_id' => $data->id])->result();
 			$execution		= $this->db->get_where('checksheet_execution', ['data_id' => $data->id])->result();
@@ -579,6 +635,7 @@ class Process_checksheets extends Admin_Controller
 			$checkers		= $this->db->get_where('checksheet_checkers', ['data_id' => $data->id])->result();
 			$checking_date	= $this->db->get_where('checksheet_checking_date', ['data_id' => $data->id])->result();
 			$checking_note	= $this->db->get_where('checksheet_checker_note', ['data_id' => $data->id])->result();
+			$checking_val	= $this->db->get_where('checksheet_checker_values', ['data_id' => $data->id])->result();
 
 			$ArrNotes 		= $this->_makeArray($notes, 'item_id');
 			$ArrUsers 		= $this->_makeArray($users, 'id_user', 'full_name');
@@ -588,6 +645,7 @@ class Process_checksheets extends Admin_Controller
 			$ArrCheck   	= $this->_makeArray($checkers, 'data_id');
 			$ArrCheckDate 	= $this->_makeArray($checking_date, 'data_id');
 			$ArrCheckNote 	= $this->_makeArray($checking_note, 'data_id');
+			$ArrCheckVal 	= $this->_makeArray($checking_val, 'data_id');
 
 			$ArrUsers = [];
 			foreach ($users as $usr) {
@@ -621,7 +679,7 @@ class Process_checksheets extends Admin_Controller
 				$name_col 	= 'Day';
 			} elseif ($data->frequency_execution == 3) {
 				$width 		= '170%';
-				$count 		= 31;
+				$count 		= (!empty($data->periode) && strtotime($data->periode)) ? (int)date('t', strtotime($data->periode)) : 31;
 				$name_col 	= 'Day';
 				$col_width 	= '30%';
 			} elseif ($data->frequency_execution == 4) {
@@ -651,8 +709,11 @@ class Process_checksheets extends Admin_Controller
 				'ArrExeDate' 		=> $ArrExeDate,
 				'ArrCheck' 			=> $ArrCheck,
 				'ArrCheckDate' 		=> $ArrCheckDate,
+				'ArrCheckNote' 		=> $ArrCheckNote,
+				'ArrCheckVal' 		=> $ArrCheckVal,
 				'ArrUsers' 			=> $ArrUsers,
 				'weekOfMonth' 		=> $weekOfMonth,
+				'ArrHolidays' 		=> $this->_get_holidays($data->periode),
 			]);
 
 			$this->template->render('checking-sheet');
@@ -681,6 +742,35 @@ class Process_checksheets extends Admin_Controller
 			// It's a "normal" week.
 			return $weekOfYear;
 		}
+	}
+
+	private function _get_holidays($periode = null)
+	{
+		$ArrHolidays = [];
+		if ($periode && strtotime($periode)) {
+			$yearMonth = date('Y-m', strtotime($periode));
+			$holidays = $this->db->like('holiday_date', $yearMonth, 'after')
+				->where('status', '1')
+				->get('master_holidays')
+				->result();
+			if ($holidays) {
+				foreach ($holidays as $h) {
+					$ArrHolidays[$h->holiday_date] = $h->holiday_name;
+				}
+			}
+		} else {
+			$currentYear = date('Y');
+			$holidays = $this->db->like('holiday_date', $currentYear, 'after')
+				->where('status', '1')
+				->get('master_holidays')
+				->result();
+			if ($holidays) {
+				foreach ($holidays as $h) {
+					$ArrHolidays[$h->holiday_date] = $h->holiday_name;
+				}
+			}
+		}
+		return $ArrHolidays;
 	}
 
 	/* FOLDER */
@@ -1090,7 +1180,12 @@ class Process_checksheets extends Admin_Controller
 		];
 		$sheet  	= $this->db->get_where('checksheet_process_data', ['id' => $_GET['sheet']])->row();
 		// $details	= $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $sheet->checksheet_data_number])->result();
-		$details	= $this->db->get_where('checksheet_process_details', ['checksheet_process_data_number' => $sheet->number])->result();
+		$details	= $this->db->select('d.*, COALESCE(NULLIF(d.upload_standard_check, ""), i.upload_standard_check) as upload_standard_check')
+			->from('checksheet_process_details d')
+			->join('checksheet_data_items i', 'i.id = d.checksheet_item_id', 'left')
+			->where('d.checksheet_process_data_number', $sheet->number)
+			->get()
+			->result();
 
 		// $ArrProcess = [];
 		// if ($detailsProcess) {
@@ -1113,7 +1208,7 @@ class Process_checksheets extends Admin_Controller
 		} elseif ($sheet->frequency_execution == 3) {
 			$width 		= '450%';
 			$col_width 	= '30%';
-			$count 		= 31;
+			$count 		= (!empty($sheet->periode) && strtotime($sheet->periode)) ? (int)date('t', strtotime($sheet->periode)) : 31;
 			$name_col 	= 'Day';
 		} elseif ($sheet->frequency_execution == 4) {
 			$width 		= '120%';
@@ -1144,8 +1239,8 @@ class Process_checksheets extends Admin_Controller
 		}
 
 		$notes			= $this->db->get_where('checksheet_notes', ['data_id' => $sheet->id])->result();
-		$execution		= $this->db->get_where('checksheet_execution', ['item_id' => $sheet->id])->row();
-		$execution_date	= $this->db->get_where('checksheet_execution_date', ['item_id' => $sheet->id])->row();
+		$execution		= $this->db->get_where('checksheet_execution', ['data_id' => $sheet->id])->row();
+		$execution_date	= $this->db->get_where('checksheet_execution_date', ['data_id' => $sheet->id])->row();
 
 		$get_sub2 = $this->db->get_where('checksheet_process_sub2', ['id' => $sheet->sub_id])->row();
 
@@ -1168,6 +1263,7 @@ class Process_checksheets extends Admin_Controller
 			'execution' 	=> ($execution) ?: [],
 			'checking_date' => ($execution_date) ?: [],
 			'weekOfMonth' 	=> $weekOfMonth,
+			'ArrHolidays' 	=> $this->_get_holidays($sheet->periode),
 		]);
 
 		$this->template->render('checking');
@@ -1187,11 +1283,46 @@ class Process_checksheets extends Admin_Controller
 		$post 	= $this->input->post();
 		$this->db->trans_begin();
 		if ($post['id']) {
+			$sheetDataCheck = $this->db->get_where('checksheet_process_data', ['id' => $post['id']])->row();
 			if (isset($post['detail'])) {
 				$nn = 1;
-				foreach ($post['detail'] as $dt) {
+				foreach ($post['detail'] as $dtKey => $dt) {
 					if (isset($dt['field'])) {
-						$field 			= $dt['field'];
+						$field = (int)$dt['field'];
+						if ($field <= 0) {
+							$nn++;
+							continue;
+						}
+
+						// Jika Once Time, selalu gunakan field 1 dan petakan data ke n1 / note1
+						if ($sheetDataCheck && $sheetDataCheck->frequency_execution == 1) {
+							$oldField = $field;
+							$field = 1;
+							if (!isset($dt['n1']) && isset($dt['n' . $oldField])) {
+								$dt['n1'] = $dt['n' . $oldField];
+							}
+							if (!isset($dt['note1']) && isset($dt['note' . $oldField])) {
+								$dt['note1'] = $dt['note' . $oldField];
+							}
+						}
+
+						if ($sheetDataCheck && $sheetDataCheck->frequency_execution == 3 && !empty($sheetDataCheck->periode)) {
+							$periodeTime = strtotime($sheetDataCheck->periode);
+							if ($periodeTime !== false && $field >= 1 && $field <= 31) {
+								$year = (int)date('Y', $periodeTime);
+								$month = (int)date('m', $periodeTime);
+								if (checkdate($month, $field, $year)) {
+									$tglCheck = sprintf('%04d-%02d-%02d', $year, $month, $field);
+									$dayNum = (int)date('w', strtotime($tglCheck));
+									$isHoliday = $this->db->get_where('master_holidays', ['holiday_date' => $tglCheck, 'status' => '1'])->row();
+									if ($dayNum === 0 || $dayNum === 6 || $isHoliday) {
+										$nn++;
+										continue;
+									}
+								}
+							}
+						}
+
 						$fieldNote 		= "note" . $field;
 						$fieldDate 		= "date" . $field;
 						$fieldChecker 	= "day" . $field;
@@ -1203,43 +1334,35 @@ class Process_checksheets extends Admin_Controller
 								"n" . $field => $dt["n" . $field]
 							], ['id' => $dt['id']]);
 
-							/* NOTES */
-							if ($dt["n" . $field] == 'no') {
-								$checkNote 	= $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row();
+							/* NOTES & BUKTI */
+							$itemIndex = $nn;
+							if (strpos((string)$dtKey, '_') !== false) {
+								$parts = explode('_', (string)$dtKey);
+								$itemIndex = $parts[0];
+							}
+							$fileKey = 'bukti' . $itemIndex . $field;
+							if (!isset($_FILES[$fileKey]) && isset($_FILES['bukti' . $nn . $field])) {
+								$fileKey = 'bukti' . $nn . $field;
+							}
+							$upload_bukti = '';
 
-								$upload_bukti = '';
-								if (!empty($checkNote)) {
-									if ($_FILES['bukti' . $nn . $field]['name'] !== '') {
-										$files = $_FILES['bukti' . $nn . $field];
-										$file_count = count($files['name']);
+							$checkNote = $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row();
+							if ($checkNote && isset($checkNote->$fieldBukti) && $checkNote->$fieldBukti !== null) {
+								$upload_bukti = $checkNote->$fieldBukti;
+							}
 
-										$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-										$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-										$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-										$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-										$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-										$this->upload->do_upload('bukti' . $nn . $field);
-										$data = $this->upload->data();
-										$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
-									}
-								} else {
-									$files = $_FILES['bukti' . $nn . $field];
-									$file_count = count($files['name']);
-
-									$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-									$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-									$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-									$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-									$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-									$this->upload->do_upload('bukti' . $nn . $field);
-									$data = $this->upload->data();
-									$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
+							if (isset($_FILES[$fileKey]) && !empty($_FILES[$fileKey]['name'])) {
+								if ($this->upload->do_upload($fileKey)) {
+									$uploadData = $this->upload->data();
+									$upload_bukti = 'assets/images/directory/checksheet/' . $uploadData['file_name'];
 								}
+							}
 
-								$dataNote 	= [
-									'data_id'	=> $post['id'],
-									'item_id'	=> $dt['id'],
-									$fieldNote 	=> (isset($dt[$fieldNote]) ? $dt[$fieldNote] : null),
+							if ($dt["n" . $field] == 'no') {
+								$dataNote = [
+									'data_id'   => $post['id'],
+									'item_id'   => $dt['id'],
+									$fieldNote  => (isset($dt[$fieldNote]) ? $dt[$fieldNote] : ''),
 									$fieldBukti => $upload_bukti
 								];
 
@@ -1249,55 +1372,17 @@ class Process_checksheets extends Admin_Controller
 									$this->db->update('checksheet_notes', $dataNote, ['data_id' => $post['id'], 'item_id' => $dt['id']]);
 								}
 							} else if ($dt["n" . $field] == 'yes') {
+								$dataNote = [
+									'data_id'   => $post['id'],
+									'item_id'   => $dt['id'],
+									$fieldNote  => '',
+									$fieldBukti => $upload_bukti
+								];
 
-								$checkNote 	= $this->db->get_where('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id']])->row_array();
-
-								$upload_bukti = '';
-
-								if (!empty($checkNote)) {
-									$upload_bukti = $checkNote['bukti_' . $field];
-
-									if (isset($_FILES['bukti' . $nn . $field]) && $_FILES['bukti' . $nn . $field]['name'] !== '') {
-										$files = $_FILES['bukti' . $nn . $field];
-										$file_count = count($files['name']);
-
-										$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-										$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-										$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-										$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-										$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-										$this->upload->do_upload('bukti' . $nn . $field);
-										$data = $this->upload->data();
-										$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
-									}
+								if (!$checkNote) {
+									$this->db->insert('checksheet_notes', $dataNote);
 								} else {
-									$files = $_FILES['bukti' . $nn . $field];
-									$file_count = count($files['name']);
-
-									$_FILES['bukti' . $nn . $field]['name'] = $files['name'];
-									$_FILES['bukti' . $nn . $field]['type'] = $files['type'];
-									$_FILES['bukti' . $nn . $field]['tmp_name'] = $files['tmp_name'];
-									$_FILES['bukti' . $nn . $field]['error'] = $files['error'];
-									$_FILES['bukti' . $nn . $field]['size'] = $files['size'];
-									$this->upload->do_upload('bukti' . $nn . $field);
-									$data = $this->upload->data();
-									$upload_bukti = 'assets/images/directory/checksheet/' . $data['file_name'];
-								}
-								// } else {
-								// }
-
-								if (empty($checkNote)) {
-									$insert_notes = $this->db->insert('checksheet_notes', ['data_id' => $post['id'], 'item_id' => $dt['id'], $fieldNote => null, 'bukti_' . $field => $upload_bukti]);
-									if (!$insert_notes) {
-										print_r($this->db->error($insert_notes));
-										exit;
-									}
-								} else {
-									$update_notes = $this->db->update('checksheet_notes', [$fieldNote => null, 'bukti_' . $field => $upload_bukti], ['data_id' => $post['id'], 'item_id' => $dt['id']]);
-									if (!$update_notes) {
-										print_r($this->db->error($update_notes));
-										exit;
-									}
+									$this->db->update('checksheet_notes', $dataNote, ['data_id' => $post['id'], 'item_id' => $dt['id']]);
 								}
 							}
 						}
@@ -1325,7 +1410,7 @@ class Process_checksheets extends Admin_Controller
 						if (!$checkBy) {
 							$this->db->insert('checksheet_execution', $dataChecker);
 						} else {
-							$this->db->update('checksheet_execution', $dataChecker, ['data_id' => $post['id'], 'item_id' => $dt['id']]);
+							$this->db->update('checksheet_execution', $dataChecker, ['data_id' => $post['id']]);
 						}
 
 						$nn++;
@@ -1356,62 +1441,140 @@ class Process_checksheets extends Admin_Controller
 	}
 
 
-	public function save_done()
+	public function save_checker()
 	{
 		$post = $this->input->post();
+		if (!$post || empty($post['id'])) {
+			echo json_encode([
+				'status' => 0,
+				'msg'    => 'Data tidak valid!'
+			]);
+			return;
+		}
 
-		if ($post['id']) {
-			// $data = $this->db->get_where('checksheet_process_data', ['id' => $post['id']])->row();
+		$data_id = $post['id'];
+		$user_id = $this->auth->user_id();
+		$now     = date('Y-m-d H:i:s');
 
-			$field 			= $post['field'];
-			$fieldDate 		= "date" . $field;
-			$fieldChecker 	= "day" . $field;
+		$this->db->trans_begin();
 
+		// 1. Update summary note & status in checksheet_process_data
+		$summaryNote   = isset($post['checker_summary_note']) ? trim($post['checker_summary_note']) : null;
+		$checkerStatus = isset($post['checker_status']) ? trim($post['checker_status']) : 'Approved';
 
-			$this->db->trans_begin();
-			/* CHECKING DATE */
-			$checkDate 	= $this->db->get_where('checksheet_checking_date', ['data_id' => $post['id']])->row();
-			$dataDate 	= [
-				'data_id'	=> $post['id'],
-				$fieldDate 	=> date('Y-m-d H:i:s')
-			];
+		$this->db->update('checksheet_process_data', [
+			'checker_summary_note' => $summaryNote,
+			'checker_status'       => $checkerStatus,
+			'checked_at'           => $now,
+			'checked_by'           => $user_id,
+			'updated_at'           => $now,
+			'update_by'            => $user_id
+		], ['id' => $data_id]);
 
-			if (!$checkDate) {
-				$this->db->insert('checksheet_checking_date', $dataDate);
-			} else {
-				$this->db->update('checksheet_checking_date', $dataDate, ['data_id' => $post['id']]);
+		// 2. Fetch existing records
+		$existChecker = $this->db->get_where('checksheet_checkers', ['data_id' => $data_id])->row();
+		$existDate    = $this->db->get_where('checksheet_checking_date', ['data_id' => $data_id])->row();
+		$existNote    = $this->db->get_where('checksheet_checker_note', ['data_id' => $data_id])->row();
+		$existValues  = $this->db->get_where('checksheet_checker_values', ['data_id' => $data_id])->row();
+
+		$dataChecker = ['data_id' => $data_id];
+		$dataDate    = ['data_id' => $data_id];
+		$dataNote    = ['data_id' => $data_id];
+		$dataValues  = ['data_id' => $data_id];
+
+		// Check if specific field (day) is submitted
+		if (!empty($post['field'])) {
+			$field = (int)$post['field'];
+			$dataChecker['day' . $field]   = $user_id;
+			$dataDate['date' . $field]     = $now;
+			if (isset($post['check_status'])) {
+				$dataValues['check' . $field] = $post['check_status'];
 			}
-
-			/* CHECKER */
-			$checkBy 	= $this->db->get_where('checksheet_checkers', ['data_id' => $post['id']])->row();
-			$dataChecker 	= [
-				'data_id' => $post['id'],
-				$fieldChecker 	=> $this->auth->user_id()
-			];
-
-			if (!$checkBy) {
-				$this->db->insert('checksheet_checkers', $dataChecker);
-			} else {
-				$this->db->update('checksheet_checkers', $dataChecker, ['data_id' => $post['id']]);
+			if (isset($post['check_note'])) {
+				$dataNote['day' . $field] = trim($post['check_note']);
 			}
 		}
 
+		// Also handle batch array of checker status / notes (if submitted as arrays)
+		if (isset($post['checker_values']) && is_array($post['checker_values'])) {
+			foreach ($post['checker_values'] as $d => $v) {
+				$dNum = (int)$d;
+				if ($dNum >= 1 && $dNum <= 31 && !empty($v)) {
+					$dataValues['check' . $dNum] = $v;
+					$dataChecker['day' . $dNum]  = $user_id;
+					$dataDate['date' . $dNum]    = $now;
+					if ($v === 'yes') {
+						$dataNote['day' . $dNum] = '';
+					}
+				}
+			}
+		}
+
+		if (isset($post['checker_notes']) && is_array($post['checker_notes'])) {
+			foreach ($post['checker_notes'] as $d => $n) {
+				$dNum = (int)$d;
+				if ($dNum >= 1 && $dNum <= 31) {
+					if (isset($post['checker_values'][$dNum]) && $post['checker_values'][$dNum] === 'no') {
+						$dataNote['day' . $dNum] = trim($n);
+					}
+				}
+			}
+		}
+
+		// Insert or update checksheet_checkers
+		if (count($dataChecker) > 1) {
+			if (!$existChecker) {
+				$this->db->insert('checksheet_checkers', $dataChecker);
+			} else {
+				$this->db->update('checksheet_checkers', $dataChecker, ['data_id' => $data_id]);
+			}
+		}
+
+		// Insert or update checksheet_checking_date
+		if (count($dataDate) > 1) {
+			if (!$existDate) {
+				$this->db->insert('checksheet_checking_date', $dataDate);
+			} else {
+				$this->db->update('checksheet_checking_date', $dataDate, ['data_id' => $data_id]);
+			}
+		}
+
+		// Insert or update checksheet_checker_values
+		if (count($dataValues) > 1) {
+			if (!$existValues) {
+				$this->db->insert('checksheet_checker_values', $dataValues);
+			} else {
+				$this->db->update('checksheet_checker_values', $dataValues, ['data_id' => $data_id]);
+			}
+		}
+
+		// Insert or update checksheet_checker_note
+		if (count($dataNote) > 1) {
+			if (!$existNote) {
+				$this->db->insert('checksheet_checker_note', $dataNote);
+			} else {
+				$this->db->update('checksheet_checker_note', $dataNote, ['data_id' => $data_id]);
+			}
+		}
 
 		if ($this->db->trans_status() === FALSE) {
 			$this->db->trans_rollback();
-			$Return		= array(
-				'status'		=> 0,
-				'msg'			=> 'Save data checkheet failed. Error!'
-			);
+			echo json_encode([
+				'status' => 0,
+				'msg'    => 'Gagal menyimpan data verifikasi. Terjadi kesalahan database.'
+			]);
 		} else {
 			$this->db->trans_commit();
-			$Return		= array(
-				'status'		=> 1,
-				'msg'			=> 'Save data checkheet successfull'
-			);
+			echo json_encode([
+				'status' => 1,
+				'msg'    => 'Verifikasi checksheet berhasil disimpan!'
+			]);
 		}
+	}
 
-		echo json_encode($Return);
+	public function save_done()
+	{
+		$this->save_checker();
 	}
 
 	public function print_sheet()
@@ -1432,6 +1595,8 @@ class Process_checksheets extends Admin_Controller
 
 		$checkers		= $this->db->get_where('checksheet_checkers', ['data_id' => $sheet->id])->result();
 		$checking_date	= $this->db->get_where('checksheet_checking_date', ['data_id' => $sheet->id])->result();
+		$checking_note	= $this->db->get_where('checksheet_checker_note', ['data_id' => $sheet->id])->result();
+		$checking_val	= $this->db->get_where('checksheet_checker_values', ['data_id' => $sheet->id])->result();
 
 		$ArrNotes 		= $this->_makeArray($notes, 'item_id');
 		$ArrUsers 		= $this->_makeArray($users, 'id_user', 'full_name');
@@ -1440,7 +1605,8 @@ class Process_checksheets extends Admin_Controller
 
 		$ArrCheck   	= $this->_makeArray($checkers, 'data_id');
 		$ArrCheckDate 	= $this->_makeArray($checking_date, 'data_id');
-
+		$ArrCheckNote 	= $this->_makeArray($checking_note, 'data_id');
+		$ArrCheckVal 	= $this->_makeArray($checking_val, 'data_id');
 
 		$ArrUsers = [];
 		foreach ($users as $usr) {
@@ -1474,7 +1640,7 @@ class Process_checksheets extends Admin_Controller
 			$name_col 	= 'Day';
 		} elseif ($sheet->frequency_execution == 3) {
 			$width 		= '170%';
-			$count 		= 31;
+			$count 		= (!empty($sheet->periode) && strtotime($sheet->periode)) ? (int)date('t', strtotime($sheet->periode)) : 31;
 			$name_col 	= 'Day';
 			$col_width 	= '30%';
 		} elseif ($sheet->frequency_execution == 4) {
@@ -1504,8 +1670,11 @@ class Process_checksheets extends Admin_Controller
 			'ArrExeDate' 		=> $ArrExeDate,
 			'ArrCheck' 			=> $ArrCheck,
 			'ArrCheckDate' 		=> $ArrCheckDate,
+			'ArrCheckNote' 		=> $ArrCheckNote,
+			'ArrCheckVal' 		=> $ArrCheckVal,
 			'ArrUsers' 			=> $ArrUsers,
 			'weekOfMonth' 		=> $weekOfMonth,
+			'ArrHolidays' 		=> $this->_get_holidays($sheet->periode),
 		];
 
 		$this->load->view('print-sheet', $data);

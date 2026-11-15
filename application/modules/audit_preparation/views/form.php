@@ -26,6 +26,9 @@
 								<button class="nav-link" id="tab-opportunity-tab" data-toggle="tab" data-target="#tab-opportunity" type="button" role="tab" aria-controls="tab-opportunity" aria-selected="false">Isu Proses</button>
 							</li>
 							<li class="nav-item" role="presentation">
+								<button class="nav-link" id="tab-risk-tab" data-toggle="tab" data-target="#tab-risk" type="button" role="tab" aria-controls="tab-risk" aria-selected="false">Audit Risk Assessment</button>
+							</li>
+							<li class="nav-item" role="presentation">
 								<button class="nav-link" id="tab-schedule-tab" data-toggle="tab" data-target="#tab-schedule" type="button" role="tab" aria-controls="tab-schedule" aria-selected="false">Jadwal Audit</button>
 							</li>
 						</ul>
@@ -52,7 +55,12 @@
 								<?php $this->load->view('audit_preparation/partials/opportunity'); ?>
 							</div>
 
-							<!-- Tab 5: Jadwal Audit -->
+							<!-- Tab 5: Audit Risk Assessment -->
+							<div class="tab-pane fade" id="tab-risk" role="tabpanel" aria-labelledby="tab-risk-tab">
+								<?php $this->load->view('audit_preparation/partials/risk_assessment'); ?>
+							</div>
+
+							<!-- Tab 6: Jadwal Audit -->
 							<div class="tab-pane fade" id="tab-schedule" role="tabpanel" aria-labelledby="tab-schedule-tab">
 								<?php $this->load->view('audit_preparation/partials/schedule'); ?>
 							</div>
@@ -78,6 +86,11 @@
 			var targetPane = $($(e.target).data('target') || $(e.target).attr('href'));
 			if (targetPane.length) {
 				// Initialize Select2 that haven't been initialized yet (for hidden tabs)
+				targetPane.find('.select2-risk-pic').each(function() {
+					if (!$(this).hasClass('select2-hidden-accessible')) {
+						$(this).select2({ placeholder: "Select PIC", allowClear: true, width: "100%" });
+					}
+				});
 				targetPane.find('.select2-schedule-process').each(function() {
 					if (!$(this).hasClass('select2-hidden-accessible')) {
 						$(this).select2({ placeholder: "Select Process", allowClear: true, width: "100%" });
@@ -216,6 +229,11 @@ $(document).on('click', '.save-program', function(e) {
 	e.preventDefault();
 	var $btn = $(this);
 
+	// Prevent duplicate clicks / concurrency issues from client side
+	if ($btn.prop('disabled') || $btn.hasClass('disabled') || window.isSubmittingProgram) {
+		return false;
+	}
+
 	// 1. Validate form
 	var errors = validateForm();
 	if (errors > 0) {
@@ -253,6 +271,11 @@ $(document).on('click', '.save-program', function(e) {
  * Submit form data via AJAX
  */
 function submitForm($btn) {
+	if (window.isSubmittingProgram) {
+		return false;
+	}
+	window.isSubmittingProgram = true;
+
 	var formData = new FormData($('#formProgram')[0]);
 
 	$.ajax({
@@ -263,11 +286,12 @@ function submitForm($btn) {
 		processData: false,
 		contentType: false,
 		beforeSend: function() {
-			$btn.prop('disabled', true);
+			$btn.prop('disabled', true).addClass('disabled');
 			$btn.html('<i class="fa fa-spinner fa-spin mr-1"></i> Saving...');
 		},
 		complete: function() {
-			$btn.prop('disabled', false);
+			window.isSubmittingProgram = false;
+			$btn.prop('disabled', false).removeClass('disabled');
 			$btn.html('<i class="fa fa-save mr-1"></i> Save');
 		},
 		success: function(result) {

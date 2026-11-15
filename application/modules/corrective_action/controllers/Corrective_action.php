@@ -83,8 +83,13 @@ class Corrective_action extends Admin_Controller
      */
     public function save()
     {
+        // Capture any stray PHP output (warnings/notices) that could corrupt response
+        ob_start();
+
         $data = $this->input->post();
         if (!$data || empty($data['pelaksanaan_id'])) {
+            ob_end_clean();
+            header('Content-Type: application/json');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
             return;
         }
@@ -100,10 +105,16 @@ class Corrective_action extends Admin_Controller
             if (!empty($warnings)) {
                 $msg .= ' Warning: ' . implode(', ', $warnings);
             }
-            echo json_encode(['status' => 1, 'msg' => $msg, 'ca_id' => $result['ca_id']]);
+            $response = ['status' => 1, 'msg' => $msg, 'ca_id' => $result['ca_id']];
         } else {
-            echo json_encode($result);
+            $response = $result;
         }
+
+        // Discard any stray output and send clean JSON
+        ob_end_clean();
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($response);
+        exit;
     }
 
     /**
@@ -112,21 +123,32 @@ class Corrective_action extends Admin_Controller
      */
     public function submit()
     {
+        ob_start();
+
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
+            ob_end_clean();
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
-            return;
+            exit;
         }
 
         $userId = $this->auth->user_id();
         $result = $this->model->submitCorrective($data['ca_id'], $userId);
 
         // Send email notification to auditor if submit was successful
-        if ($result['status'] == 1) {
-            $this->_sendEmailToAuditor($data['ca_id']);
+        if (isset($result['status']) && $result['status'] == 1) {
+            try {
+                $this->_sendEmailToAuditor($data['ca_id']);
+            } catch (Exception $e) {
+                log_message('error', 'CA Email error: ' . $e->getMessage());
+            }
         }
 
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($result);
+        exit;
     }
 
     /**
@@ -226,13 +248,16 @@ class Corrective_action extends Admin_Controller
     {
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
-            return;
+            exit;
         }
 
         $userId = $this->auth->user_id();
         $result = $this->model->approveCorrective($data['ca_id'], $userId);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($result);
+        exit;
     }
 
     /**
@@ -243,23 +268,28 @@ class Corrective_action extends Admin_Controller
     {
         $data = $this->input->post();
         if (!$data || empty($data['ca_id'])) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Data not valid. Please try again.']);
-            return;
+            exit;
         }
 
         $alasan = isset($data['alasan_reject']) ? trim($data['alasan_reject']) : '';
         if ($alasan === '') {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Alasan reject wajib diisi.']);
-            return;
+            exit;
         }
         if (strlen($alasan) > 2000) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 0, 'msg' => 'Alasan reject maksimal 2000 karakter.']);
-            return;
+            exit;
         }
 
         $userId = $this->auth->user_id();
         $result = $this->model->rejectCorrective($data['ca_id'], $alasan, $userId);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode($result);
+        exit;
     }
 
     // =========================================================================
@@ -512,55 +542,62 @@ class Corrective_action extends Admin_Controller
      */
     private function _sendEmailToAuditor($ca_id)
     {
-        // Get CA data with auditor info
-        $ca = $this->db->get_where('corrective_action', ['id' => $ca_id, 'deleted' => '0'])->row();
-        if (!$ca) return;
+        try {
+            // Get CA data with auditor info
+            $ca = $this->db->get_where('corrective_action', ['id' => $ca_id, 'deleted' => '0'])->row();
+            if (!$ca) return;
 
-        // Get auditor email from schedule
-        $auditor = $this->db->select('aac.name, aac.email')
-            ->from('pelaksanaan_audit pa')
-            ->join('audit_program_schedule aps', 'aps.id = pa.schedule_id', 'left')
-            ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
-            ->where('pa.id', $ca->pelaksanaan_id)
-            ->get()
-            ->row();
+            // Get auditor email from schedule
+            $auditor = $this->db->select('aac.name, aac.email')
+                ->from('pelaksanaan_audit pa')
+                ->join('audit_program_schedule aps', 'aps.id = pa.schedule_id', 'left')
+                ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
+                ->where('pa.id', $ca->pelaksanaan_id)
+                ->get()
+                ->row();
 
-        if (!$auditor || empty($auditor->email)) return;
+            if (!$auditor || empty($auditor->email)) return;
 
-        // Get header info for email content
-        $header = $this->_getAuditHeader($ca->pelaksanaan_id);
+            // Get header info for email content
+            $header = $this->_getAuditHeader($ca->pelaksanaan_id);
 
-        // Build email body
-        $body = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">';
-        $body .= '<h2 style="color: #2c3e50;">Reminder: Approval Corrective Action</h2>';
-        $body .= '<p>Yth. <strong>' . htmlspecialchars($auditor->name) . '</strong>,</p>';
-        $body .= '<p>Corrective Action telah diajukan dan menunggu approval Anda. Mohon segera ditindaklanjuti.</p>';
-        $body .= '<table style="border-collapse: collapse; width: 100%; margin: 15px 0;" border="1" cellpadding="8">';
-        $body .= '<tr><th style="text-align:left; background:#f8f9fa; width:200px;">ID Corrective Action</th><td>' . htmlspecialchars($ca->id) . '</td></tr>';
-        if ($header) {
-            $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Prosedur</th><td>' . htmlspecialchars($header->process_name) . '</td></tr>';
-            $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Tanggal Audit</th><td>' . date('d-m-Y', strtotime($header->audit_date)) . '</td></tr>';
-            $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Department</th><td>' . htmlspecialchars($header->department_name) . '</td></tr>';
-        }
-        $body .= '</table>';
-        $body .= '<p>Silakan login ke sistem untuk melakukan approval.</p>';
-        $body .= '<br><p style="color: #7f8c8d; font-size: 12px;">Email ini dikirim otomatis dari Sentral Sistem - Audit Module.</p>';
-        $body .= '</body></html>';
+            // Build email body
+            $body = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">';
+            $body .= '<h2 style="color: #2c3e50;">Reminder: Approval Corrective Action</h2>';
+            $body .= '<p>Yth. <strong>' . htmlspecialchars($auditor->name) . '</strong>,</p>';
+            $body .= '<p>Corrective Action telah diajukan dan menunggu approval Anda. Mohon segera ditindaklanjuti.</p>';
+            $body .= '<table style="border-collapse: collapse; width: 100%; margin: 15px 0;" border="1" cellpadding="8">';
+            $body .= '<tr><th style="text-align:left; background:#f8f9fa; width:200px;">ID Corrective Action</th><td>' . htmlspecialchars($ca->id) . '</td></tr>';
+            if ($header) {
+                $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Prosedur</th><td>' . htmlspecialchars($header->process_name) . '</td></tr>';
+                $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Tanggal Audit</th><td>' . date('d-m-Y', strtotime($header->audit_date)) . '</td></tr>';
+                $body .= '<tr><th style="text-align:left; background:#f8f9fa;">Department</th><td>' . htmlspecialchars($header->department_name) . '</td></tr>';
+            }
+            $body .= '</table>';
+            $body .= '<p>Silakan login ke sistem untuk melakukan approval.</p>';
+            $body .= '<br><p style="color: #7f8c8d; font-size: 12px;">Email ini dikirim otomatis dari Sentral Sistem - Audit Module.</p>';
+            $body .= '</body></html>';
 
-        // Send email
-        $this->load->library('email');
+            // Send email
+            $config = get_smtp_config();
+            if (empty($config['smtp_user']) || empty($config['smtp_pass']) || empty($config['smtp_host'])) {
+                return;
+            }
 
-        $config = get_smtp_config();
-        $smtp_user = $config['smtp_user'];
+            $this->load->library('email');
+            $smtp_user = $config['smtp_user'];
 
-        $this->email->initialize($config);
-        $this->email->from($smtp_user, 'Sentral Sistem - Audit');
-        $this->email->to($auditor->email);
-        $this->email->subject('Segera Approve Corrective Action');
-        $this->email->message($body);
+            $this->email->initialize($config);
+            $this->email->from($smtp_user, 'Sentral Sistem - Audit');
+            $this->email->to($auditor->email);
+            $this->email->subject('Segera Approve Corrective Action');
+            $this->email->message($body);
 
-        if (!$this->email->send()) {
-            log_message('error', 'CA Email send failed: ' . $this->email->print_debugger(['headers']));
+            if (!@$this->email->send()) {
+                log_message('error', 'CA Email send failed: ' . $this->email->print_debugger(['headers']));
+            }
+        } catch (Exception $e) {
+            log_message('error', 'CA Email exception: ' . $e->getMessage());
         }
     }
 }

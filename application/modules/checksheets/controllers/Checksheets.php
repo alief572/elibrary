@@ -41,10 +41,10 @@ class Checksheets extends Admin_Controller
 		if ((isset($_GET['d']) && ($_GET['d'])) && (isset($_GET['sub']) && ($_GET['sub']))) {
 			$checksheets		= $this->db->get_where('checksheets', ['id' => $_GET['d'], 'company_id' => $this->company])->row();
 			$sub 				= $_GET['sub'];
-			$selected 			= $checksheets->id;
-			$details 	  		= $this->db->get_where('view_checksheet_details', ['checksheet_id' => $checksheets->id, 'status' => '1'])->row();
+			$selected 			= ($checksheets) ? $checksheets->id : '';
+			$details 	  		= $this->db->get_where('view_checksheet_details', ['id' => $sub, 'status' => '1'])->row();
 			$details_data 	  	= $this->db->get_where('view_checksheet_detail_data', ['checksheet_detail_id' => $sub, 'status' => '1'])->result();
-			$breadcumb 			= ($details) ? ["<a href='" . base_url($this->uri->segment(1) . '/?d=' . $checksheets->id) . "'>$details->checksheet_name</a>", $details->checksheet_detail_name] : '';
+			$breadcumb 			= ($details) ? ["<a href='" . base_url($this->uri->segment(1) . '/?d=' . ($checksheets ? $checksheets->id : '')) . "'>$details->checksheet_name</a>", $details->checksheet_detail_name] : '';
 		}
 		$freq 			= [
 			'1' => 'Once Time',
@@ -351,7 +351,7 @@ class Checksheets extends Admin_Controller
 					foreach ($items as $item) {
 						if (isset($item['id'])) {
 							$upload_standard_check = '';
-							if (isset($_FILES['items']['name'][$no]['upload_standard_check'])) {
+							if (isset($_FILES['items']['name'][$no]['upload_standard_check']) && !empty($_FILES['items']['name'][$no]['upload_standard_check'])) {
 								$_FILES['file'] = [
 									'name'     => $_FILES['items']['name'][$no]['upload_standard_check'],
 									'type'     => $_FILES['items']['type'][$no]['upload_standard_check'],
@@ -398,15 +398,9 @@ class Checksheets extends Admin_Controller
 								}
 							}
 
-							// $this->db->update('checksheet_process_details', [
-							// 	'item_name' => $item['item_name'],
-							// 	'standard_check' => $item['standard_check'],
-							// 	'check_type' => $item['check_type'],
-							// ], ['checkheet_item_id' => $item['id']]);
-
 						} else {
-							$upload_standard_check = '';
-							if (isset($_FILES['items']['name'][$no]['upload_standard_check'])) {
+							$upload_standard_check = null;
+							if (isset($_FILES['items']['name'][$no]['upload_standard_check']) && !empty($_FILES['items']['name'][$no]['upload_standard_check'])) {
 								$_FILES['file'] = [
 									'name'     => $_FILES['items']['name'][$no]['upload_standard_check'],
 									'type'     => $_FILES['items']['type'][$no]['upload_standard_check'],
@@ -553,8 +547,8 @@ class Checksheets extends Admin_Controller
 	{
 		$id 		 = $this->input->post('id');
 		if ($id) {
-			$data 		 = $this->db->get('checksheet_detail_data')->row();
-			$check_child = $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $data->number])->result();
+			$data 		 = $this->db->get_where('checksheet_detail_data', ['id' => $id])->row();
+			$check_child = ($data) ? $this->db->get_where('checksheet_data_items', ['checksheet_data_number' => $data->number])->result() : [];
 
 			$this->db->trans_begin();
 			if (count($check_child) > 0) {

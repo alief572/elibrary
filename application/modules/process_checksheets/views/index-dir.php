@@ -11,62 +11,78 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 	<div class="d-flex flex-column-fluid justify-content-between align-items-top">
 		<div class="container">
 			<div class="card card-stretch shadow card-custom">
-				<div class="card-header justify-content-between d-flex align-items-center">
-					<h3 class="m-0">
-						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id); ?>" title="Back" class="btn btn-light btn-sm btn-icon"><i class="fa fa-arrow-left text-dark"></i></a> List Folder
+				<div class="card-header justify-content-between d-flex flex-wrap align-items-center py-3 px-3 px-md-4 gap-2">
+					<h3 class="m-0 font-weight-bolder d-flex align-items-center" style="font-size: 1.15rem;">
+						<a href="<?= base_url($this->uri->segment(1) . '/?p=' . $parent->id); ?>" title="Back" class="btn btn-light btn-sm btn-icon mr-2 shadow-xs"><i class="fa fa-arrow-left text-dark"></i></a> 
+						<span>List Folder</span>
 					</h3>
 					<?php if ($menus_perm['create'] == '1') : ?>
-						<button type="button" id="add-folder" class="btn btn-primary"><i class="fa fa-plus"></i> Add Folder</button>
+						<button type="button" id="add-folder" class="btn btn-primary btn-sm font-weight-bold px-3"><i class="fa fa-plus mr-1"></i> Add Folder</button>
 					<?php endif; ?>
 				</div>
-				<div class="card-body">
-					<div class="d-flex justify-content-between align-items-center">
-						<div class="searching">
+				<div class="card-body p-3 p-md-4">
+					<div class="row align-items-center mb-3">
+						<div class="col-12 col-md-5 col-lg-4 mb-2 mb-md-0">
 							<div class="input-group">
-								<div class="input-group-text input-group-prepend rounded-right-0"><i class="fa fa-search"></i></div>
-								<input data type="text" name="search" id="search" class="form-control w-200px d-inline-block" placeholder="Search">
+								<div class="input-group-prepend">
+									<span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
+								</div>
+								<input type="text" name="search" id="search" class="form-control border-left-0 pl-0" placeholder="Search folder...">
 							</div>
 						</div>
-						<input type="hidden" id="process_id" value="<?= $sub->process_id; ?>">
-						<input type="hidden" id="sub_id" value="<?= $sub->id; ?>">
-						<nav class="breadcrumb py-2 line-height-0 m-0">
-							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)); ?>"><i class="fa fa-home"></i></a>
-							<a class="breadcrumb-item" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id; ?>"><?= $parent->name; ?></a>
-							<span class="breadcrumb-item active"><?= $sub->name; ?></span>
-						</nav>
+						<div class="col-12 col-md-7 col-lg-8">
+							<input type="hidden" id="process_id" value="<?= $sub->process_id; ?>">
+							<input type="hidden" id="sub_id" value="<?= $sub->id; ?>">
+							<nav class="breadcrumb py-2 px-3 m-0 bg-light rounded d-flex flex-wrap align-items-center" style="font-size: 12px; line-height: 1.6;">
+								<a class="breadcrumb-item text-primary" href="<?= base_url($this->uri->segment(1)); ?>"><i class="fa fa-home mr-1"></i>Home</a>
+								<a class="breadcrumb-item text-muted" href="<?= base_url($this->uri->segment(1)) . '?p=' . $parent->id; ?>"><?= $parent->name; ?></a>
+								<span class="breadcrumb-item active font-weight-bold text-dark"><?= $sub->name; ?></span>
+							</nav>
+						</div>
 					</div>
-					<table class="table table-sm table-bordered datatable">
-						<thead class="table-light">
-							<tr>
-								<th class="p-2">Directory Name</th>
-								<th class="p-2 text-center" width="20%">Last Created</th>
-								<th class="p-2 text-center" width="70">Opsi</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php $n = 0;
-							if ($data) foreach ($data as $dt) : $n++; ?>
+					<div class="table-responsive">
+						<table class="table table-sm table-bordered datatable">
+							<thead class="table-light">
 								<tr>
-									<td class="py-2">
-										<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->process_id . "&sub=" . $dt->id_sub . "&sub2=" . $dt->id); ?>">
-											<h4 class="mb-0 d-flex align-items-end">
-												<i class="fa fa-folder mr-2 text-warning" style="font-size: 28px;"></i><?= $dt->name; ?>
-											</h4>
-										</a>
-									</td>
-									<td class="py-2 text-center"><?= $dt->created_at; ?></td>
-									<td class="py-2 text-center">
-										<?php if ($menus_perm['update'] == '1') : ?>
-											<button type="button" class="btn btn-xs btn-icon btn-warning edit" data-id="<?= $dt->id; ?>"><i class="fa fa-edit"></i></button>
-										<?php endif; ?>
-										<?php if ($menus_perm['delete'] == '1') : ?>
-											<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>"><i class="fa fa-trash"></i></button>
-										<?php endif; ?>
-									</td>
+									<th class="p-2">Directory Name</th>
+									<th class="p-2 text-center" width="20%">Last Created</th>
+									<th class="p-2 text-center" width="70">Opsi</th>
 								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								<?php $n = 0;
+								if ($data) foreach ($data as $dt) : $n++; ?>
+									<tr>
+										<td class="py-2 align-middle">
+											<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->process_id . "&sub=" . $dt->id_sub . "&sub2=" . $dt->id); ?>" class="text-dark">
+												<div class="d-flex align-items-center">
+													<div class="symbol symbol-30 mr-2 flex-shrink-0">
+														<span class="symbol-label bg-light-warning p-2 rounded">
+															<i class="fa fa-folder text-warning" style="font-size: 16px;"></i>
+														</span>
+													</div>
+													<div>
+														<span class="font-weight-bolder d-block" style="font-size: 13.5px; line-height: 1.3; word-break: break-word;">
+															<?= $dt->name; ?>
+														</span>
+													</div>
+												</div>
+											</a>
+										</td>
+										<td class="py-2 text-center align-middle text-muted" style="font-size: 12px;"><?= $dt->created_at; ?></td>
+										<td class="py-2 text-center align-middle">
+											<?php if ($menus_perm['update'] == '1') : ?>
+												<button type="button" class="btn btn-xs btn-icon btn-warning edit" data-id="<?= $dt->id; ?>" title="Edit"><i class="fa fa-edit"></i></button>
+											<?php endif; ?>
+											<?php if ($menus_perm['delete'] == '1') : ?>
+												<button type="button" class="btn btn-xs btn-icon btn-danger delete" data-id="<?= $dt->id; ?>" title="Hapus"><i class="fa fa-trash"></i></button>
+											<?php endif; ?>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>

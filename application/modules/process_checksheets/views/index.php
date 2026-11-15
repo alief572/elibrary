@@ -11,49 +11,68 @@ $menus_perm = json_decode(has_permission_v2(15), true);
 	<div class="d-flex flex-column-fluid justify-content-between align-items-top">
 		<div class="container">
 			<div class="card card-stretch shadow card-custom">
-				<div class="card-header justify-content-between d-flex align-items-center">
-					<h3 class="m-0"><i class="fa fa-home"></i> List Folder</h3>
+				<div class="card-header justify-content-between d-flex flex-wrap align-items-center py-3 px-3 px-md-4 gap-2">
+					<h3 class="m-0 font-weight-bolder d-flex align-items-center" style="font-size: 1.15rem;">
+						<i class="fa fa-home mr-2 text-primary"></i> <span>List Folder</span>
+					</h3>
 					<?php if ($menus_perm['create'] == '1') : ?>
-						<button type="button" class="btn btn-primary" id="add-folder"><i class="fa fa-plus"></i> New Folder</button>
+						<button type="button" class="btn btn-primary btn-sm font-weight-bold px-3" id="add-folder"><i class="fa fa-plus mr-1"></i> New Folder</button>
 					<?php endif; ?>
 				</div>
-				<div class="card-body">
-					<div class="input-group  w-25">
-						<div class="input-group-text input-group-prepend rounded-right-0"><i class="fa fa-search"></i></div>
-						<input data type="text" name="search" id="search" class="form-control d-inline-block" placeholder="Search">
+				<div class="card-body p-3 p-md-4">
+					<div class="row align-items-center mb-3">
+						<div class="col-12 col-md-5 col-lg-4">
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<span class="input-group-text bg-white border-right-0"><i class="fa fa-search text-muted"></i></span>
+								</div>
+								<input type="text" name="search" id="search" class="form-control border-left-0 pl-0" placeholder="Search folder...">
+							</div>
+						</div>
 					</div>
-					<table class="table table-sm table-bordered datatable">
-						<thead class="table-light">
-							<tr>
-								<th class="py-2">Directory Name</th>
-								<th class="py-2 text-center" width="20%">Last Created</th>
-								<th class="py-2 text-center" width="50">Opsi</th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php $n = 0;
-							if ($parents) foreach ($parents as $dt) : $n++; ?>
+					<div class="table-responsive">
+						<table class="table table-sm table-bordered datatable">
+							<thead class="table-light">
 								<tr>
-									<td class="py-2">
-										<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->id); ?>" class="<?= ($dt->status == '0') ? 'text-muted' : ''; ?>">
-											<h4 class="mb-0 d-flex align-items-end">
-												<i class="fa fa-folder mr-2 text-success" style="font-size: 28px;"></i><?= $dt->name; ?>
-											</h4>
-										</a>
-									</td>
-									<td class="py-2 text-center"><?= $dt->created_at; ?></td>
-									<td class="py-2 text-center">
-										<?php if ($menus_perm['update'] == '1') : ?>
-											<button type="button" class="btn btn-warning btn-xs btn-icon edit" data-id="<?= $dt->id; ?>"><i class="fa fa-edit"></i></button>
-										<?php endif; ?>
-										<?php if ($menus_perm['delete'] == '1') : ?>
-											<button type="button" class="btn btn-danger btn-xs btn-icon delete" data-id="<?= $dt->id; ?>"><i class="fa fa-trash"></i></button>
-										<?php endif; ?>
-									</td>
+									<th class="py-2">Directory Name</th>
+									<th class="py-2 text-center" width="20%">Last Created</th>
+									<th class="py-2 text-center" width="70">Opsi</th>
 								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								<?php $n = 0;
+								if ($parents) foreach ($parents as $dt) : $n++; ?>
+									<tr>
+										<td class="py-2 align-middle">
+											<a href="<?= base_url($this->uri->segment(1) . "/?p=" . $dt->id); ?>" class="<?= ($dt->status == '0') ? 'text-muted' : 'text-dark'; ?>">
+												<div class="d-flex align-items-center">
+													<div class="symbol symbol-30 mr-2 flex-shrink-0">
+														<span class="symbol-label bg-light-success p-2 rounded">
+															<i class="fa fa-folder text-success" style="font-size: 16px;"></i>
+														</span>
+													</div>
+													<div>
+														<span class="font-weight-bolder d-block" style="font-size: 13.5px; line-height: 1.3; word-break: break-word;">
+															<?= $dt->name; ?>
+														</span>
+													</div>
+												</div>
+											</a>
+										</td>
+										<td class="py-2 text-center align-middle text-muted" style="font-size: 12px;"><?= $dt->created_at; ?></td>
+										<td class="py-2 text-center align-middle">
+											<?php if ($menus_perm['update'] == '1') : ?>
+												<button type="button" class="btn btn-warning btn-xs btn-icon edit" data-id="<?= $dt->id; ?>" title="Edit"><i class="fa fa-edit"></i></button>
+											<?php endif; ?>
+											<?php if ($menus_perm['delete'] == '1') : ?>
+												<button type="button" class="btn btn-danger btn-xs btn-icon delete" data-id="<?= $dt->id; ?>" title="Hapus"><i class="fa fa-trash"></i></button>
+											<?php endif; ?>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>

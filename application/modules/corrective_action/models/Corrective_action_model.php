@@ -1,4 +1,4 @@
-﻿<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * Corrective Action Model
@@ -101,7 +101,7 @@ class Corrective_action_model extends BF_Model
                 pa.id as pelaksanaan_id,
                 aps.audit_date,
                 COALESCE(p.name, aps.process_name_free) as process_name,
-                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
+                COALESCE(ad.name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name,
                 COUNT(pat.id) as temuan_count,
                 GROUP_CONCAT(DISTINCT pat.kategori SEPARATOR ", ") as kategori,
@@ -113,7 +113,7 @@ class Corrective_action_model extends BF_Model
             ->join('procedures p', 'p.id = aps.process_id', 'left')
             ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
             ->join('audit_program_schedule_auditee apsa', 'apsa.schedule_id = aps.id', 'left')
-            ->join('audit_department ad', 'ad.id = apsa.department_id', 'left')
+            ->join('departements ad', 'ad.id = apsa.department_id', 'left')
             ->join('pelaksanaan_audit_temuan pat', 'pat.audit_id = pa.id AND pat.status = "1"', 'inner')
             ->join('corrective_action ca', 'ca.pelaksanaan_id = pa.id AND ca.deleted = "0"', 'left')
             ->where('pa.status', '1')
@@ -134,7 +134,7 @@ class Corrective_action_model extends BF_Model
                 ca.id as ca_id,
                 aps.audit_date,
                 COALESCE(p.name, aps.process_name_free) as process_name,
-                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
+                COALESCE(ad.name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name,
                 COUNT(pat.id) as temuan_count,
                 GROUP_CONCAT(DISTINCT pat.kategori SEPARATOR ", ") as kategori,
@@ -146,7 +146,7 @@ class Corrective_action_model extends BF_Model
             ->join('procedures p', 'p.id = aps.process_id', 'left')
             ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
             ->join('audit_program_schedule_auditee apsa', 'apsa.schedule_id = aps.id', 'left')
-            ->join('audit_department ad', 'ad.id = apsa.department_id', 'left')
+            ->join('departements ad', 'ad.id = apsa.department_id', 'left')
             ->join('pelaksanaan_audit_temuan pat', 'pat.audit_id = pa.id AND pat.status = "1"', 'left')
             ->where_in('ca.status_ca', ['waiting_approval', 'approved'])
             ->where('ca.deleted', '0')
@@ -167,7 +167,7 @@ class Corrective_action_model extends BF_Model
                 ca.id as ca_id,
                 aps.audit_date,
                 COALESCE(p.name, aps.process_name_free) as process_name,
-                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
+                COALESCE(ad.name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name,
                 COUNT(pat.id) as temuan_count,
                 GROUP_CONCAT(DISTINCT pat.kategori SEPARATOR ", ") as kategori,
@@ -179,7 +179,7 @@ class Corrective_action_model extends BF_Model
             ->join('procedures p', 'p.id = aps.process_id', 'left')
             ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
             ->join('audit_program_schedule_auditee apsa', 'apsa.schedule_id = aps.id', 'left')
-            ->join('audit_department ad', 'ad.id = apsa.department_id', 'left')
+            ->join('departements ad', 'ad.id = apsa.department_id', 'left')
             ->join('pelaksanaan_audit_temuan pat', 'pat.audit_id = pa.id AND pat.status = "1"', 'left')
             ->where('ca.status_ca', 'approved')
             ->where('ca.deleted', '0')
@@ -200,7 +200,7 @@ class Corrective_action_model extends BF_Model
         return $this->db->select('
                 COALESCE(p.name, aps.process_name_free) as process_name,
                 aps.audit_date,
-                COALESCE(ad.department_name, aps.auditee_name_free) as department_name,
+                COALESCE(ad.name, aps.auditee_name_free) as department_name,
                 aac.name as auditor_name
             ')
             ->from('pelaksanaan_audit pa')
@@ -208,7 +208,7 @@ class Corrective_action_model extends BF_Model
             ->join('procedures p', 'p.id = aps.process_id', 'left')
             ->join('audit_auditor_consultant aac', 'aac.id = aps.auditor_id', 'left')
             ->join('audit_program_schedule_auditee apsa', 'apsa.schedule_id = aps.id', 'left')
-            ->join('audit_department ad', 'ad.id = apsa.department_id', 'left')
+            ->join('departements ad', 'ad.id = apsa.department_id', 'left')
             ->where('pa.id', $pelaksanaan_id)
             ->get()
             ->row();
@@ -423,8 +423,12 @@ class Corrective_action_model extends BF_Model
         // Validate all details are filled
         $details = $this->getCADetails($ca_id);
         foreach ($details as $detail) {
-            if (trim($detail->fakta) === '' || trim($detail->kesimpulan_penyebab) === '' ||
-                trim($detail->correction) === '' || trim($detail->corrective_action) === '') {
+            $fakta = isset($detail->fakta) ? trim($detail->fakta) : '';
+            $penyebab = isset($detail->kesimpulan_penyebab) ? trim($detail->kesimpulan_penyebab) : '';
+            $correction = isset($detail->correction) ? trim($detail->correction) : '';
+            $ca_action = isset($detail->corrective_action) ? trim($detail->corrective_action) : '';
+
+            if ($fakta === '' || $penyebab === '' || $correction === '' || $ca_action === '') {
                 return ['status' => 0, 'msg' => 'Semua field wajib diisi untuk setiap temuan sebelum diajukan.'];
             }
         }
@@ -438,13 +442,20 @@ class Corrective_action_model extends BF_Model
         $this->db->trans_begin();
         $now = date('Y-m-d H:i:s');
 
-        $this->db->update('corrective_action', [
-            'status_ca'    => 'waiting_approval',
-            'submitted_at' => $now,
-            'submitted_by' => $userId,
-            'modified_at'  => $now,
-            'modified_by'  => $userId,
-        ], ['id' => $ca_id]);
+        // Build update data - only include columns that exist
+        $updateData = [
+            'status_ca'   => 'waiting_approval',
+            'modified_at' => $now,
+            'modified_by' => $userId,
+        ];
+
+        // Check if submitted_at column exists
+        if ($this->db->field_exists('submitted_at', 'corrective_action')) {
+            $updateData['submitted_at'] = $now;
+            $updateData['submitted_by'] = $userId;
+        }
+
+        $this->db->update('corrective_action', $updateData, ['id' => $ca_id]);
 
         if ($this->db->trans_status() === FALSE) {
             $this->db->trans_rollback();

@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS `audit_program_schedule` (
   `program_id` VARCHAR(11) NOT NULL COMMENT 'FK to audit_program.id',
   `process_id` VARCHAR(20) NULL DEFAULT NULL COMMENT 'FK to procedures.id',
   `process_name_free` VARCHAR(255) NULL DEFAULT NULL COMMENT 'Free text process name',
+  `requirement_id` INT(11) NULL DEFAULT NULL COMMENT 'FK to requirements.id',
   `auditor_id` VARCHAR(11) NOT NULL COMMENT 'FK to audit_auditor_consultant.id',
   `audit_date` DATE NOT NULL COMMENT 'Scheduled audit date',
   `start_time` TIME NOT NULL COMMENT 'Audit start time',

@@ -3,6 +3,12 @@
 <table class="table table-hover" id="records-tree-table">
   <thead>
     <tr>
+      <th class="py-0 text-center" width="40">
+        <label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+          <input type="checkbox" id="check-all-records" title="Select All">
+          <span></span>
+        </label>
+      </th>
       <th class="py-0">File or Folder Name</th>
       <th class="py-0 text-left">Description</th>
       <th class="py-0 text-right">Last Update</th>
@@ -33,6 +39,12 @@
         }
       ?>
         <tr class="tree-row" data-id="<?= $form->id; ?>" data-parent-id="" data-depth="0" data-loaded="false">
+          <td class="py-1 text-center align-middle" width="40">
+            <label class="checkbox checkbox-single checkbox-primary mb-0 justify-content-center">
+              <input type="checkbox" class="record-checkbox" value="<?= $form->id; ?>" data-type="<?= $form->flag_type; ?>" data-name="<?= htmlspecialchars($form->name); ?>">
+              <span></span>
+            </label>
+          </td>
           <td class="py-1">
             <a href="javascript:void(0)" data-id="<?= $form->id; ?>" class="cursor-pointer <?= ($form->flag_type == 'FOLDER') ? 'folder' : 'file'; ?> text-dark">
               <div class="d-flex justify-content-start align-items-center">
@@ -40,17 +52,19 @@
                   <i class="fa fa-chevron-right mr-2 toggle-icon" style="transition: transform 0.2s;"></i>
                   <i class="fa fa-folder text-warning fa-2x mr-3"></i>
                 <?php elseif (isset($form->link_url) && $form->link_url) : ?>
-                  <i class="fa fa-link text-info fa-2x mr-3 ml-4"></i>
+                  <i class="fa fa-link text-info mr-3 ml-4"></i>
                 <?php else : 
                   $ext = isset($form->ext) && $form->ext ? strtolower(str_replace('.', '', $form->ext)) : (isset($form->file_name) ? strtolower(pathinfo($form->file_name, PATHINFO_EXTENSION)) : '');
-                  if ($ext == 'pdf') { $icon = 'fas fa-file-pdf text-danger'; }
-                  elseif (in_array($ext, ['xls', 'xlsx'])) { $icon = 'fas fa-file-excel text-success'; }
-                  elseif (in_array($ext, ['doc', 'docx'])) { $icon = 'fas fa-file-word text-primary'; }
-                  elseif (in_array($ext, ['ppt', 'pptx'])) { $icon = 'fas fa-file-powerpoint text-warning'; }
-                  elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) { $icon = 'fas fa-file-image text-info'; }
-                  else { $icon = 'fas fa-file-alt text-success'; }
+                  if ($ext == 'pdf') { $icon = 'fas fa-file-pdf'; $iconColor = '#e5252a'; }
+                  elseif (in_array($ext, ['xls', 'xlsx', 'csv'])) { $icon = 'fas fa-file-excel'; $iconColor = '#217346'; }
+                  elseif (in_array($ext, ['doc', 'docx'])) { $icon = 'fas fa-file-word'; $iconColor = '#2b579a'; }
+                  elseif (in_array($ext, ['ppt', 'pptx'])) { $icon = 'fas fa-file-powerpoint'; $iconColor = '#d24726'; }
+                  elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'])) { $icon = 'fas fa-file-image'; $iconColor = '#17a2b8'; }
+                  elseif (in_array($ext, ['zip', 'rar', '7z', 'tar', 'gz'])) { $icon = 'fas fa-file-archive'; $iconColor = '#ffc107'; }
+                  elseif (in_array($ext, ['txt', 'rtf'])) { $icon = 'fas fa-file-alt'; $iconColor = '#6c757d'; }
+                  else { $icon = 'fas fa-file-alt'; $iconColor = '#6c757d'; }
                 ?>
-                  <i class="<?= $icon ?> fa-2x mr-3 ml-4"></i>
+                  <i class="<?= $icon ?> mr-3 ml-4" style="color: <?= $iconColor ?>;"></i>
                 <?php endif; ?>
                 <span class="text-name mt-3 h5"><?= $form->name; ?></span>
               </div>
@@ -77,7 +91,7 @@
                     <?php elseif (isset($form->link_url) && $form->link_url) : ?>
                       <a class="dropdown-item" href="<?= $form->link_url; ?>" target="_blank" title="Open Link"><i class="fa fa-external-link-alt text-info mr-2"></i> Open Link</a>
                     <?php else : ?>
-                      <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf text-primary' ?> mr-2"></i> View Document</a>
+                      <a class="dropdown-item view-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="<?= isset($icon) ? $icon : 'fas fa-file-pdf' ?> mr-2" style="color: <?= isset($iconColor) ? $iconColor : '#2b579a' ?>;"></i> View Document</a>
                     <?php endif; ?>
                     <?php if (isset($user_confidential) && $user_confidential == '1' && !$is_locked) : ?>
                     <a class="dropdown-item toggle-confidential" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-value="<?= $form->flag_confidential; ?>">
@@ -97,11 +111,13 @@
                     <?php if ($this->uri->segment(1) == 'records') : ?>
                       <a class="dropdown-item add-folder-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-folder-plus text-warning mr-2"></i> Add Folder</a>
                       <a class="dropdown-item add-record-inside" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-file-medical text-primary mr-2"></i> Add Record</a>
+                      <a class="dropdown-item paste-into-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" style="display:none;"><i class="fa fa-paste text-success mr-2"></i> Paste into this folder</a>
                       <div class="dropdown-divider"></div>
                     <?php endif; ?>
                     <a class="dropdown-item edit-folder" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= $form->name; ?>"><i class="fa fa-edit text-warning mr-2"></i> Edit Folder</a>
                   <?php endif; ?>
                   <?php if (!($form->flag_type == 'FILE' && $is_locked)) : ?>
+                  <a class="dropdown-item copy-single-record" href="javascript:void(0)" data-id="<?= $form->id; ?>" data-name="<?= htmlspecialchars($form->name); ?>" data-type="<?= $form->flag_type; ?>"><i class="fa fa-copy text-info mr-2"></i> Copy</a>
                   <a class="dropdown-item move-record" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-random text-success mr-2"></i> Move</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item delete-record text-danger" href="javascript:void(0)" data-id="<?= $form->id; ?>"><i class="fa fa-trash text-danger mr-2"></i> Delete</a>
@@ -114,7 +130,7 @@
       <?php endforeach; ?>
     <?php else : ?>
       <tr>
-        <td colspan="4" class="text-center py-5">
+        <td colspan="5" class="text-center py-5">
           <i class="fa fa-folder-open text-muted fa-4x mb-3"></i>
           <h5 class="text-muted">~ Folder Kosong ~</h5>
           <button type="button" class="btn btn-warning mt-3 add_folder"><i class="fa fa-folder-plus"></i> Create Folder</button>

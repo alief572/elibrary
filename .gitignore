@@ -14,7 +14,7 @@ directory/*
 #assets/images/directory/master_checksheet
 application/config/database.php
 assets/images/directory/*
-
+.env
 docker-compose.yml
 docker/apache/Dockerfile
 docker/mysql/init.sql

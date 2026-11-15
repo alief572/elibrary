@@ -97,11 +97,46 @@ class Cross_reference extends Admin_Controller
 	{
 		$Data 			= $this->db->get_where('requirements', ['company_id' => $this->company, 'id' => $id])->row();
 		$Data_detail 	= $this->db->get_where('requirement_details', ['requirement_id' => $id])->result();
-		$procedure 		= $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL', 'deleted_by' => null])->result();
+		$crossData 		= $this->db->get_where('view_cross_references', ['company_id' => $this->company, 'standard_id' => $id])->row();
 
-		$this->template->set('Data', $Data);
-		$this->template->set('Data_detail', $Data_detail);
-		$this->template->set('procedure', $procedure);
+		$Procedure 		= [];
+		$other_docs 	= [];
+		if ($crossData) {
+			$DetailCross = $this->db->get_where('view_cross_reference_details', ['reference_id' => $crossData->id])->result_array();
+			if ($DetailCross) {
+				$Procedure 	= array_combine(array_column($DetailCross, 'chapter_id'), array_column($DetailCross, 'procedure_id'));
+				$other_docs = array_combine(array_column($DetailCross, 'chapter_id'), array_column($DetailCross, 'other_docs'));
+			}
+		}
+
+		$procedures 	= $this->db->get_where('procedures', ['company_id' => $this->company, 'status !=' => 'DEL'])->result();
+		$status = [
+			'PUB' => 'badge-success',
+			'DFT' => 'badge-secondary',
+			'APV' => 'badge-info',
+			'REV' => 'badge-warning',
+			'COR' => 'badge-danger',
+			'DEL' => 'badge-light',
+			'RVI' => 'badge-info',
+			'HLD' => 'badge-default',
+		];
+
+		$list_procedure = [];
+		$ArrProcedures = [];
+		foreach ($procedures as $pro) {
+			$list_procedure[$pro->id] = "<span style='cursor:pointer' title='View Procedure' class='badge view-procedure "  . (isset($status[$pro->status]) ? $status[$pro->status] : 'badge-primary') . " m-1' data-id='$pro->id'> " . $pro->name . "<sup> (". ($pro->status).")</sup></span>";
+			$ArrProcedures[$pro->id] = $pro->status;
+		}
+
+		$this->template->set([
+			'Data' 				=> $Data,
+			'Data_detail' 		=> $Data_detail,
+			'list_procedure' 	=> $list_procedure,
+			'other_docs' 		=> $other_docs,
+			'Procedure' 		=> $Procedure,
+			'ArrProcedures' 	=> $ArrProcedures,
+		]);
+
 		$this->template->render('load_pasal');
 	}
 

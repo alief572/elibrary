@@ -34,8 +34,8 @@
 					<div class="form-group row mb-0">
 						<label class="col-12 col-form-label"><span class="text-danger">*</span> Upload Document :</label>
 						<div class="col-12">
-							<input type="file" accept=".xlsx,.xls,.pdf" name="forms_image" id="image" class="form-control" placeholder="Upload File">
-							<span class="form-text text-muted">File type : PDF, Excel</span>
+							<input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv" name="forms_image" id="image" class="form-control" placeholder="Upload File">
+							<span class="form-text text-muted">File type : PDF, Word, Excel, PowerPoint</span>
 							<span class="form-text text-danger invalid-feedback">Upload Document harus di isi</span>
 						</div>
 						<?php if (isset($data)) : ?>
@@ -85,8 +85,8 @@
 					<div class="form-group row mb-0">
 						<label class="col-12 col-form-label"><span class="text-danger">*</span> Upload Document :</label>
 						<div class="col-12">
-							<input type="file" accept=".xlsx,.xls,.pdf" name="forms_image" id="image" class="form-control" placeholder="Upload File">
-							<span class="form-text text-muted">File type : PDF, Excel</span>
+							<input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv" name="forms_image" id="image" class="form-control" placeholder="Upload File">
+							<span class="form-text text-muted">File type : PDF, Word, Excel, PowerPoint</span>
 							<span class="form-text text-danger invalid-feedback">Upload Document harus di isi</span>
 						</div>
 					</div>

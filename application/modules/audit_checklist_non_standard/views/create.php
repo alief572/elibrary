@@ -4,7 +4,7 @@
 			<div class="card card-stretch shadow card-custom">
 				<div class="card-header justify-content-between d-flex align-items-center">
 					<h2 class="m-0"><i class="<?= $icon; ?> text-primary mr-2"></i>Create Checklist Audit Berdasarkan Kinerja</h2>
-					<a href="<?= site_url('audit_checklist_non_standard'); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
+					<a href="<?= site_url('audit_checklist_non_standard/schedules/' . $schedule->program_id); ?>" class="btn btn-danger"><i class="fa fa-reply"></i> Kembali</a>
 				</div>
 
 				<div class="card-body">
@@ -187,7 +187,7 @@ $(document).ready(function() {
 					success: function(res) {
 						if (res.status == 1) {
 							Swal.fire({title: 'Success!', icon: 'success', text: res.msg, timer: 2000}).then(function() {
-								window.location.href = '<?= site_url("audit_checklist_non_standard"); ?>';
+								window.location.href = '<?= site_url("audit_checklist_non_standard/schedules/" . $schedule->program_id); ?>';
 							});
 						} else {
 							Swal.fire({title: 'Warning!', icon: 'warning', text: res.msg});
