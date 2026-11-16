@@ -450,7 +450,7 @@ class Documents_list extends Admin_Controller
 		$file 			= $this->List->getMateriFile($id);
 		if (!$file) return;
 
-		$array 			= explode('.', $file->document);
+		$array 			= explode('.', (string) $file->document);
 		$extension 		= end($array);
 
 		$this->template->set([
@@ -539,7 +539,7 @@ class Documents_list extends Admin_Controller
 		$file 			= $this->List->getGuideDetailDataByIdIK($id);
 		if (!$file) return;
 
-		$array 			= explode('.', $file->document);
+		$array 			= explode('.', (string) $file->document);
 		$extension 		= end($array);
 
 		$this->template->set([
@@ -555,7 +555,7 @@ class Documents_list extends Admin_Controller
 		$file 			= $this->List->getGuideDocumentById($id);
 		if (!$file) return;
 
-		$array 			= explode('.', $file->document);
+		$array 			= explode('.', (string) $file->document);
 		$extension 		= end($array);
 
 		$this->template->set([

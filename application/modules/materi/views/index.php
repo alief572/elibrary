@@ -79,38 +79,214 @@
 </style>
 
 <style>
-	.cursor-pointer:hover div.dir-tools .btn-dropdown {
+	.cursor-pointer:hover div.dir-tools .btn-dropdown,
+	.dir-tools .btn-dropdown.show,
+	.dir-tools .btn-dropdown:focus-within {
 		display: block !important;
+	}
+	.dir-tools .dropdown-menu {
+		z-index: 1050 !important;
+	}
+
+	#modalId .materi-upload-dialog {
+		max-width: 960px !important;
+	}
+
+	.materi-upload-layout {
+		min-height: 390px;
+		border: 1px solid #e4e6ef;
+		border-radius: .65rem;
+		overflow: hidden;
+		background: #fff;
+	}
+
+	.materi-upload-nav {
+		padding: 1rem .75rem;
+		background: #f5f7fa;
+		border-right: 1px solid #e4e6ef;
+	}
+
+	.materi-upload-nav .nav-link {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		margin-bottom: .5rem;
+		padding: .8rem .9rem;
+		border: 0;
+		border-radius: .5rem;
+		color: #5e6278;
+		background: transparent;
+		font-weight: 600;
+		text-align: left;
+	}
+
+	.materi-upload-nav .nav-link i {
+		width: 22px;
+		margin-right: .65rem;
+		text-align: center;
+	}
+
+	.materi-upload-nav .nav-link.active {
+		color: #fff;
+		background: #3699ff;
+		box-shadow: 0 4px 12px rgba(54, 153, 255, .25);
+	}
+
+	.materi-upload-nav .nav-link.active i {
+		color: #fff !important;
+	}
+
+	.materi-upload-content {
+		padding: 1.5rem;
+	}
+
+	.materi-upload-content .tab-pane {
+		padding: 0 !important;
+		border: 0 !important;
+	}
+
+	.materi-upload-content .dropzone-wrapper {
+		height: 280px !important;
+		margin-right: 0 !important;
+		border-radius: .5rem;
+	}
+
+	.youtube-preview {
+		margin-top: 1rem;
+		border: 1px solid #e4e6ef;
+		border-radius: .5rem;
+		overflow: hidden;
+		background: #202124;
+	}
+
+	.youtube-preview iframe {
+		display: block;
+		width: 100%;
+		height: 315px;
+		aspect-ratio: 16 / 9;
+		border: 0;
+	}
+
+	.youtube-preview-placeholder {
+		display: flex;
+		min-height: 240px;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem;
+		color: #b5b5c3;
+		text-align: center;
+	}
+
+	.external-link-preview {
+		position: relative;
+		margin-top: 1rem;
+		border: 1px solid #e4e6ef;
+		border-radius: .5rem;
+		overflow: hidden;
+		background: #f5f7fa;
+	}
+
+	.external-link-preview iframe {
+		display: block;
+		width: 100%;
+		height: 315px;
+		border: 0;
+		background: #fff;
+	}
+
+	.external-link-preview-placeholder {
+		display: flex;
+		min-height: 240px;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem;
+		color: #7e8299;
+		text-align: center;
+	}
+
+	.external-link-preview-action {
+		position: absolute;
+		z-index: 2;
+		top: .75rem;
+		right: .75rem;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+	}
+
+	#modalView {
+		padding: 0 !important;
+	}
+
+	#modalView .modal-dialog {
+		width: 100vw;
+		max-width: 100vw !important;
+		height: 100vh;
+		margin: 0;
+	}
+
+	#modalView .modal-content,
+	#modalView .modal-body {
+		height: 100vh;
+		min-height: 0;
+		border: 0;
+		border-radius: 0;
+		background: #202124;
+	}
+
+	#modalView .modal-body {
+		padding: 0 !important;
+		overflow: hidden;
+	}
+
+	#modalView .materi-viewer-close {
+		position: absolute;
+		z-index: 1060;
+		top: 10px;
+		right: 12px;
+		width: 40px;
+		height: 40px;
+		border: 0;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, .92);
+		color: #3c4043;
+		font-size: 28px;
+		line-height: 1;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
 	}
 
 	@media (max-width: 767.98px) {
-		.h-mobile-auto {
-			height: auto !important;
-			max-height: 250px !important;
+		.materi-upload-nav {
+			padding: .75rem .5rem;
 		}
-		.h-mobile-content-auto {
-			height: auto !important;
-			max-height: 450px !important;
+
+		.materi-upload-nav .nav-link {
+			flex-direction: column;
+			padding: .75rem .35rem;
+			font-size: 11px;
+			text-align: center;
 		}
-		.card-header-responsive {
-			height: auto !important;
-			padding: 10px 15px !important;
+
+		.materi-upload-nav .nav-link i {
+			margin: 0 0 .35rem;
+		}
+
+		.materi-upload-content {
+			padding: 1rem;
 		}
 	}
 </style>
 
 <div class="content d-flex flex-column flex-column-fluid p-0">
 	<div class="d-flex flex-column-fluid justify-content-between align-items-top">
-		<div class="container-fluid mt-4 mt-md-10 px-3 px-md-6">
-			<h1 class="text-white mb-5"><i class="fa fa-folder-open h1 text-white"></i> DOKUMEN MATERI TRAINING</h1>
+		<div class="container mt-10">
+			<h1 class="text-white mb-5"><i class="fa fa-folder-open h1"></i> DOKUMEN MATERI TRAINING</h1>
 			<div class="card">
-				<div class="row m-0">
-					<div class="col-md-3 col-12 pr-md-0 px-3 border-right-md">
-						<div class="card-header px-3 pt-3 h-50px d-flex align-items-center">
+				<div class="row">
+					<div class="col-md-3 pr-md-0 mb-3 mb-md-0">
+						<div class="card-header px-3 pt-3 h-50px">
 							<button type="button" class="btn btn-sm btn-primary add-directory"><i class="fa fa-plus"></i> Add Directory</button>
 						</div>
 
-						<div class="card-body px-0 py-1 overflow-auto h-500px h-mobile-auto">
+						<div class="card-body px-0 py-1 overflow-auto h-auto max-h-250px h-md-500px">
 							<table class="table table-sm table-hover">
 								<tbody>
 									<?php
@@ -120,19 +296,19 @@
 										foreach ($data as $dt) :
 										?>
 											<tr class="<?= ($dt->id == $selected) ? 'bg-secondary' : ''; ?>">
-												<th class="cursor-pointer pl-3 pl-md-5 pr-1">
+												<th class="cursor-pointer pl-5 pr-1">
 													<div class="d-flex justify-content-between align-items-center">
 														<a class="text-dark w-100" href="<?= base_url($this->uri->segment(1) . '/?d=' . $dt->id); ?>">
-															<h4 class="mb-0 text-truncate"><i class="fa fa-folder fa-2x text-warning mr-3" style="vertical-align: middle;"></i>
+															<h4><i class="fa fa-folder fa-2x text-warning mr-3" style="vertical-align: middle;"></i>
 																<?= $dt->name; ?>
 															</h4>
 														</a>
 														<div class="dir-tools">
-															<div class="dropdown btn-dropdown d-">
-																<button class="btn btn-xs p-0 m-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+															<div class="dropdown btn-dropdown">
+																<button class="btn btn-xs p-0 m-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-boundary="window" aria-haspopup="true" aria-expanded="false">
 																	<i class="fas fa-chevron-down"></i>
 																</button>
-																<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+																<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
 																	<a class="dropdown-item edit_dir" data-id="<?= $dt->id; ?>" href="#"><i class="fa fa-pen text-warning mr-1"></i>Edit</a>
 																	<a class="dropdown-item delete_dir" data-id="<?= $dt->id; ?>" href="#"><i class="fa fa-trash text-danger mr-1"></i>Delete</a>
 																</div>
@@ -149,11 +325,11 @@
 						</div>
 					</div>
 
-					<div class="col-md-9 col-12 pl-md-0 px-3">
-						<div class="card-header px-3 border-1 border-bottom-0 rounded-left-0 border-left py-2 h-auto min-h-50px card-header-responsive">
-							<div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center w-100 gap-2">
-								<h3 class="fw-bold p-2 m-0 text-truncate"><i class="fa fa-list mr-2"></i><?= ($breadcumb) ? implode(" / ", $breadcumb) : ''; ?></h3>
-								<div class="tools p-1 p-md-2 w-100 w-md-50">
+					<div class="col-md-9 pl-md-0">
+						<div class="card-header px-0 border-1 border-bottom-0 rounded-left-0 border-left pb-11 pt-0 h-auto min-h-md-50px">
+							<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center w-100">
+								<h3 class="fw-bold p-2"><i class="fa fa-list mr-2"></i><?= ($breadcumb) ? implode(" / ", $breadcumb) : ''; ?></h3>
+								<div class="tools p-2 w-100 w-md-50">
 									<div class="input-group">
 										<span class="input-group-text bg-transparent border-right-0 rounded-right-0" id="input1"><i class="fa fa-search"></i></span>
 										<input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="input1" />
@@ -162,48 +338,48 @@
 							</div>
 						</div>
 						<div id="data-file">
-							<div class="card-body border border-1 border-left overflow-auto py-2 px-3 h-550px h-mobile-content-auto">
+							<div class="card-body border border-1 border-left py-2 px-1 h-auto min-h-350px h-md-550px overflow-auto">
 								<?php if (!isset($details) || !$details) : ?>
-									<div class="px-1 py-1">
+									<div class="px-3">
 										<button type="button" class="btn mb-2 btn-sm btn-light-success add-sub-directory <?= ($selected) ? '' : 'd-none'; ?>" data-id="<?= $selected; ?>" title="New Sub Directory"><i class="fa fa-plus"></i> New Sub Directory</button>
 									</div>
 									<div class="d-flex justify-content-center align-items-center py-10">
-										<img src="<?= base_url('assets\images\dashboard\folder-file.gif'); ?>" alt="" width="300px" class="img-responsive text-center opacity-30" style="max-width: 100%; height: auto;">
+										<img src="<?= base_url('assets\images\dashboard\folder-file.gif'); ?>" alt="" width="300px" class="img-responsive text-center opacity-30">
 									</div>
 								<?php else : ?>
 									<?php if ($details && !$details_data) : ?>
-										<div class="px-1 py-1">
+										<div class="px-3">
 											<button type="button" class="btn mb-2 btn-sm btn-light-success add-sub-directory <?= ($selected) ? '' : 'd-none'; ?>" data-id="<?= $selected; ?>" title="New Sub Directory"><i class="fa fa-plus"></i> New Sub Directory</button>
 										</div>
 										<div class="table-responsive">
-											<table class="table table-hover datatable" style="margin:0px 0px !important;">
-												<thead>
-													<tr class="table-light">
-														<th class="py-2">Name</th>
-														<th width="150" class="text-nowrap">Last update</th>
-														<th class="py-2 text-center text-nowrap" width="100">Opsi</th>
+										<table class="table table-hover datatable" style="margin:0px 0px !important;">
+											<thead>
+												<tr class="table-light">
+													<th class="py-2">Name</th>
+													<th width="150">Last update</th>
+													<th class="py-2 text-center" width="100">Opsi</th>
+												</tr>
+											</thead>
+											<tbody>
+												<?php foreach ($details as $dtl) : ?>
+													<tr>
+														<!-- <td><?= $dtl->id; ?></td> -->
+														<td class="py-3"><a href="?d=<?= $dtl->materi_id . "&sub=" . $dtl->id ?>" class="text-dark h4 text-hover-primary"><i class="fa fa-folder text-success mr-2"></i><?= $dtl->materi_detail_name; ?></a></td>
+														<td class="py-3"><?= ($dtl->modified_at) ?: $dtl->created_at; ?></td>
+														<td class="py-3 text-center">
+															<button type="button" class="btn btn-icon btn-xs btn-info info-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fas fa-question-circle"></i></button>
+															<button type="button" class="btn btn-icon btn-xs btn-warning edit-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-pencil-alt"></i></button>
+															<button type="button" class="btn btn-icon btn-xs btn-danger delete-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-trash-alt"></i></button>
+														</td>
 													</tr>
-												</thead>
-												<tbody>
-													<?php foreach ($details as $dtl) : ?>
-														<tr>
-															<!-- <td><?= $dtl->id; ?></td> -->
-															<td class="py-3"><a href="?d=<?= $dtl->materi_id . "&sub=" . $dtl->id ?>" class="text-dark h4 text-hover-primary"><i class="fa fa-folder text-success mr-2"></i><?= $dtl->materi_detail_name; ?></a></td>
-															<td class="py-3 text-nowrap"><?= ($dtl->modified_at) ?: $dtl->created_at; ?></td>
-															<td class="py-3 text-center text-nowrap">
-																<button type="button" class="btn btn-icon btn-xs btn-info info-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fas fa-question-circle"></i></button>
-																<button type="button" class="btn btn-icon btn-xs btn-warning edit-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-pencil-alt"></i></button>
-																<button type="button" class="btn btn-icon btn-xs btn-danger delete-sub-folder" data-id="<?= $dtl->id; ?>"><i class="fa fa-trash-alt"></i></button>
-															</td>
-														</tr>
-													<?php endforeach; ?>
-												</tbody>
-											</table>
+												<?php endforeach; ?>
+											</tbody>
+										</table>
 										</div>
 									<?php else : ?>
-										<div class="row h-100 m-0">
-											<div class="col-md-3 col-12 border-left-0 border-bottom-0 border-top-0 border mb-3 mb-md-0 px-2">
-												<div class="nav h6 text-dark flex-row flex-md-column nav-pills nav-light-success overflow-auto flex-nowrap text-nowrap pb-2 pb-md-0" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+										<div class="row h-100">
+											<div class="col-12 col-md-3 mb-3 mb-md-0 border-left-0 border-bottom-0 border-top-0 border">
+												<div class="nav h6 text-dark flex-row flex-md-column nav-pills nav-light-success overflow-auto text-nowrap" id="v-pills-tab" role="tablist" aria-orientation="vertical">
 													<a class="nav-link text-dark active" id="mat-tab" data-toggle="pill" data-target="#mat" type="button" role="tab" aria-controls="mat" aria-selected="true">Materi</a>
 													<a class="nav-link text-dark" id="pre-tab" data-toggle="pill" data-target="#pre" type="button" role="tab" aria-controls="pre" aria-selected="false">Pre Test & Post Test</a>
 													<a class="nav-link text-dark" id="stu-tab" data-toggle="pill" data-target="#stu" type="button" role="tab" aria-controls="stu" aria-selected="false">Studi Kasus, Quiz & Workshop</a>
@@ -212,10 +388,10 @@
 													<a class="nav-link text-dark" id="ref-tab" data-toggle="pill" data-target="#ref" type="button" role="tab" aria-controls="ref" aria-selected="false">Reference</a>
 												</div>
 											</div>
-											<div class="col-md-9 col-12 px-2">
+											<div class="col-12 col-md-9">
 												<div class="tab-content" id="v-pills-tabContent">
 													<div class="tab-pane show active fade" id="mat" role="tabpanel" aria-labelledby="mat-tab">
-														<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+														<div class="d-flex justify-content-between align-items-center">
 															<h3 for="" class="fw-bold"><i class="fa fa-list mr-2"></i>Materi</h3>
 															<div class="tools pr-3">
 																<button type="button" class="btn btn-success btn-sm upload-file" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" title="Upload New File"><i class="fa fa-upload"></i> Upload File</button>
@@ -223,31 +399,31 @@
 														</div>
 														<hr class="my-1">
 														<div class="table-responsive">
-															<table class="table py-0 table-sm table-hover datatable">
-																<thead>
-																	<tr>
-																		<th class="py-2">Name</th>
-																		<th class="py-2 text-center text-nowrap" width="100">Action</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<?php if (isset($details_data['MAT'])) : foreach ($details_data['MAT'] as $dtDtl) : ?>
-																			<tr>
-																				<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
-																				<td class="text-center text-nowrap">
-																					<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
-																				</td>
-																			</tr>
-																	<?php endforeach;
-																	endif; ?>
-																</tbody>
-															</table>
+														<table class="table py-0 table-sm table-hover datatable">
+															<thead>
+																<tr>
+																	<th class="py-2">Name</th>
+																	<th class="py-2 text-center" width="100">Action</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php if (isset($details_data['MAT'])) : foreach ($details_data['MAT'] as $dtDtl) : ?>
+																		<tr>
+																			<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
+																			<td class="text-center">
+																				<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="MAT" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
+																			</td>
+																		</tr>
+																<?php endforeach;
+																endif; ?>
+															</tbody>
+														</table>
 														</div>
 													</div>
 													<div class="tab-pane fade" id="pre" role="tabpanel" aria-labelledby="pre-tab">
-														<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+														<div class="d-flex justify-content-between align-items-center">
 															<h3 for="" class="fw-bold"><i class="fa fa-list mr-2"></i>Pre Test & Post Test</h3>
 															<div class="tools pr-3">
 																<button type="button" class="btn btn-success btn-sm upload-file" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" title="Upload New File"><i class="fa fa-upload"></i> Upload File</button>
@@ -255,31 +431,31 @@
 														</div>
 														<hr class="my-1">
 														<div class="table-responsive">
-															<table class="table py-0 table-sm table-hover datatable">
-																<thead>
-																	<tr>
-																		<th class="py-2">Name</th>
-																		<th class="py-2 text-center text-nowrap" width="100">Action</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<?php if (isset($details_data['PRE'])) : foreach ($details_data['PRE'] as $dtDtl) : ?>
-																			<tr>
-																				<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
-																				<td class="text-center text-nowrap">
-																					<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
-																				</td>
-																			</tr>
-																	<?php endforeach;
-																	endif; ?>
-																</tbody>
-															</table>
+														<table class="table py-0 table-sm table-hover datatable">
+															<thead>
+																<tr>
+																	<th class="py-2">Name</th>
+																	<th class="py-2 text-center" width="100">Action</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php if (isset($details_data['PRE'])) : foreach ($details_data['PRE'] as $dtDtl) : ?>
+																		<tr>
+																			<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
+																			<td class="text-center">
+																				<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="PRE" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
+																			</td>
+																		</tr>
+																<?php endforeach;
+																endif; ?>
+															</tbody>
+														</table>
 														</div>
 													</div>
 													<div class="tab-pane fade" id="stu" role="tabpanel" aria-labelledby="stu-tab">
-														<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+														<div class="d-flex justify-content-between align-items-center">
 															<h3 for="" class="fw-bold"><i class="fa fa-list mr-2"></i>Studi Kasus, Quiz & Workshop</h3>
 															<div class="tools pr-3">
 																<button type="button" class="btn btn-success btn-sm upload-file" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" title="Upload New File"><i class="fa fa-upload"></i> Upload File</button>
@@ -287,31 +463,31 @@
 														</div>
 														<hr class="my-1">
 														<div class="table-responsive">
-															<table class="table py-0 table-sm table-hover datatable">
-																<thead>
-																	<tr>
-																		<th class="py-2">Name</th>
-																		<th class="py-2 text-center text-nowrap" width="100">Action</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<?php if (isset($details_data['STU'])) : foreach ($details_data['STU'] as $dtDtl) : ?>
-																			<tr>
-																				<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
-																				<td class="text-center text-nowrap">
-																					<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
-																				</td>
-																			</tr>
-																	<?php endforeach;
-																	endif; ?>
-																</tbody>
-															</table>
+														<table class="table py-0 table-sm table-hover datatable">
+															<thead>
+																<tr>
+																	<th class="py-2">Name</th>
+																	<th class="py-2 text-center" width="100">Action</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php if (isset($details_data['STU'])) : foreach ($details_data['STU'] as $dtDtl) : ?>
+																		<tr>
+																			<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
+																			<td class="text-center">
+																				<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="STU" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
+																			</td>
+																		</tr>
+																<?php endforeach;
+																endif; ?>
+															</tbody>
+														</table>
 														</div>
 													</div>
 													<div class="tab-pane fade" id="sil" role="tabpanel" aria-labelledby="sil-tab">
-														<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+														<div class="d-flex justify-content-between align-items-center">
 															<h3 for="" class="fw-bold"><i class="fa fa-list mr-2"></i>Silabus</h3>
 															<div class="tools pr-3">
 																<button type="button" class="btn btn-success btn-sm upload-file" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" title="Upload New File"><i class="fa fa-upload"></i> Upload File</button>
@@ -319,31 +495,31 @@
 														</div>
 														<hr class="my-1">
 														<div class="table-responsive">
-															<table class="table py-0 table-sm table-hover datatable">
-																<thead>
-																	<tr>
-																		<th class="py-2">Name</th>
-																		<th class="py-2 text-center text-nowrap" width="100">Action</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<?php if (isset($details_data['SIL'])) : foreach ($details_data['SIL'] as $dtDtl) : ?>
-																			<tr>
-																				<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
-																				<td class="text-center text-nowrap">
-																					<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
-																				</td>
-																			</tr>
-																	<?php endforeach;
-																	endif; ?>
-																</tbody>
-															</table>
+														<table class="table py-0 table-sm table-hover datatable">
+															<thead>
+																<tr>
+																	<th class="py-2">Name</th>
+																	<th class="py-2 text-center" width="100">Action</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php if (isset($details_data['SIL'])) : foreach ($details_data['SIL'] as $dtDtl) : ?>
+																		<tr>
+																			<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
+																			<td class="text-center">
+																				<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="SIL" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
+																			</td>
+																		</tr>
+																<?php endforeach;
+																endif; ?>
+															</tbody>
+														</table>
 														</div>
 													</div>
 													<div class="tab-pane fade" id="vid" role="tabpanel" aria-labelledby="vid-tab">
-														<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+														<div class="d-flex justify-content-between align-items-center">
 															<h3 for="" class="fw-bold"><i class="fa fa-list mr-2"></i>Video</h3>
 															<div class="tools pr-3">
 																<button type="button" class="btn btn-success btn-sm upload-file" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" title="Upload New File"><i class="fa fa-upload"></i> Upload File</button>
@@ -351,31 +527,31 @@
 														</div>
 														<hr class="my-1">
 														<div class="table-responsive">
-															<table class="table py-0 table-sm table-hover datatable">
-																<thead>
-																	<tr>
-																		<th class="py-2">Name</th>
-																		<th class="py-2 text-center text-nowrap" width="100">Action</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<?php if (isset($details_data['VID'])) : foreach ($details_data['VID'] as $dtDtl) : ?>
-																			<tr>
-																				<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
-																				<td class="text-center text-nowrap">
-																					<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
-																				</td>
-																			</tr>
-																	<?php endforeach;
-																	endif; ?>
-																</tbody>
-															</table>
+														<table class="table py-0 table-sm table-hover datatable">
+															<thead>
+																<tr>
+																	<th class="py-2">Name</th>
+																	<th class="py-2 text-center" width="100">Action</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php if (isset($details_data['VID'])) : foreach ($details_data['VID'] as $dtDtl) : ?>
+																		<tr>
+																			<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
+																			<td class="text-center">
+																				<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="VID" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
+																			</td>
+																		</tr>
+																<?php endforeach;
+																endif; ?>
+															</tbody>
+														</table>
 														</div>
 													</div>
 													<div class="tab-pane fade" id="ref" role="tabpanel" aria-labelledby="ref-tab">
-														<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+														<div class="d-flex justify-content-between align-items-center">
 															<h3 for="" class="fw-bold"><i class="fa fa-list mr-2"></i>Reference</h3>
 															<div class="tools pr-3">
 																<button type="button" class="btn btn-success btn-sm upload-file" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" title="Upload New File"><i class="fa fa-upload"></i> Upload File</button>
@@ -383,27 +559,27 @@
 														</div>
 														<hr class="mb-0">
 														<div class="table-responsive">
-															<table class="table py-0 table-sm table-hover datatable">
-																<thead>
-																	<tr>
-																		<th class="py-2">Name</th>
-																		<th class="py-2 text-center text-nowrap" width="100">Action</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<?php if (isset($details_data['REF'])) : foreach ($details_data['REF'] as $dtDtl) : ?>
-																			<tr>
-																				<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
-																				<td class="text-center text-nowrap">
-																					<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
-																					<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
-																				</td>
-																			</tr>
-																	<?php endforeach;
-																	endif; ?>
-																</tbody>
-															</table>
+														<table class="table py-0 table-sm table-hover datatable">
+															<thead>
+																<tr>
+																	<th class="py-2">Name</th>
+																	<th class="py-2 text-center" width="100">Action</th>
+																</tr>
+															</thead>
+															<tbody>
+																<?php if (isset($details_data['REF'])) : foreach ($details_data['REF'] as $dtDtl) : ?>
+																		<tr>
+																			<td class="cursor-pointer"><i class="fa fa-file-alt mr-2 text-primary"></i><?= $dtDtl->materi_detail_data_name; ?></td>
+																			<td class="text-center">
+																				<button type="button" class="btn btn-xs btn-icon btn-info view-file" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-eye"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-warning edit-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-edit"></i></button>
+																				<button type="button" class="btn btn-xs btn-icon btn-danger delete-file" data-doc="<?= $dtDtl->document; ?>" data-materi_detail_id="<?= $sub; ?>" data-cat="REF" data-id="<?= $dtDtl->id; ?>"><i class="fa fa-trash"></i></button>
+																			</td>
+																		</tr>
+																<?php endforeach;
+																endif; ?>
+															</tbody>
+														</table>
 														</div>
 													</div>
 												</div>
@@ -441,18 +617,10 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modalView" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-scrollable" style="max-width:90%" role="document">
+	<div class="modal-dialog" role="document">
 		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title"></h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">&times;</span>
-				</button>
-			</div>
+			<button type="button" class="materi-viewer-close" data-dismiss="modal" aria-label="Tutup pratinjau"><span aria-hidden="true">&times;</span></button>
 			<div class="modal-body p-2"></div>
-			<div class="modal-footer py-2">
-				<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-times"></i>Close</button>
-			</div>
 		</div>
 	</div>
 </div>
@@ -730,7 +898,8 @@
 		const materi_detail_id = $(this).data('materi_detail_id')
 		$('#modalId .modal-title').text('Upload Files')
 		$('#modalId').modal('show')
-		$('#modalId .modal-dialog').addClass('modal-lg')
+		$('#modalId .modal-dialog').removeClass('modal-lg').addClass('materi-upload-dialog')
+		$('#modalId .modal-footer .btn-primary').addClass('d-none')
 		$('#modalId .modal-body').html(`
 		<form id="form-header" class="mb-4">
 			<input type="hidden" name="materi_detail_id" class="form-control mb-3" placeholder="Document Name" value="` + materi_detail_id + `" aria-describedby="helpId">
@@ -745,24 +914,23 @@
 				</div>
 			</div>
 		</form>
-		<div class="row">
-			<div class="col-md-2"></div>
-			<div class="col-md-10">
+		<div class="row materi-upload-layout mx-0">
+			<div class="col-12 d-flex p-0">
 				<!-- Nav tabs -->
-				<ul class="nav nav-tabs" id="tab-upload" role="tablist">
+				<ul class="nav nav-pills flex-column flex-shrink-0 materi-upload-nav" id="tab-upload" role="tablist">
 					<li class="nav-item" role="presentation">
-						<button class="nav-link active" id="upload-document-tab" data-toggle="tab" data-target="#upload-document" type="button" role="tab" aria-controls="upload-document" aria-selected="false">Upload Document</button>
+						<button class="nav-link active" id="upload-document-tab" data-toggle="tab" data-target="#upload-document" type="button" role="tab" aria-controls="upload-document" aria-selected="true"><i class="fa fa-file-upload"></i><span>Upload Document</span></button>
 					</li>
 					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="from-external-url-tab" data-toggle="tab" data-target="#from-external-url" type="button" role="tab" aria-controls="from-url" aria-selected="true">External Link <i class="ml-2 fa fa-link text-primary" aria-hidden="true"></i></button>
+						<button class="nav-link" id="from-external-url-tab" data-toggle="tab" data-target="#from-external-url" type="button" role="tab" aria-controls="from-external-url" aria-selected="false"><i class="fa fa-link text-primary" aria-hidden="true"></i><span>External Link</span></button>
 					</li>
 					<li class="nav-item" role="presentation">
-						<button class="nav-link" id="from-url-tab" data-toggle="tab" data-target="#from-url" type="button" role="tab" aria-controls="from-url" aria-selected="true">From YouTube <i class="fab fa-youtube ml-1 text-danger"></i></button>
+						<button class="nav-link" id="from-url-tab" data-toggle="tab" data-target="#from-url" type="button" role="tab" aria-controls="from-url" aria-selected="false"><i class="fab fa-youtube text-danger"></i><span>From YouTube</span></button>
 					</li>
 				</ul>
 		
 				<!-- Tab panes -->
-				<div class="tab-content">
+				<div class="tab-content flex-grow-1 materi-upload-content">
 					<div class="tab-pane active p-3 border border-top-0 rounded-bottom" id="upload-document" role="tabpanel" aria-labelledby="upload-file-tab">
 						<form id="form-document" enctype="multipart/form-data">
 							<div class="dropzone-wrapper mr-2 d-flex flex-column justify-content-center align-items-center" style="width: 100%;height:310px">
@@ -788,14 +956,23 @@
 								<input type="url" name="url_link" id="url-link" class="form-control" placeholder="Url">
 								<span class="invalid-feedback">Name document can't be empty</span>
 							</div>
+							<div class="external-link-preview">
+								<div class="external-link-preview-placeholder"><span><i class="fa fa-link fa-3x text-primary mb-3 d-block"></i>Paste URL untuk menampilkan preview halaman.</span></div>
+								<iframe class="d-none" title="Preview external link"></iframe>
+								<a class="external-link-preview-action btn btn-sm btn-success d-none" href="#" target="_blank" rel="noopener noreferrer">Buka di tab baru <i class="fa fa-external-link-alt ml-1"></i></a>
+							</div>
 							<button type="button" class="btn btn-primary mt-3 save-external-link"><i class="fa fa-save"></i>Save</button>
 						</form>
 					</div>
 					<div class="tab-pane p-3 border border-top-0 rounded-bottom" id="from-url" role="tabpanel" aria-labelledby="from-url-tab">
 						<form id="form-youtube-video">
 							<div class="input-group">
-								<div class="input-group-text rounded-right-0">https://youtube.com/embed/</div>
-								<input type="text"  name="video_link" id="video-link" class="form-control" placeholder="Video Id">
+								<div class="input-group-text rounded-right-0"><i class="fab fa-youtube text-danger"></i></div>
+								<input type="text"  name="video_link" id="video-link" class="form-control" placeholder="Embed Video ID">
+							</div>
+							<div class="youtube-preview">
+								<div class="youtube-preview-placeholder"><span><i class="fab fa-youtube fa-3x text-danger mb-3 d-block"></i>Paste ID atau URL YouTube untuk menampilkan preview video.</span></div>
+								<iframe class="d-none" title="Preview video YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 							</div>
 							<button type="button" class="btn btn-primary mt-3 save-video-youtube"><i class="fa fa-save"></i>Save</button>
 						</form>
@@ -816,9 +993,10 @@
 
 	$(document).on('click', '.edit-file', function() {
 		const id = $(this).data('id')
-		$('#modalId .modal-title').text('Upload Files')
+		$('#modalId .modal-title').text('Edit File')
 		$('#modalId').modal('show')
-		$('#modalId .modal-dialog').addClass('modal-lg')
+		$('#modalId .modal-dialog').removeClass('modal-lg').addClass('materi-upload-dialog')
+		$('#modalId .modal-footer .btn-primary').addClass('d-none')
 		$('#modalId .modal-body').html('')
 
 		$.getJSON(siteurl + active_controller + 'edit_file/' + id, function(result) {
@@ -842,25 +1020,24 @@
 					</div>
 				</div>
 			</form>
-			<div class="row">
-				<div class="col-md-2"></div>
-				<div class="col-md-10">
+			<div class="row materi-upload-layout mx-0">
+				<div class="col-12 d-flex p-0">
 				
 					<!-- Nav tabs -->
-					<ul class="nav nav-tabs" id="tab-upload" role="tablist">
+					<ul class="nav nav-pills flex-column flex-shrink-0 materi-upload-nav" id="tab-upload" role="tablist">
 						<li class="nav-item" role="presentation">
-							<button class="nav-link active" id="upload-document-tab" data-toggle="tab" data-target="#upload-document" type="button" role="tab" aria-controls="upload-document" aria-selected="false">Upload Document</button>
+							<button class="nav-link active" id="upload-document-tab" data-toggle="tab" data-target="#upload-document" type="button" role="tab" aria-controls="upload-document" aria-selected="true"><i class="fa fa-file-upload"></i><span>Upload Document</span></button>
 						</li>
 						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="from-external-url-tab" data-toggle="tab" data-target="#from-external-url" type="button" role="tab" aria-controls="from-url" aria-selected="true">External Link <i class="ml-2 fa fa-link text-primary" aria-hidden="true"></i></button>
+							<button class="nav-link" id="from-external-url-tab" data-toggle="tab" data-target="#from-external-url" type="button" role="tab" aria-controls="from-external-url" aria-selected="false"><i class="fa fa-link text-primary" aria-hidden="true"></i><span>External Link</span></button>
 						</li>
 						<li class="nav-item" role="presentation">
-							<button class="nav-link" id="from-url-tab" data-toggle="tab" data-target="#from-url" type="button" role="tab" aria-controls="from-url" aria-selected="true">From YouTube <i class="fab fa-youtube ml-1 text-danger"></i></button>
+							<button class="nav-link" id="from-url-tab" data-toggle="tab" data-target="#from-url" type="button" role="tab" aria-controls="from-url" aria-selected="false"><i class="fab fa-youtube text-danger"></i><span>From YouTube</span></button>
 						</li>
 					</ul>
 			
 					<!-- Tab panes -->
-					<div class="tab-content">
+					<div class="tab-content flex-grow-1 materi-upload-content">
 						<div class="tab-pane active p-3 border border-top-0 rounded-bottom" id="upload-document" role="tabpanel" aria-labelledby="upload-file-tab">
 							<form id="form-document" enctype="multipart/form-data">
 								<div class="dropzone-wrapper mr-2 d-flex flex-column justify-content-center align-items-center" style="width: 100%;height:310px">
@@ -889,14 +1066,23 @@
 									<input type="url" name="url_link" id="url-link" class="form-control" placeholder="Url"  value="` + (data.url_link !== null ? data.url_link : '') + `" >
 									<span class="invalid-feedback">Name document can't be empty</span>
 								</div>
+								<div class="external-link-preview">
+									<div class="external-link-preview-placeholder"><span><i class="fa fa-link fa-3x text-primary mb-3 d-block"></i>Paste URL untuk menampilkan preview halaman.</span></div>
+									<iframe class="d-none" title="Preview external link"></iframe>
+									<a class="external-link-preview-action btn btn-sm btn-success d-none" href="#" target="_blank" rel="noopener noreferrer">Buka di tab baru <i class="fa fa-external-link-alt ml-1"></i></a>
+								</div>
 								<button type="button" class="btn btn-primary mt-3 save-external-link"><i class="fa fa-save"></i>Save</button>
 							</form>
 						</div>
 						<div class="tab-pane p-3 border border-top-0 rounded-bottom" id="from-url" role="tabpanel" aria-labelledby="from-url-tab">
 							<form id="form-youtube-video">
 								<div class="input-group">
-									<div class="input-group-text rounded-right-0">https://youtube.com/embed/</div>
-									<input type="text"  name="video_link" id="video-link" class="form-control" placeholder="Video Id"  value="` + (data.video_link !== null ? data.video_link : '') + `" >
+									<div class="input-group-text rounded-right-0"><i class="fab fa-youtube text-danger"></i></div>
+									<input type="text"  name="video_link" id="video-link" class="form-control" placeholder="Embed Video ID"  value="` + (data.video_link !== null ? data.video_link : '') + `" >
+								</div>
+								<div class="youtube-preview">
+									<div class="youtube-preview-placeholder"><span><i class="fab fa-youtube fa-3x text-danger mb-3 d-block"></i>Paste ID atau URL YouTube untuk menampilkan preview video.</span></div>
+									<iframe class="d-none" title="Preview video YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 								</div>
 								<button type="button" class="btn btn-primary mt-3 save-video-youtube"><i class="fa fa-save"></i>Save</button>
 							</form>
@@ -905,6 +1091,9 @@
 				</div>
 			</div>
 			`)
+
+			refreshExternalLinkPreview($('#url-link'))
+			refreshYouTubePreview($('#video-link'))
 
 			const url = siteurl + 'directory/MATERI/' + data.company_id + '/' + data.document;
 			if (data.document) {
@@ -928,6 +1117,117 @@
 			// 	.removeClass('save')
 			// 	.addClass('update-files').html('<i class="fa fa-upload"></i> Upload File')
 		});
+	})
+
+	var externalLinkPreviewTimer = null
+
+	function getExternalLinkUrl(value) {
+		var input = $.trim(value || '')
+
+		if (!input) {
+			return ''
+		}
+
+		if (/^www\./i.test(input)) {
+			input = 'https://' + input
+		}
+
+		try {
+			var parsedUrl = new URL(input)
+			return (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') && parsedUrl.hostname ? parsedUrl.href : ''
+		} catch (error) {
+			return ''
+		}
+	}
+
+	function refreshExternalLinkPreview($input) {
+		if (!$input.length) {
+			return
+		}
+
+		var previewUrl = getExternalLinkUrl($input.val())
+		var $preview = $input.closest('#form-external-link').find('.external-link-preview')
+		var $iframe = $preview.find('iframe')
+		var $placeholder = $preview.find('.external-link-preview-placeholder')
+		var $action = $preview.find('.external-link-preview-action')
+
+		if (!previewUrl) {
+			$iframe.attr('src', '').addClass('d-none')
+			$action.attr('href', '#').addClass('d-none')
+			$placeholder.removeClass('d-none').html('<span><i class="fa fa-link fa-3x text-primary mb-3 d-block"></i>' + ($.trim($input.val()) ? 'URL tidak valid. Gunakan alamat http:// atau https://.' : 'Paste URL untuk menampilkan preview halaman.') + '</span>')
+			return
+		}
+
+		if ($input.val() !== previewUrl) {
+			$input.val(previewUrl)
+		}
+
+		$placeholder.addClass('d-none')
+		$action.attr('href', previewUrl).removeClass('d-none')
+		$iframe.attr('src', previewUrl).removeClass('d-none')
+	}
+
+	$(document).on('input change', '#url-link', function() {
+		var $input = $(this)
+		clearTimeout(externalLinkPreviewTimer)
+		externalLinkPreviewTimer = setTimeout(function() {
+			refreshExternalLinkPreview($input)
+		}, 500)
+	})
+
+	$(document).on('paste', '#url-link', function() {
+		var $input = $(this)
+		setTimeout(function() {
+			refreshExternalLinkPreview($input)
+		}, 0)
+	})
+
+	function getYouTubeVideoId(value) {
+		var input = $.trim(value || '')
+		var idPattern = /^[A-Za-z0-9_-]{11}$/
+		var urlPattern = /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/i
+
+		if (idPattern.test(input)) {
+			return input
+		}
+
+		var match = input.match(urlPattern)
+		return match ? match[1] : ''
+	}
+
+	function refreshYouTubePreview($input) {
+		if (!$input.length) {
+			return
+		}
+
+		var videoId = getYouTubeVideoId($input.val())
+		var $preview = $input.closest('#form-youtube-video').find('.youtube-preview')
+		var $iframe = $preview.find('iframe')
+		var $placeholder = $preview.find('.youtube-preview-placeholder')
+
+		if (!videoId) {
+			$iframe.attr('src', '').addClass('d-none')
+			$placeholder.removeClass('d-none').html('<span><i class="fab fa-youtube fa-3x text-danger mb-3 d-block"></i>' + ($.trim($input.val()) ? 'ID atau URL YouTube tidak valid.' : 'Paste ID atau URL YouTube untuk menampilkan preview video.') + '</span>')
+			return
+		}
+
+		if ($input.val() !== videoId) {
+			$input.val(videoId)
+		}
+
+		$placeholder.addClass('d-none')
+		$iframe.attr('src', 'https://www.youtube-nocookie.com/embed/' + videoId + '?rel=0').removeClass('d-none')
+	}
+
+	$(document).on('input change', '#video-link', function() {
+		refreshYouTubePreview($(this))
+	})
+
+	$(document).on('paste', '#video-link', function() {
+		var $input = $(this)
+		setTimeout(function() {
+			refreshYouTubePreview($input)
+		}, 0)
 	})
 
 	$(document).on('click', '.save-files', function() {
@@ -1039,10 +1339,22 @@
 
 	$(document).on('click', '.view-file', function() {
 		const id = $(this).data('id')
-		$('#modalView .modal-title').text('View Files')
+		$('#modalView .modal-body').html('<div class="d-flex align-items-center justify-content-center h-100 text-white">Memuat dokumen...</div>')
 		$('#modalView').modal('show')
-		$('#modalView .modal-dialog')
-		$('#modalView .modal-body').load(siteurl + active_controller + 'view_file/' + id)
+		$('#modalView .modal-body').load(siteurl + active_controller + 'view_file/' + id, function(response, status) {
+			if (status === 'error') {
+				$(this).html('<div class="d-flex align-items-center justify-content-center h-100 text-white">Dokumen gagal dimuat. Silakan tutup lalu coba kembali.</div>')
+			}
+		})
+	})
+
+	$('#modalId').on('hidden.bs.modal', function() {
+		$(this).find('.modal-dialog').removeClass('materi-upload-dialog modal-lg')
+		$(this).find('.modal-footer .btn-primary').removeClass('d-none')
+	})
+
+	$('#modalView').on('hidden.bs.modal', function() {
+		$(this).find('.modal-body').empty()
 	})
 
 	$(document).on('click', '.delete-file', function() {
@@ -1258,8 +1570,8 @@
 		}
 
 		// validate file size
-		if (file.size > 10 * 1024 * 1024) {
-			alert('Error : Exceeded size 10MB');
+		if (file.size > 20 * 1024 * 1024) {
+			alert('Error : Exceeded size 20MB');
 			return;
 		}
 

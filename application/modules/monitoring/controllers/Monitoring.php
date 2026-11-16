@@ -527,6 +527,20 @@ class Monitoring extends Admin_Controller
 		$this->template->render('list');
 	}
 
+	public function rejected_document()
+	{
+		$procedures = $this->Monitor_model->getProceduresByStatusAndDeletion($this->company, 'HLD', 'REJ');
+		$users = $this->Monitor_model->getAllUsers();
+		$positions = $this->Monitor_model->getPositionsByCompany($this->company);
+		$ArrPosition = array_combine(array_column($positions, 'id'), array_column($positions, 'name'));
+		$groups = $this->Monitor_model->getGroupProcedures();
+		$ArrGroup = array_combine(array_column($groups, 'id'), array_column($groups, 'name'));
+		$ArrUsers = []; foreach ($users as $u) { $ArrUsers[$u->id_user] = $u; }
+
+		$this->template->set(['title' => 'REJECTED DELETION PROCEDURES', 'procedures' => $procedures, 'sts' => $this->sts, 'ArrUsers' => $ArrUsers, 'ArrPosition' => $ArrPosition, 'ArrPosts' => $this->ArrPosts, 'ArrGroup' => $ArrGroup]);
+		$this->template->render('list');
+	}
+
 	public function view_form($id = null)
 	{
 		$this->load->model('documents_list/Documents_list_model', 'List');

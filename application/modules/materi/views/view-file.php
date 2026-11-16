@@ -1,78 +1,172 @@
-<!-- Nav tabs -->
-<ul class="nav nav-tabs" id="tab-upload" role="tablist">
-	<li class="nav-item" role="presentation">
-		<button class="nav-link active" id="upload-document-tab" data-toggle="tab" data-target="#upload-document" type="button" role="tab" aria-controls="upload-document" aria-selected="false">Upload Document</button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link" id="from-external-url-tab" data-toggle="tab" data-target="#from-external-url" type="button" role="tab" aria-controls="from-url" aria-selected="true">External Link <i class="ml-2 fa fa-link text-primary" aria-hidden="true"></i></button>
-	</li>
-	<li class="nav-item" role="presentation">
-		<button class="nav-link" id="from-url-tab" data-toggle="tab" data-target="#from-url" type="button" role="tab" aria-controls="from-url" aria-selected="true">From YouTube <i class="fab fa-youtube ml-1 text-danger"></i></button>
-	</li>
-</ul>
+<?php
+$has_document = !empty($data->document);
+$has_external_link = !empty($data->url_link);
+$has_video = !empty($data->video_link);
+$active_tab = $has_document ? 'document' : ($has_external_link ? 'external' : ($has_video ? 'video' : ''));
+?>
+<style>
+	.materi-viewer-content,
+	.materi-viewer-content > .tab-content,
+	.materi-viewer-content > .tab-content > .tab-pane {
+		height: 100%;
+		min-height: 0;
+	}
 
-<!-- Tab panes -->
-<div class="tab-content">
-	<div class="tab-pane active p-0 border border-top-0 rounded-bottom" id="upload-document" role="tabpanel" aria-labelledby="upload-file-tab">
-		<?php if ($data->document) : ?>
-			<?php $pdfMateriUrl = base_url("directory/MATERI/$data->company_id/$data->document"); ?>
-			<!-- Mobile View PDF: technical explanation + download button -->
-			<div class="text-center py-4 px-3 d-block d-md-none">
-				<i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
-				<h5 class="mb-2"><?= isset($data->name) ? $data->name : 'Dokumen Materi PDF'; ?></h5>
-				<div class="alert alert-warning text-left mx-auto mb-4" style="max-width: 550px;">
-					<div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Informasi Preview Mobile:</div>
-					<ul class="pl-3 mb-2 small text-dark" style="line-height: 1.5;">
-						<li>Browser di HP/Mobile (seperti Android Chrome) tidak memiliki fitur renderer bawaan untuk merender dokumen PDF di dalam frame browser.</li>
-						<li>Beberapa perangkat mobile memerlukan aplikasi pembaca PDF eksternal untuk membaca berkas PDF.</li>
-					</ul>
-					<div class="border-top pt-2 mt-2 small text-dark">
-						<i class="fas fa-lightbulb text-warning mr-1"></i> <strong>Saran:</strong> Tekan tombol di bawah untuk membuka / mengunduh PDF secara langsung di tab baru atau aplikasi PDF HP Anda.
-					</div>
-				</div>
-				<a href="<?= $pdfMateriUrl; ?>" target="_blank" class="btn btn-primary btn-lg">
-					<i class="fas fa-external-link-alt mr-2"></i> Buka / Download PDF
-				</a>
+	.materi-viewer-content {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		background: #202124;
+	}
+
+	.materi-tabs-drawer {
+		position: absolute;
+		z-index: 5;
+		top: 10px;
+		left: 0;
+		display: flex;
+		align-items: stretch;
+		padding: 4px 32px 4px 4px;
+		transform: translateX(calc(-100% + 28px));
+		transition: transform .2s ease;
+		border-radius: 0 8px 8px 0;
+		background: rgba(255, 255, 255, .94);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, .16);
+	}
+
+	.materi-tabs-drawer:hover,
+	.materi-tabs-drawer:focus-within,
+	.materi-tabs-drawer.is-open {
+		transform: translateX(0);
+	}
+
+	.materi-tabs-drawer .nav-tabs {
+		display: flex;
+		flex-wrap: nowrap;
+		padding: 4px;
+		border: 0;
+	}
+
+	.materi-tabs-drawer .nav-link {
+		margin-right: 3px;
+		padding: 6px 10px;
+		border: 0;
+		border-radius: 5px;
+		color: #5f6368;
+		background: transparent;
+		font-size: 12px;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.materi-tabs-drawer .nav-link.active {
+		color: #202124;
+		background: #f1f3f4;
+	}
+
+	.materi-tabs-handle {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 28px;
+		height: 100%;
+		padding: 0;
+		border: 0;
+		border-left: 1px solid #e8eaed;
+		border-radius: 0 8px 8px 0;
+		background: transparent;
+		color: #5f6368;
+	}
+
+	.materi-viewer-content > .tab-content {
+		flex: 1 1 auto;
+		overflow: hidden;
+	}
+
+	.materi-viewer-frame {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border: 0;
+		background: #525659;
+	}
+
+	.materi-external-pane {
+		position: relative;
+		height: 100%;
+	}
+
+	.materi-external-action {
+		position: absolute;
+		z-index: 4;
+		top: 58px;
+		left: 12px;
+		padding: 7px 12px;
+		border-radius: 6px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+		font-size: 12px;
+	}
+
+	.materi-empty-state {
+		height: 100%;
+		color: #fff;
+	}
+</style>
+
+<div class="materi-viewer-content">
+	<?php if ($has_document || $has_external_link || $has_video) : ?>
+		<div class="materi-tabs-drawer" id="materiTabsDrawer">
+			<ul class="nav nav-tabs" id="materi-view-tabs" role="tablist">
+				<?php if ($has_document) : ?>
+					<li class="nav-item" role="presentation"><button class="nav-link <?= $active_tab === 'document' ? 'active' : ''; ?>" id="view-document-tab" data-toggle="tab" data-target="#view-document" type="button" role="tab" aria-controls="view-document" aria-selected="<?= $active_tab === 'document' ? 'true' : 'false'; ?>">Document</button></li>
+				<?php endif; ?>
+				<?php if ($has_external_link) : ?>
+					<li class="nav-item" role="presentation"><button class="nav-link <?= $active_tab === 'external' ? 'active' : ''; ?>" id="view-external-tab" data-toggle="tab" data-target="#view-external" type="button" role="tab" aria-controls="view-external" aria-selected="<?= $active_tab === 'external' ? 'true' : 'false'; ?>">External Link <i class="ml-1 fa fa-link text-primary"></i></button></li>
+				<?php endif; ?>
+				<?php if ($has_video) : ?>
+					<li class="nav-item" role="presentation"><button class="nav-link <?= $active_tab === 'video' ? 'active' : ''; ?>" id="view-video-tab" data-toggle="tab" data-target="#view-video" type="button" role="tab" aria-controls="view-video" aria-selected="<?= $active_tab === 'video' ? 'true' : 'false'; ?>">YouTube <i class="fab fa-youtube ml-1 text-danger"></i></button></li>
+				<?php endif; ?>
+			</ul>
+			<button type="button" class="materi-tabs-handle" aria-label="Tampilkan pilihan konten" aria-controls="materi-view-tabs" aria-expanded="false">&#8250;</button>
+		</div>
+	<?php endif; ?>
+
+	<div class="tab-content">
+		<?php if ($has_document) : ?>
+			<div class="tab-pane <?= $active_tab === 'document' ? 'active show' : ''; ?>" id="view-document" role="tabpanel" aria-labelledby="view-document-tab">
+				<iframe class="materi-viewer-frame" src="<?= base_url('directory/MATERI/' . rawurlencode($data->company_id) . '/' . rawurlencode($data->document)); ?>#toolbar=0&navpanes=0&scrollbar=1&view=FitH" title="<?= html_escape($data->name); ?>" allowfullscreen></iframe>
 			</div>
-			<!-- Desktop View PDF -->
-			<div class="d-none d-md-block">
-				<div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center flex-wrap">
-					<span class="text-muted small"><i class="fa fa-info-circle mr-1"></i> Preview Dokumen PDF</span>
-					<a href="<?= $pdfMateriUrl; ?>" target="_blank" class="btn btn-sm btn-primary my-1">
-						Buka / Download PDF <i class="fas fa-external-link-alt ml-1" aria-hidden="true"></i>
-					</a>
-				</div>
-				<div class="position-relative w-100" style="height: 550px;">
-					<iframe src="<?= $pdfMateriUrl; ?>#toolbar=0&navpanes=0" frameborder="0" width="100%" height="550"></iframe>
-				</div>
-			</div>
-		<?php else : ?>
-			<h5 class="text-center mt-5">~ Not available data ~</h5>
 		<?php endif; ?>
-	</div>
-	<div class="tab-pane p-0 border border-top-0 rounded-bottom" id="from-external-url" role="tabpanel" aria-labelledby="from-external-url-tab">
-		<?php if ($data->url_link) : ?>
-			<div class="position-absolute d-flex justify-content-center zindex-5 w-100">
-				<a href="<?= $data->url_link; ?>" target="_blank" class="btn-xs btn shadow-sm">Original File <i class="fa fa-link" aria-hidden="true"></i></a>
+		<?php if ($has_external_link) : ?>
+			<div class="tab-pane materi-external-pane <?= $active_tab === 'external' ? 'active show' : ''; ?>" id="view-external" role="tabpanel" aria-labelledby="view-external-tab">
+				<iframe class="materi-viewer-frame" src="<?= html_escape($data->url_link); ?>" title="External Link - <?= html_escape($data->name); ?>"></iframe>
+				<a href="<?= html_escape($data->url_link); ?>" target="_blank" rel="noopener noreferrer" class="materi-external-action btn btn-success">Buka di tab baru <i class="fa fa-external-link-alt ml-1"></i></a>
 			</div>
-			<div style="width:98%;background-color: aquamarine; position: absolute;opacity: 0;height:103%"></div>
-			<iframe style="pointer-events:visibleStroke;" onclick="cek(e)" oncontextmenu="cek(r)" src="<?= $data->url_link ?>" frameborder="0" width="100%" height="550"></iframe>
-		<?php else : ?>
-			<h5 class="text-center mt-5">~ Not available data ~</h5>
 		<?php endif; ?>
-	</div>
-	<div class="tab-pane p-0 border border-top-0 rounded-bottom" id="from-url" role="tabpanel" aria-labelledby="from-url-tab">
-		<?php if ($data->video_link) : ?>
-			<iframe style="pointer-events:visibleStroke;" onclick="cek(e)" oncontextmenu="cek(r)" src="https://youtube.com/embed/<?= $data->video_link; ?>" frameborder="0" width="100%" height="550"></iframe>
-		<?php else : ?>
-			<h5 class="text-center mt-5">~ Not available data ~</h5>
+		<?php if ($has_video) : ?>
+			<div class="tab-pane <?= $active_tab === 'video' ? 'active show' : ''; ?>" id="view-video" role="tabpanel" aria-labelledby="view-video-tab">
+				<iframe class="materi-viewer-frame" src="https://youtube.com/embed/<?= html_escape($data->video_link); ?>" title="YouTube - <?= html_escape($data->name); ?>" allowfullscreen></iframe>
+			</div>
+		<?php endif; ?>
+		<?php if (!$has_document && !$has_external_link && !$has_video) : ?>
+			<div class="materi-empty-state d-flex align-items-center justify-content-center">Konten belum tersedia</div>
 		<?php endif; ?>
 	</div>
 </div>
 
 <script>
-	function cek(e) {
-		console.log(e);
-		alert(e);
-	}
+	(function() {
+		var $drawer = $('#materiTabsDrawer');
+		var $handle = $drawer.find('.materi-tabs-handle');
+
+		$handle.on('click', function() {
+			var isOpen = $drawer.toggleClass('is-open').hasClass('is-open');
+			$handle.attr('aria-expanded', isOpen ? 'true' : 'false').html(isOpen ? '&#8249;' : '&#8250;');
+		});
+
+		$drawer.find('[data-toggle="tab"]').on('click', function() {
+			$drawer.removeClass('is-open');
+			$handle.attr('aria-expanded', 'false').html('&#8250;');
+		});
+	})();
 </script>

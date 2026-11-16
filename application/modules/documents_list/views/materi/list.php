@@ -2,6 +2,64 @@
     .dataTables_scroll {
         margin: 0px !important;
     }
+
+    .materi-file-row:focus {
+        outline: 2px solid #f3b200;
+        outline-offset: -2px;
+    }
+
+    #materiViewerModal {
+        padding: 0 !important;
+    }
+
+    #materiViewerModal .modal-dialog {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        margin: 0;
+    }
+
+    #materiViewerModal .modal-content {
+        height: 100vh;
+        border: 0;
+        border-radius: 0;
+        background: #202124;
+    }
+
+    #materiViewerModal .materi-viewer-close {
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        z-index: 1060;
+        top: 10px;
+        right: 12px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .92);
+        color: #3c4043;
+        font-size: 28px;
+        line-height: 1;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+    }
+
+    #materiViewerModal .materi-viewer-close:hover,
+    #materiViewerModal .materi-viewer-close:focus {
+        background: #fff;
+        color: #111;
+        outline: none;
+    }
+
+    #materiViewerModal .modal-body {
+        height: 100vh;
+        min-height: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .materi-viewer-loading {
+        height: 100%;
+        color: #fff;
+    }
 </style>
 <div class="content d-flex flex-column flex-column-fluid p-0">
     <div class="d-flex flex-column-fluid justify-content-between align-items-top">
@@ -59,6 +117,7 @@
                         if ($category) :
                             foreach ($category as $k => $cat) :  $n++; ?>
                                 <div class="tab-pane fade <?= ($n == '1') ? 'active show' : ''; ?>" id="data_<?= $k; ?>" role="tabpanel" aria-labelledby="tab_<?= $k; ?>">
+                                    <div class="table-responsive">
                                     <table class="table datatable table-hover table-sm">
                                         <thead>
                                             <tr>
@@ -68,17 +127,18 @@
                                         </thead>
                                         <tbody>
                                             <?php if (isset($ArrDtlData[$k])) foreach ($ArrDtlData[$k] as $list) : ?>
-                                                <tr class="cursor-pointer" data-id="<?= $list->id; ?>">
+                                                <tr class="cursor-pointer materi-file-row" data-id="<?= $list->id; ?>" data-title="<?= html_escape($list->name); ?>" tabindex="0" role="button" aria-label="Buka <?= html_escape($list->name); ?>">
                                                     <td class="text-center h6 p-1" width="50px">
                                                         <i class="fa fa-file-alt fa-2x text-success"></i>
                                                     </td>
                                                     <td class="font-weight-bold p-1 h4 text-dark">
-                                                        <span onclick="show(<?= $list->id; ?>)"><?= $list->name; ?></span>
+                                                        <span><?= html_escape($list->name); ?></span>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -90,32 +150,45 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width:90%">
-        <div class="modal-content" data-scroll="true" data-height="700">
-            <div class="modal-header">
-                <h5 class="modal-title">View Document</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-1 m-1" id="data-file">
-                File not found
-            </div>
-            <div class="modal-footer py-2">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+<div class="modal fade" id="materiViewerModal" tabindex="-1" role="dialog" aria-label="Pratinjau dokumen" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <button type="button" class="materi-viewer-close" data-dismiss="modal" aria-label="Tutup pratinjau">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div class="modal-body" id="data-file">
+                <div class="materi-viewer-loading d-flex align-items-center justify-content-center">Memuat dokumen...</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function show(id) {
-        $('#modelId').modal('show')
-        $('#data-file').load(siteurl + active_controller + 'show_materi/' + id)
+    function showMateri(id) {
+        var $modal = $('#materiViewerModal');
+        $('#data-file').html('<div class="materi-viewer-loading d-flex align-items-center justify-content-center">Memuat dokumen...</div>');
+        $modal.modal('show');
+
+        $('#data-file').load(siteurl + active_controller + 'show_materi/' + id, function(response, status) {
+            if (status === 'error') {
+                $(this).html('<div class="materi-viewer-loading d-flex align-items-center justify-content-center">Dokumen gagal dimuat. Silakan tutup lalu coba kembali.</div>');
+            }
+        });
     }
 
     $(document).ready(function() {
+        $('.materi-file-row').on('click', function() {
+            showMateri($(this).data('id'));
+        }).on('keydown', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                showMateri($(this).data('id'));
+            }
+        });
+
+        $('#materiViewerModal').on('hidden.bs.modal', function() {
+            $('#data-file').empty();
+        });
+
         $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
             $.fn.dataTable.tables({
                 visible: true,

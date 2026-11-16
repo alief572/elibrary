@@ -1,14 +1,14 @@
 <div class="content d-flex flex-column flex-column-fluid p-0">
   <div class="container mt-3">
-    <div class="mb-5">
-      <div style="font-size: 36px;" class="text-white font-weight-bolder">
-        <a style="font-size: 30px;" href="<?= base_url($this->uri->segment(1)); ?>" class="text-warning" title="Back to Monitoring">
-          <span class="fa fa-chevron-left"></span>
+    <div class="mb-4">
+      <div class="text-white font-weight-bolder d-flex align-items-center" style="font-size: clamp(20px, 4vw, 32px);">
+        <a href="<?= base_url($this->uri->segment(1)); ?>" class="text-danger mr-2" title="Back to Monitoring" style="font-size: clamp(22px, 4.5vw, 30px);">
+          <span class="fa fa-arrow-circle-left"></span>
         </a>
-        <?= $title; ?>
+        <span><?= $title; ?></span>
       </div>
     </div>
-    <div class="input-group mb-3 w-100 w-md-25" style="max-width: 350px;">
+    <div class="input-group mb-3 w-100" style="max-width: 320px;">
       <span class="input-group-text rounded-right-0"><i class="fa fa-search"></i></span>
       <input type="text" name="search" id="search" class="form-control" placeholder="Search">
     </div>
@@ -212,10 +212,8 @@
       }
     })
 
-    // #column3_search is a <input type="text"> element
     $('#search').on('paste input', function() {
       table
-        .columns(1)
         .search(this.value)
         .draw();
     });
